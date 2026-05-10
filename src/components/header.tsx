@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { GlassSurface } from "@/components/glass-surface";
+import { MobileGateModal } from "@/components/mobile-gate-modal";
+import { useMobileGate } from "@/hooks/use-mobile-gate";
 
 const LOGO_URL = "/images/logo.png";
 
@@ -18,20 +20,26 @@ const navItems = [
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { gateState, intercept, closeGate } = useMobileGate();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
+    <>
+      <MobileGateModal
+        isOpen={gateState.isOpen}
+        onClose={closeGate}
+        targetUrl={gateState.targetUrl}
+        pageLabel={gateState.pageLabel}
+      />
+
     <header 
       className={`fixed top-0 left-0 right-0 z-50 px-4 py-4 md:px-6 transition-all duration-300 ${
-        isScrolled ? 'backdrop-blur-sm' : ''
+          isScrolled ? "backdrop-blur-sm" : ""
       }`}
     >
       {/* Desktop Glass Navbar */}
@@ -70,12 +78,15 @@ export function Header() {
 
             <div className="flex items-center gap-3">
               <Link
-                href="/transition/connexion"
+                  href="/connexion"
                 className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
               >
                 Connexion
               </Link>
-              <Link href="/transition/programme">
+                <Link
+                  href="/programme"
+                  onClick={(e) => intercept(e, "/programme", "le Programme")}
+                >
                 <GlassSurface
                   borderRadius={25}
                   brightness={50}
@@ -111,7 +122,6 @@ export function Header() {
                 className="h-8 w-8 object-contain"
               />
             </Link>
-
             <button
               type="button"
               className="text-foreground"
@@ -123,7 +133,6 @@ export function Header() {
           </div>
         </GlassSurface>
 
-        {/* Mobile Menu Dropdown */}
         {isMobileMenuOpen && (
           <div className="mt-2">
             <GlassSurface
@@ -145,20 +154,24 @@ export function Header() {
                 ))}
                 <div className="mt-2 flex flex-col gap-2 border-t border-foreground/10 pt-2">
                   <Link
-                    href="#connexion"
+                      href="/connexion"
                     className="rounded-lg px-3 py-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-foreground/5"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Connexion
                   </Link>
+                    <Link
+                      href="/programme"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
                   <GlassSurface
                     borderRadius={10}
                     brightness={50}
                     className="mx-2 py-2 text-center transition-transform hover:scale-[1.02]"
-                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <span className="text-xs font-semibold text-foreground">Découvrir</span>
                   </GlassSurface>
+                    </Link>
                 </div>
               </div>
             </GlassSurface>
@@ -166,5 +179,6 @@ export function Header() {
         )}
       </div>
     </header>
+    </>
   );
 }

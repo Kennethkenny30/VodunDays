@@ -2,16 +2,26 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { GlassSurface } from "@/components/glass-surface";
 import { ArrowDown, MapPin, Calendar } from "lucide-react";
+import { MobileGateModal } from "@/components/mobile-gate-modal";
+import { useMobileGate } from "@/hooks/use-mobile-gate";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export function HeroSection() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
+  const desktopBgRef = useRef<HTMLDivElement>(null);
+
+  const { gateState, intercept, closeGate } = useMobileGate();
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -35,28 +45,54 @@ export function HeroSection() {
         { opacity: 0 },
         { opacity: 1, duration: 0.8, ease: "power2.out", delay: 1.2 }
       );
+
+      if (desktopBgRef.current) {
+        ScrollTrigger.create({
+          trigger: document.body,
+          start: "450vh top",
+          end: "200vh top",
+          scrub: true,
+          onUpdate: (self) => {
+            gsap.set(desktopBgRef.current, { opacity: 1 - self.progress });
+          },
+        });
+      }
     });
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <section className="relative flex min-h-screen items-center justify-center px-4 md:px-6">
-      <div className="relative z-10 mx-auto max-w-5xl text-center">
-        {/*<div className="mb-4 md:mb-6 inline-flex items-center gap-1.5 md:gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm text-primary backdrop-blur-sm">
-          <span className="h-1.5 w-1.5 md:h-2 md:w-2 animate-pulse rounded-full bg-primary" />
-          10 Janvier 2027 - Ouidah, Bénin
-        </div>    text-muted-foreground*/}
+    <>
+      <MobileGateModal
+        isOpen={gateState.isOpen}
+        onClose={closeGate}
+        targetUrl={gateState.targetUrl}
+        pageLabel={gateState.pageLabel}
+      />
 
+    <section className="relative flex min-h-screen items-center justify-center px-4 md:px-6">
+
+        {/* Desktop background image */}
+        <div
+          ref={desktopBgRef}
+          className="fixed inset-0 z-0 hidden md:block"
+        >
+          <img
+            src="/arene-ouidah.jpg"
+            alt="Arène de Ouidah"
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/50" />
+        </div>
+
+      <div className="relative z-10 mx-auto max-w-5xl text-center">
         <h1
           ref={titleRef}
-          className="mb-4 md:mb-6 text-3xl md:text-5xl lg:text-7xl xl:text-8xl font-bold leading-tight tracking-tight text-foreground"
+            className="mb-4 md:mb-6 text-3xl md:text-5xl lg:text-7xl xl:text-8xl font-bold leading-tight tracking-tight"
         >
-          <span className="text-balance">
-            Célébrez la{" "}
-            <span className="bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
-              Tradition
-            </span>
+            <span className="text-balance bg-linear-to-b from-white to-slate-900/10 bg-clip-text text-transparent">
+              Célébrez la Tradition
           </span>
         </h1>
 
@@ -69,7 +105,10 @@ export function HeroSection() {
         </p>
 
         <div ref={ctaRef} className="flex flex-col items-center justify-center gap-3 md:gap-4 sm:flex-row">
-          <Link href="/transition/programme">
+            <Link
+              href="/transition/programme"
+              onClick={(e) => intercept(e, "/transition/programme", "le Programme")}
+            >
             <GlassSurface
               borderRadius={30}
               displace={0.5}
@@ -80,7 +119,9 @@ export function HeroSection() {
               brightness={50}
               className="px-5 py-3 md:px-8 md:py-4 transition-transform hover:scale-105"
             >
-              <span className="text-sm md:text-lg font-semibold text-foreground">Explorer le Programme</span>
+                <span className="text-sm md:text-lg font-semibold text-foreground">
+                  Explorer le Programme
+                </span>
             </GlassSurface>
           </Link>
           <Link href="/transition/carte">
@@ -118,5 +159,6 @@ export function HeroSection() {
         <ArrowDown className="h-4 w-4 md:h-6 md:w-6 text-foreground/50" />
       </div>
     </section>
+    </>
   );
 }
