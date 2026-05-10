@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useMemo, type ReactNode, type CSSProperties } from "react";
+import { useRef, useEffect, useId, type ReactNode, type CSSProperties } from "react";
 
 interface GlassSurfaceProps {
   children: ReactNode;
@@ -36,13 +36,10 @@ export function GlassSurface({
   onClick,
 }: GlassSurfaceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  // Générer l'ID du filtre une seule fois avec useMemo
-  const filterId = useMemo(
-    // eslint-disable-next-line react-hooks/purity
-    () => `glass-filter-${Math.random().toString(36).substr(2, 9)}`,
-    []
-  );
+
+  // useId génère un ID stable et identique côté serveur et client (pas de hydration mismatch)
+  const rawId = useId();
+  const filterId = `glass-filter-${rawId.replace(/:/g, "")}`;
 
   useEffect(() => {
     const container = containerRef.current;
