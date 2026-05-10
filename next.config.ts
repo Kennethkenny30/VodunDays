@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
       tailwindcss: path.resolve(__dirname, "node_modules/tailwindcss"),
     },
   },
+  experimental: {
+    turbopackFileSystemCacheForDev: false,
+  },
 };
 
 export default nextConfig;
