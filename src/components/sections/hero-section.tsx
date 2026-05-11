@@ -89,7 +89,7 @@ export function HeroSection() {
       <div className="relative z-10 mx-auto max-w-5xl text-center">
         <h1
           ref={titleRef}
-            className="mb-4 md:mb-6 text-3xl md:text-5xl lg:text-7xl xl:text-8xl font-bold leading-tight tracking-tight"
+            className="mb-4 md:mb-6 text-5xl md:text-5xl lg:text-7xl xl:text-8xl font-bold leading-tight tracking-tight"
         >
             <span className="text-balance bg-linear-to-b from-white to-slate-900/10 bg-clip-text text-transparent">
               Célébrez la Tradition
