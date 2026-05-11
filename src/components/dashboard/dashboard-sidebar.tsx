@@ -39,6 +39,7 @@ const superAdminNav = [
     items: [
       { label: "Sites & géographie", icon: IconMapPin,  href: "/superadmin/sites" },
       { label: "Gestion des rôles",  icon: IconUsers,   href: "/superadmin/roles" },
+      { label: "Performance",        icon: IconChart,   href: "/superadmin/performance" },
     ],
   },
   {
