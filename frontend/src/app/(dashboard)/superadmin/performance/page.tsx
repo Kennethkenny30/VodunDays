@@ -611,7 +611,7 @@ export default function PerformancePage() {
                     <h2 className="text-base font-semibold">Erreurs HTTP</h2>
                     <InfoTip content={<span><strong>4xx</strong> = erreurs client (404, 403…) · <strong>5xx</strong> = erreurs serveur. Les 5xx sont critiques.</span>} />
                   </div>
-                  <div className="h-[160px]">
+                  <div className="h-40">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={[{code:"4xx — Client",count:234},{code:"5xx — Serveur",count:12}]} layout="vertical" margin={{left:8,right:20,top:4,bottom:4}}>
                         <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.06)" horizontal={false} />
@@ -765,7 +765,7 @@ export default function PerformancePage() {
                     <h2 className="text-base font-semibold">Latence API dans le temps</h2>
                     <InfoTip content="Évolution du temps de réponse moyen de l'API back-office. Un pic soudain peut indiquer un problème serveur ou un pic de charge." />
                   </div>
-                  <div className="h-[220px]">
+                  <div className="h-55">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={trafficData} margin={{top:4,right:4,left:-28,bottom:0}}>
                         <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.06)" vertical={false} />
