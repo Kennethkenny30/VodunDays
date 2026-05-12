@@ -75,7 +75,7 @@ export function VideoScrollPlayer({
   }, [scrollHeight]);
 
   return (
-    <div ref={containerRef} className={`fixed inset-0 z-0 ${className}`}>
+    <div ref={containerRef} className={`fixed inset-0 z-0 md:hidden ${className}`}>
       <video
         ref={videoRef}
         className="h-full w-full object-cover"

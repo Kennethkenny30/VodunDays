@@ -1,0 +1,45 @@
+// ✅ Insertion
+await prisma.$queryRaw`
+  INSERT INTO "Sites" (id, name, "zoneGeo", ...)
+  VALUES (
+    ${id},
+    ${name},
+    ST_GeomFromGeoJSON(${JSON.stringify(polygonGeoJSON)}),
+    ...
+  )
+`
+
+// ✅ Lecture
+const sites = await prisma.$queryRaw`
+  SELECT id, name, ST_AsGeoJSON("zoneGeo") as "zoneGeo"
+  FROM "Sites"
+`
+
+// ✅ Requête spatiale (points dans un polygone)
+const result = await prisma.$queryRaw`
+  SELECT * FROM "Sites"
+  WHERE ST_Contains("zoneGeo", ST_MakePoint(${longitude}, ${latitude}))
+`
+
+
+// Exemple : créer un site en deux étapes
+const site = await prisma.sites.create({
+  data: { id, name, description, latitude, longitude, type, capacity }
+})
+
+await prisma.$queryRaw`
+  UPDATE "Sites"
+  SET "zoneGeo" = ST_GeomFromGeoJSON(${JSON.stringify(polygon)})
+  WHERE id = ${site.id}
+`
+
+
+
+-- Active l'extension PostGIS si pas encore fait
+CREATE EXTENSION IF NOT EXISTS postgis;
+
+-- Ajoute la colonne zoneGeo
+ALTER TABLE
+    "Sites"
+ADD
+    COLUMN "zoneGeo" geometry(Polygon, 4326);

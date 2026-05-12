@@ -7,6 +7,7 @@ import { DayFilter } from "@/components/programs/DayFilter";
 import { WeatherWidget } from "@/components/programs/WeatherWidget";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { ProgramList } from "@/components/programs/ProgramList";
+import { useWeather } from "@/hooks/useWeather";
 import type { Program } from "@/lib/types";
 
 const mockPrograms: Program[] = [
@@ -24,32 +25,21 @@ const mockPrograms: Program[] = [
   { id: "10", title: "Procession Royale",       description: "Grande procession avec les dignitaires royaux",    type: "RITUAL",    startTime: "17:30", endTime: "19:30", location: "Route des Esclaves",    rating: 4.9, image: "/images/vodundays-9.jpg",  isLive: false, day: 3 },
 ];
 
-/*
-  Variantes pour l'entrée orchestrée de la page.
-  Le container déclenche ses enfants en cascade (staggerChildren).
-*/
 const pageVariants = {
   hidden: {},
   visible: {
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.05,
-    },
+    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
   },
 };
 
-// Chaque section descend depuis le haut avec un léger flou
 const itemVariants = {
   hidden:  { opacity: 0, y: -14, filter: "blur(3px)" },
   visible: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
+    opacity: 1, y: 0, filter: "blur(0px)",
     transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
   },
 };
 
-// Glow ambient : simple fondu lent au montage
 const glowVariants = {
   hidden:  { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 1.2, ease: "easeOut" } },
@@ -59,30 +49,28 @@ export default function ProgrammePage() {
   const [activeDay, setActiveDay]   = useState(1);
   const [logoMerged, setLogoMerged] = useState(false);
 
+  // ── Météo réelle — position GPS du visiteur via useWeather ──
+  // weather === null pendant le chargement → le widget affiche ses données par défaut
+  // weather === données réelles dès que le GPS + l'API répondent
+  const { weather } = useWeather();
+
   const filteredPrograms = mockPrograms.filter((p) => p.day === activeDay);
 
   return (
-    /*
-      Conteneur racine avec stagger :
-      au montage, chaque enfant motion.* entre en décalé (header → dayfilter → liste).
-    */
     <motion.div
       className="min-h-screen bg-[#151419]"
       variants={pageVariants}
       initial="hidden"
       animate="visible"
     >
-      {/* Glow ambient — fondu lent indépendant du stagger */}
+      {/* Glow ambient */}
       <motion.div
         variants={glowVariants}
         className="fixed inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse at top, rgba(245,110,15,0.08), transparent 60%)" }}
       />
 
-      {/*
-        Header — premier élément à entrer.
-        Safe-area PWA : padding-top adapté notch/status bar sur tous les appareils.
-      */}
+      {/* Header */}
       <motion.header
         variants={itemVariants}
         className="relative z-10 px-4 flex items-end pb-2"
@@ -114,29 +102,25 @@ export default function ProgrammePage() {
         </AnimatePresence>
       </motion.header>
 
-      {/* Dynamic Island — fixed à droite en idle, s'étend au centre à l'ouverture */}
+      {/* Dynamic Island — reçoit les données météo réelles */}
       <WeatherWidget
+        weather={weather ?? undefined}
         logoSrc="/images/logo.png"
         logoMerged={logoMerged}
         onLogoMerge={() => setLogoMerged(true)}
         onLogoSeparate={() => setLogoMerged(false)}
       />
 
-      {/* Sélecteur de jour — deuxième à entrer */}
+      {/* Sélecteur de jour */}
       <motion.div variants={itemVariants}>
         <DayFilter activeDay={activeDay} onDayChange={setActiveDay} totalDays={3} />
       </motion.div>
 
-      {/*
-        Liste des programmes — troisième à entrer.
-        Les ProgramCard s'animent ensuite individuellement au scroll (useInView dans ProgramCard).
-        La prop activeDay déclenche l'AnimatePresence dans ProgramList au changement de jour.
-      */}
+      {/* Liste des programmes */}
       <motion.main variants={itemVariants} className="relative z-10 py-2">
         <ProgramList programs={filteredPrograms} activeDay={activeDay} />
       </motion.main>
 
-      {/* BottomNav */}
       <BottomNav />
     </motion.div>
   );

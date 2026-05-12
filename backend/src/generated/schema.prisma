@@ -1,0 +1,179 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../src/generated/"
+  engineType      = "client"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+model Sites {
+  id          String                                  @id @default(uuid())
+  name        String
+  description String?
+  latitude    Float
+  longitude   Float
+  zoneGeo     Unsupported("geometry(Polygon, 4326)")?
+  type        String
+  capacity    Int
+  createdAt   DateTime                                @default(now())
+  updatedAt   DateTime                                @updatedAt
+
+  amenities Amenities[]
+  events    Events[]
+}
+
+model Amenities {
+  id        String   @id @default(uuid())
+  name      String
+  siteId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  site Sites @relation(fields: [siteId], references: [id])
+}
+
+model EventsTypes {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events Events[]
+}
+
+model Events {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  status      String
+  siteId      String
+  eventTypeId String
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  site      Sites       @relation(fields: [siteId], references: [id])
+  eventType EventsTypes @relation(fields: [eventTypeId], references: [id])
+  programs  Programs[]
+  artists   Artists[]
+  quizzes   Quiz[]
+}
+
+model Programs {
+  id        String   @id @default(uuid())
+  startTime DateTime
+  endTime   DateTime
+  eventId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  event Events @relation(fields: [eventId], references: [id])
+}
+
+model Artists {
+  id        String   @id @default(uuid())
+  name      String
+  eventId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  event Events @relation(fields: [eventId], references: [id])
+}
+
+model Quiz {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  active      Boolean  @default(false)
+  eventId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  event     Events      @relation(fields: [eventId], references: [id])
+  questions Questions[]
+}
+
+model QuestionsTypes {
+  id        String   @id @default(uuid())
+  types     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questions Questions[]
+}
+
+model Questions {
+  id             String   @id @default(uuid())
+  wording        String
+  questionTypeId String
+  quizId         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  questionType QuestionsTypes          @relation(fields: [questionTypeId], references: [id])
+  quiz         Quiz                    @relation(fields: [quizId], references: [id])
+  impressions  Questions_impressions[]
+  choices      Choices[]
+  answers      Answers[]
+}
+
+model Impressions {
+  id        String   @id @default(uuid())
+  name      String
+  emoji     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questions Questions_impressions[]
+}
+
+model Questions_impressions {
+  questionId   String
+  impressionId String
+
+  question   Questions   @relation(fields: [questionId], references: [id])
+  impression Impressions @relation(fields: [impressionId], references: [id])
+
+  @@id([questionId, impressionId])
+}
+
+model Choices {
+  id         String   @id @default(uuid())
+  wording    String
+  questionId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  question Questions @relation(fields: [questionId], references: [id])
+}
+
+model Answers {
+  id         String   @id @default(uuid())
+  uuid       String   @unique @default(uuid())
+  response   String
+  questionId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  question Questions @relation(fields: [questionId], references: [id])
+}
+
+model Users {
+  id         String    @id @default(uuid())
+  email      String    @unique
+  password   String
+  role       String
+  active     Boolean   @default(true)
+  firstname  String
+  lastname   String
+  phone      String?
+  lastLoging DateTime?
+  createdBy  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}

@@ -1,0 +1,284 @@
+"use client"
+
+import { useEffect, useState, useCallback } from "react"
+import { usePathname } from "next/navigation"
+import Link from "next/link"
+import { useTheme } from "next-themes"
+import { cn } from "@/lib/utils"
+import { useSidebarStore } from "@/lib/stores/sidebar-store"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  IconMenu,
+  IconSearch,
+  IconBell,
+  IconMoon,
+  IconSun,
+  IconLogout,
+  IconUser,
+  IconChevronRight,
+  IconSwitch,
+  IconCalendar,
+  IconMapPin,
+  IconUsers,
+} from "@/components/icons"
+
+// Fil d'Ariane - génère les segments depuis le pathname
+function Breadcrumbs() {
+  const pathname = usePathname()
+  const segments = pathname.split("/").filter(Boolean)
+
+  // Labels lisibles pour les segments
+  const labels: Record<string, string> = {
+    superadmin: "Super Admin",
+    admin: "Admin Culture",
+    config: "Configuration",
+    sites: "Sites",
+    roles: "Rôles",
+    audit: "Audit",
+    incidents: "Incidents",
+    events: "Événements",
+    programs: "Créneaux",
+    notifications: "Notifications",
+    survey: "Enquête",
+  }
+
+  return (
+    <nav className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
+      {segments.map((segment, idx) => (
+        <span key={segment} className="flex items-center gap-1">
+          {idx > 0 && <IconChevronRight className="size-3" />}
+          <Link
+            href={`/${segments.slice(0, idx + 1).join("/")}`}
+            className={cn(
+              "hover:text-foreground transition-colors",
+              idx === segments.length - 1 && "text-foreground font-medium"
+            )}
+          >
+            {labels[segment] || segment}
+          </Link>
+        </span>
+      ))}
+    </nav>
+  )
+}
+
+// Barre supérieure du dashboard
+export function DashboardTopBar() {
+  const { toggle } = useSidebarStore()
+  const { theme, setTheme } = useTheme()
+  const pathname = usePathname()
+  const [commandOpen, setCommandOpen] = useState(false)
+
+  // Raccourci clavier pour la recherche
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      e.preventDefault()
+      setCommandOpen(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [handleKeyDown])
+
+  // Détermination du rôle selon le chemin
+  const isSuperAdmin = pathname.startsWith("/superadmin")
+
+  return (
+    <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6">
+      {/* Bouton hamburger mobile */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="md:hidden"
+        onClick={toggle}
+        aria-label="Ouvrir le menu"
+      >
+        <IconMenu className="size-5" />
+      </Button>
+
+      {/* Fil d'Ariane */}
+      <Breadcrumbs />
+
+      {/* Actions à droite */}
+      <div className="ml-auto flex items-center gap-2">
+        {/* Recherche globale */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="hidden sm:flex items-center gap-2 text-muted-foreground"
+          onClick={() => setCommandOpen(true)}
+        >
+          <IconSearch className="size-4" />
+          <span className="hidden lg:inline">Rechercher...</span>
+          <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 text-[10px] font-medium text-muted-foreground">
+            <span className="text-xs">Ctrl</span>K
+          </kbd>
+        </Button>
+
+        {/* Recherche mobile */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="sm:hidden"
+          onClick={() => setCommandOpen(true)}
+          aria-label="Rechercher"
+        >
+          <IconSearch className="size-5" />
+        </Button>
+
+        {/* Notifications */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+              <IconBell className="size-5" />
+              <span className="absolute -top-1 -right-1 size-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
+                3
+              </span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-80">
+            <div className="space-y-3">
+              <p className="text-sm font-medium">Notifications récentes</p>
+              <div className="space-y-2">
+                <NotificationItem
+                  title="Nouvel événement créé"
+                  time="Il y a 5 min"
+                />
+                <NotificationItem
+                  title="Site mis à jour"
+                  time="Il y a 15 min"
+                />
+                <NotificationItem
+                  title="Connexion admin détectée"
+                  time="Il y a 1h"
+                />
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Menu utilisateur */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <Avatar className="size-8">
+                <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                  AD
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium">Admin Vodun</p>
+                <p className="text-xs text-muted-foreground">admin@vodundays.bj</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <IconUser className="mr-2 size-4" />
+              Profil
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+              {theme === "dark" ? (
+                <IconSun className="mr-2 size-4" />
+              ) : (
+                <IconMoon className="mr-2 size-4" />
+              )}
+              Changer de thème
+            </DropdownMenuItem>
+            {isSuperAdmin && (
+              <DropdownMenuItem asChild>
+                <Link href="/admin">
+                  <IconSwitch className="mr-2 size-4" />
+                  Basculer vers Admin Culture
+                </Link>
+              </DropdownMenuItem>
+            )}
+            {!isSuperAdmin && (
+              <DropdownMenuItem asChild>
+                <Link href="/superadmin">
+                  <IconSwitch className="mr-2 size-4" />
+                  Basculer vers Super Admin
+                </Link>
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive">
+              <IconLogout className="mr-2 size-4" />
+              Déconnexion
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Dialog de recherche globale */}
+      <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
+        <CommandInput placeholder="Rechercher un événement, un site, un utilisateur..." />
+        <CommandList>
+          <CommandEmpty>Aucun résultat trouvé.</CommandEmpty>
+          <CommandGroup heading="Événements">
+            <CommandItem>
+              <IconCalendar className="mr-2 size-4" />
+              Cérémonie d&apos;ouverture
+            </CommandItem>
+            <CommandItem>
+              <IconCalendar className="mr-2 size-4" />
+              Procession traditionnelle
+            </CommandItem>
+          </CommandGroup>
+          <CommandGroup heading="Sites">
+            <CommandItem>
+              <IconMapPin className="mr-2 size-4" />
+              Temple des Pythons
+            </CommandItem>
+            <CommandItem>
+              <IconMapPin className="mr-2 size-4" />
+              Place Chacha
+            </CommandItem>
+          </CommandGroup>
+          <CommandGroup heading="Utilisateurs">
+            <CommandItem>
+              <IconUsers className="mr-2 size-4" />
+              Admin Culture
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
+    </header>
+  )
+}
+
+// Composant item de notification
+function NotificationItem({ title, time }: { title: string; time: string }) {
+  return (
+    <div className="flex items-start gap-3 rounded-lg p-2 hover:bg-accent transition-colors cursor-pointer">
+      <div className="size-2 mt-1.5 rounded-full bg-primary shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm">{title}</p>
+        <p className="text-xs text-muted-foreground">{time}</p>
+      </div>
+    </div>
+  )
+}

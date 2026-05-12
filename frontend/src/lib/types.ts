@@ -113,4 +113,5 @@ export interface WeatherData {
   humidity: number;
   uv: number;
   location: string;
+  hourly?: Array<{ h: string; t: number; icon: string }>
 }
