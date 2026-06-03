@@ -21,11 +21,11 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.19.2
+ * Prisma Client JS version: 6.19.3
  * Query Engine version: c2990dca591cba766e3b7ef5d9e8a84796e47ab7
  */
 Prisma.prismaVersion = {
-  client: "6.19.2",
+  client: "6.19.3",
   engine: "c2990dca591cba766e3b7ef5d9e8a84796e47ab7"
 }
 
@@ -157,7 +157,8 @@ exports.Prisma.EventsScalarFieldEnum = {
   eventTypeId: 'eventTypeId',
   createdBy: 'createdBy',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  imageUrl: 'imageUrl'
 };
 
 exports.Prisma.ProgramsScalarFieldEnum = {
@@ -248,9 +249,63 @@ exports.Prisma.UsersScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.NotificationsScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  message: 'message',
+  target: 'target',
+  targetId: 'targetId',
+  status: 'status',
+  scheduledAt: 'scheduledAt',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AlertsScalarFieldEnum = {
+  id: 'id',
+  uuid: 'uuid',
+  displayName: 'displayName',
+  type: 'type',
+  description: 'description',
+  status: 'status',
+  siteId: 'siteId',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AlertTimelineScalarFieldEnum = {
+  id: 'id',
+  alertId: 'alertId',
+  status: 'status',
+  note: 'note',
+  userId: 'userId',
+  userName: 'userName',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AuditLogsScalarFieldEnum = {
+  id: 'id',
+  action: 'action',
+  module: 'module',
+  description: 'description',
+  metadata: 'metadata',
+  userId: 'userId',
+  userName: 'userName',
+  ipAddress: 'ipAddress',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -261,6 +316,12 @@ exports.Prisma.QueryMode = {
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 
 
@@ -278,7 +339,11 @@ exports.Prisma.ModelName = {
   Questions_impressions: 'Questions_impressions',
   Choices: 'Choices',
   Answers: 'Answers',
-  Users: 'Users'
+  Users: 'Users',
+  Notifications: 'Notifications',
+  Alerts: 'Alerts',
+  AlertTimeline: 'AlertTimeline',
+  AuditLogs: 'AuditLogs'
 };
 
 /**

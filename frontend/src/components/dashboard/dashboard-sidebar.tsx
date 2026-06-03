@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { useSidebarStore } from "@/lib/stores/sidebar-store"
+import { useSession } from "@/hooks/useSession"
 import {
   IconDashboard,
   IconMapPin,
@@ -20,8 +21,9 @@ import {
   IconChart,
   IconShield,
   IconClock,
+  IconStar,
 } from "@/components/icons"
-import { ChevronLeft, ChevronRight, LogOut } from "lucide-react"
+import { ChevronLeft, ChevronRight, LogOut, ShieldAlert } from "lucide-react"
 import { useState } from "react"
 import type { UserRole } from "@/lib/types/api"
 
@@ -68,8 +70,15 @@ const adminNav = [
   {
     group: "Communication",
     items: [
-      { label: "Notifications", icon: IconBell,  href: "/admin/notifications" },
+      { label: "Notifications",  icon: IconBell,  href: "/admin/notifications" },
       { label: "Enquête & avis", icon: IconChart, href: "/admin/survey" },
+      { label: "Questionnaires", icon: IconStar,  href: "/admin/quiz" },
+    ],
+  },
+  {
+    group: "Sécurité",
+    items: [
+      { label: "Urgences", icon: ShieldAlert, href: "/admin/urgences" },
     ],
   },
 ]
@@ -157,9 +166,10 @@ interface SidebarContentProps {
   collapsed: boolean
   onToggle?: () => void
   showToggle?: boolean
+  onLogout: () => void
 }
 
-function SidebarContent({ role, collapsed, onToggle, showToggle = false }: SidebarContentProps) {
+function SidebarContent({ role, collapsed, onToggle, showToggle = false, onLogout }: SidebarContentProps) {
   const pathname = usePathname()
   const navConfig = role === "SUPER_ADMIN" ? superAdminNav : adminNav
   const homeHref = role === "SUPER_ADMIN" ? "/superadmin" : "/admin"
@@ -261,10 +271,10 @@ function SidebarContent({ role, collapsed, onToggle, showToggle = false }: Sideb
       <div className="border-t border-white/8 p-2">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Link
-              href="/connexion"
+            <button
+              onClick={onLogout}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive",
+                "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive",
                 collapsed && "justify-center"
               )}
             >
@@ -282,7 +292,7 @@ function SidebarContent({ role, collapsed, onToggle, showToggle = false }: Sideb
                   </motion.span>
                 )}
               </AnimatePresence>
-            </Link>
+            </button>
           </TooltipTrigger>
           {collapsed && (
             <TooltipContent side="right" sideOffset={8} className="text-xs">
@@ -301,8 +311,10 @@ export function DashboardSidebar() {
   const pathname = usePathname()
   const { isOpen, close } = useSidebarStore()
   const [collapsed, setCollapsed] = useState(false)
+  const { user, logout } = useSession()
 
-  const role: UserRole = pathname.startsWith("/superadmin") ? "SUPER_ADMIN" : "ADMIN"
+  // Rôle lu depuis la session — pas depuis le pathname
+  const role: UserRole = user?.role === "SUPER_ADMIN" ? "SUPER_ADMIN" : "ADMIN"
 
   return (
     <>
@@ -321,6 +333,7 @@ export function DashboardSidebar() {
           collapsed={collapsed}
           onToggle={() => setCollapsed((v) => !v)}
           showToggle
+          onLogout={logout}
         />
       </motion.aside>
 
@@ -333,7 +346,7 @@ export function DashboardSidebar() {
           <SheetHeader className="sr-only">
             <SheetTitle>Menu de navigation</SheetTitle>
           </SheetHeader>
-          <SidebarContent role={role} collapsed={false} />
+          <SidebarContent role={role} collapsed={false} onLogout={logout} />
         </SheetContent>
       </Sheet>
     </>

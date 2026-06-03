@@ -1,6 +1,9 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
+import { getPlatformStats, getPlatformActivity } from "@/lib/api/platform"
+import type { PlatformStats, PlatformActivity } from "@/lib/api/platform"
+import { toast } from "sonner"
 import { PageTransition } from "@/components/dashboard/page-transition"
 import { NumberTicker } from "@/components/magicui/number-ticker"
 import { Badge } from "@/components/ui/badge"
@@ -354,13 +357,37 @@ export default function PerformancePage() {
   const [period, setPeriod] = useState<Period>("24h")
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [lastRefresh, setLastRefresh] = useState(new Date())
-  const trafficData = useMemo(() => generateTrafficData(period), [period])
-  const apiData = useMemo(() => generateApiData(period), [period])
-  const goodVitals = VITALS.filter(v => getStatus(v.value, v.thresholds) === "good").length
+  const [platformStats, setPlatformStats] = useState<PlatformStats | null>(null)
+  const [recentActivity, setRecentActivity] = useState<PlatformActivity[]>([])
+  const [statsLoading, setStatsLoading] = useState(true)
 
-  const handleRefresh = () => {
+  const trafficData = useMemo(() => generateTrafficData(period), [period])
+  const apiData     = useMemo(() => generateApiData(period),     [period])
+  const goodVitals  = VITALS.filter(v => getStatus(v.value, v.thresholds) === "good").length
+
+  const fetchRealStats = useCallback(async () => {
+    setStatsLoading(true)
+    try {
+      const [statsRes, activityRes] = await Promise.all([
+        getPlatformStats(),
+        getPlatformActivity(10),
+      ])
+      if (statsRes.success)    setPlatformStats(statsRes.data)
+      if (activityRes.success) setRecentActivity(activityRes.data)
+    } catch {
+      // silencieux — les données générées restent affichées
+    } finally {
+      setStatsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchRealStats() }, [fetchRealStats])
+
+  const handleRefresh = async () => {
     setIsRefreshing(true)
-    setTimeout(() => { setIsRefreshing(false); setLastRefresh(new Date()) }, 1200)
+    await fetchRealStats()
+    setLastRefresh(new Date())
+    setIsRefreshing(false)
   }
 
   const handleExport = (format: "csv" | "pdf") => {

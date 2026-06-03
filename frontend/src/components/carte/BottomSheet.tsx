@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useCallback, useState } from "react";
-import { MARKER_CATEGORIES, POI_DATA, type POI } from "@/lib/markers";
+// POI_DATA supprimé — la liste des POI vient de la prop allPois (chargée depuis la BDD)
+import { MARKER_CATEGORIES, type POI } from "@/lib/markers";
 import { X, Navigation, MapPin, ChevronDown, ArrowRight } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -41,6 +42,8 @@ interface RoutePointSelectorProps {
   dotColor: string;
   value: RoutePoint | null;
   userLocation: UserLocation | null;
+  // allPois remplace POI_DATA — liste dynamique chargée depuis la BDD
+  allPois: POI[];
   /** Si true le sélecteur est en lecture seule (point A quand GPS disponible) */
   readOnly?: boolean;
   onChange: (point: RoutePoint) => void;
@@ -51,6 +54,7 @@ function RoutePointSelector({
   dotColor,
   value,
   userLocation,
+  allPois,
   readOnly = false,
   onChange,
 }: RoutePointSelectorProps) {
@@ -59,8 +63,8 @@ function RoutePointSelector({
   const displayLabel = !value
     ? "Choisir un point…"
     : value.type === "gps"
-    ? "📍 Ma position"
-    : `${MARKER_CATEGORIES[value.poi.category].emoji} ${value.poi.name}`;
+    ? "Ma position"
+    : `${value.poi.name}`;
 
   const handleToggle = useCallback(() => {
     if (!readOnly) setOpen(o => !o);
@@ -199,8 +203,8 @@ function RoutePointSelector({
             </button>
           )}
 
-          {/* Liste des POI */}
-          {POI_DATA.map(poi => {
+          {/* Liste des POI depuis la BDD (allPois) — plus de POI_DATA hardcodé */}
+          {allPois.map(poi => {
             const cat = MARKER_CATEGORIES[poi.category];
             return (
               <button
@@ -241,7 +245,7 @@ function RoutePointSelector({
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {cat.emoji} {poi.name}
+                  {poi.name}
                 </span>
               </button>
             );
@@ -259,6 +263,8 @@ interface BottomSheetProps {
   userLocation: UserLocation | null;
   onClose: () => void;
   onNavigateFromTo: (from: RoutePoint, to: RoutePoint) => void;
+  // Nouvelle prop — POI chargés depuis la BDD, passés par CarteMapSection
+  allPois: POI[];
 }
 
 export function BottomSheet({
@@ -266,6 +272,7 @@ export function BottomSheet({
   userLocation,
   onClose,
   onNavigateFromTo,
+  allPois,
 }: BottomSheetProps) {
   const [showRoutePanel, setShowRoutePanel] = useState(false);
   const [fromPoint, setFromPoint] = useState<RoutePoint | null>(null);
@@ -352,8 +359,7 @@ export function BottomSheet({
           className="text-[10px] font-extrabold uppercase mb-1.5"
           style={{ color: category.color, letterSpacing: "0.12em" }}
         >
-          {category.emoji && <span className="mr-1">{category.emoji}</span>}
-          {category.label}
+                    {category.label}
         </div>
 
         {/* Nom du site */}
@@ -430,6 +436,7 @@ export function BottomSheet({
               dotColor="#4488FF"
               value={fromPoint}
               userLocation={userLocation}
+              allPois={allPois}
               readOnly={fromLocked}
               onChange={setFromPoint}
             />
@@ -462,6 +469,7 @@ export function BottomSheet({
               dotColor="#F56E0F"
               value={toPoint}
               userLocation={userLocation}
+              allPois={allPois}
               onChange={setToPoint}
             />
 

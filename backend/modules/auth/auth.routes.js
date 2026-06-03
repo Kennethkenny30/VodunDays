@@ -1,17 +1,22 @@
 import { Router } from "express";
 import Joi from "joi";
 import { validate } from "../../middlewares/validate.middleware.js";
-import { login, register } from "./auth.controller.js";
+import { authenticate, authorize } from "../../middlewares/auth.middleware.js";
+import { auditLog } from "../../middlewares/audit.middleware.js";
+import { login, logout, me, register } from "./auth.controller.js";
 
 const router = Router();
+
+// ─── Schémas de validation ────────────────────────────────────────────────────
 
 const registerSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(8).required(),
   firstname: Joi.string().required(),
   lastname: Joi.string().required(),
-  phone: Joi.string().optional(),
-  role: Joi.string().valid("ADMIN", "AGENT").optional(),
+  phone: Joi.string().optional().allow(""),
+  // Seul un SUPER_ADMIN peut créer un compte, et peut choisir le rôle
+  role: Joi.string().valid("SUPER_ADMIN", "ADMIN").optional(),
 });
 
 const loginSchema = Joi.object({
@@ -19,7 +24,27 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
-router.post("/register", validate(registerSchema), register);
-router.post("/login", validate(loginSchema), login);
+// ─── Routes ───────────────────────────────────────────────────────────────────
+
+// Publiques
+router.post("/login",
+  validate(loginSchema),
+  auditLog("auth", "AUTH", (req) => `Connexion : ${req.body.email}`),
+  login
+);
+router.post("/logout", logout);
+
+// Protégées
+router.get("/me", authenticate, me);
+
+// Création de compte : réservée au SUPER_ADMIN
+router.post(
+  "/register",
+  authenticate,
+  authorize("SUPER_ADMIN"),
+  validate(registerSchema),
+  auditLog("users", "CREATE", (req) => `Création du compte : ${req.body.email} (${req.body.role || "ADMIN"})`),
+  register
+);
 
 export default router;

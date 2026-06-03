@@ -1,7 +1,14 @@
-// Client API - Vodun Days Dashboard
+/**
+ * Client API — Vodun Days Dashboard
+ *
+ * Toutes les requêtes incluent credentials: "include" pour que le navigateur
+ * envoie automatiquement le cookie HttpOnly vd_token au backend.
+ * Plus besoin d'injecter manuellement le header Authorization.
+ */
 import type { ApiResponse } from "@/lib/types/api"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api"
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"
 
 type RequestOptions = {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE"
@@ -9,7 +16,6 @@ type RequestOptions = {
   headers?: Record<string, string>
 }
 
-// Fonction générique pour les appels API
 export async function apiClient<T>(
   endpoint: string,
   options: RequestOptions = {}
@@ -18,6 +24,8 @@ export async function apiClient<T>(
 
   const config: RequestInit = {
     method,
+    credentials: "include", // envoie le cookie HttpOnly vd_token
+    cache: "no-store",
     headers: {
       "Content-Type": "application/json",
       ...headers,
@@ -30,15 +38,23 @@ export async function apiClient<T>(
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config)
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Erreur réseau" }))
-    throw new Error(error.message || `Erreur ${response.status}`)
+  // 401 → session expirée, rediriger vers /connexion
+  if (response.status === 401) {
+    if (typeof window !== "undefined") {
+      window.location.href = "/connexion"
+    }
+    throw new Error("Session expirée")
   }
 
-  return response.json()
+  const json = await response.json().catch(() => ({
+    success: false,
+    message: "Erreur réseau",
+    data: null,
+  }))
+
+  return json as ApiResponse<T>
 }
 
-// Helpers pour les méthodes HTTP courantes
 export const api = {
   get: <T>(endpoint: string) => apiClient<T>(endpoint),
 

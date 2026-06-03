@@ -8,8 +8,13 @@ import { CarteFilterBar } from "@/components/carte/CarteFilterBar";
 import { CarteMapSkeleton } from "@/components/carte/CarteMapSkeleton";
 
 /**
- * Chargement dynamique de la section carte avec SSR désactivé
- * MapLibre GL nécessite les APIs navigateur (window, WebGL)
+ * Chargement dynamique de la section carte avec SSR désactivé.
+ * MapLibre GL nécessite les APIs navigateur (window, WebGL).
+ *
+ * ⚠️  CarteMapSection utilise useSearchParams() pour lire les query params
+ * de deep-link (?siteId=, ?lat=, ?lng=). Next.js exige que tout composant
+ * appelant useSearchParams soit enveloppé dans un <Suspense> — ce qui est
+ * déjà fait ici via le Suspense fallback du dynamic + le Suspense explicite.
  */
 const CarteMapSection = dynamic(
   () => import("@/components/carte/CarteMapSection").then(mod => ({ default: mod.CarteMapSection })),
@@ -19,14 +24,10 @@ const CarteMapSection = dynamic(
   }
 );
 
-/**
- * Page Carte Interactive
- * Affiche une carte MapLibre GL avec les points d'intérêt du festival
- */
 export default function CartePage() {
-  // État des filtres actifs - tous activés par défaut
+  // ✅ "pra" ajouté — toutes les catégories BDD activées par défaut
   const [activeFilters, setActiveFilters] = useState<Set<string>>(
-    new Set(["all", "sites", "toilettes", "urgences", "transport", "assistance"])
+    new Set(["all", "sites", "toilettes", "urgences", "transport", "assistance", "pra"])
   );
 
   return (
@@ -42,21 +43,17 @@ export default function CartePage() {
         }}
       />
 
-      {/* En-tête de la page */}
       <CartePageHeader />
 
-      {/* Barre de filtres */}
       <CarteFilterBar
         activeFilters={activeFilters}
         onFiltersChange={setActiveFilters}
       />
 
-      {/* Section carte (chargée dynamiquement) */}
       <Suspense fallback={<CarteMapSkeleton />}>
         <CarteMapSection activeFilters={activeFilters} />
       </Suspense>
 
-      {/* Navigation inférieure */}
       <BottomNav activeTab="carte" />
     </div>
   );

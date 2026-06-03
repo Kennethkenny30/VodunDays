@@ -4,38 +4,44 @@
  * SitesMapModal
  * ─────────────────────────────────────────────────────────────────────────────
  * Modal de visualisation cartographique pour le dashboard admin.
- * Utilisable dans deux contextes :
- *   1. Visualisation d'un site existant (mode "view")  → affiche un marqueur
- *   2. Sélection de coordonnées dans le formulaire (mode "pick") → permet de
- *      cliquer sur la carte pour définir lat/lng, et confirme la sélection.
- *
- * MapCN components: Map, MapMarker, MarkerContent, MarkerLabel, MapControls
+ *   1. mode "view" → affiche un marqueur de la couleur de la catégorie du site
+ *   2. mode "pick" → clic sur la carte pour définir lat/lng
  */
 
 import { useCallback, useRef, useState, useEffect } from "react";
-import { Map, MapMarker, MarkerContent, MarkerLabel, MapControls, type MapRef } from "@/components/ui/map";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+  Map, MapMarker, MarkerContent, MarkerLabel, MapControls, useMap, type MapRef,
+} from "@/components/ui/map";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button }   from "@/components/ui/button";
 import { MapPin, Navigation, Check, X, Crosshair, Layers } from "lucide-react";
-import { useMap } from "@/components/ui/map";
 import type { Site } from "@/lib/types/api";
 
-// ─── Constants ─────────────────────────────────────────────────────────────────
+// ─── Constantes ────────────────────────────────────────────────────────────────
 
 const OUIDAH_CENTER: [number, number] = [2.0878, 6.3654];
-const DEFAULT_ZOOM = 15;
-const MAPTILER_KEY = "rF42xkuvfnAvkNeWRop5";
+const DEFAULT_ZOOM  = 15;
+const MAPTILER_KEY  = "rF42xkuvfnAvkNeWRop5";
 
 const MAP_STYLES = {
   plan:      "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
   satellite: `https://api.maptiler.com/maps/satellite/style.json?key=${MAPTILER_KEY}`,
 } as const;
+
+// ─── Couleurs par catégorie (identiques à markers.ts) ────────────────────────
+
+type MarkerCategory = "SITE" | "TOILETTES" | "URGENCES" | "TRANSPORT" | "ASSISTANCE" | "PRA"
+
+const CATEGORY_COLORS: Record<MarkerCategory, string> = {
+  SITE:       "#F56E0F",
+  TOILETTES:  "#4488FF",
+  URGENCES:   "#FF3333",
+  TRANSPORT:  "#FFbb00",
+  ASSISTANCE: "#AA44FF",
+  PRA:        "#00E5CC",
+}
 
 // ─── Keyframes ─────────────────────────────────────────────────────────────────
 
@@ -44,7 +50,7 @@ const KF = `
   @keyframes smm-pop  { 0%{opacity:0;transform:scale(.6)} 60%{opacity:1;transform:scale(1.08)} 100%{transform:scale(1)} }
 `;
 
-// ─── Sub: Click handler inside Map context ─────────────────────────────────────
+// ─── MapClickCapture ───────────────────────────────────────────────────────────
 
 function MapClickCapture({
   enabled,
@@ -72,41 +78,19 @@ function MapClickCapture({
   return null;
 }
 
-// ─── Props ─────────────────────────────────────────────────────────────────────
-
-interface SitesMapModalProps {
-  open: boolean;
-  onClose: () => void;
-
-  /** Mode "view" : affiche un site existant (lecture seule). */
-  site?: Site | null;
-
-  /** Mode "pick" : permet de sélectionner des coordonnées. */
-  mode?: "view" | "pick";
-
-  /** Coordonnées pré-remplies en mode pick (latitude du formulaire). */
-  initialLat?: number;
-  initialLng?: number;
-
-  /** Callback en mode pick — retourne les coordonnées confirmées. */
-  onPick?: (lat: number, lng: number) => void;
-}
-
-// ─── Marqueur admin (gold) ─────────────────────────────────────────────────────
+// ─── AdminMarker ───────────────────────────────────────────────────────────────
 
 function AdminMarker({
   longitude,
   latitude,
   label,
-  isPicking,
+  color,
 }: {
   longitude: number;
-  latitude: number;
-  label?: string;
-  isPicking?: boolean;
+  latitude:  number;
+  label?:    string;
+  color:     string;
 }) {
-  const COLOR = isPicking ? "#4A9EFF" : "#F5A623";
-
   return (
     <MapMarker longitude={longitude} latitude={latitude}>
       <MarkerContent>
@@ -117,7 +101,7 @@ function AdminMarker({
             position: "absolute",
             width: 48, height: 48,
             borderRadius: "50%",
-            border: `1.5px solid ${COLOR}`,
+            border: `1.5px solid ${color}`,
             opacity: 0,
             animation: "smm-ping 2s ease-out infinite",
           }} />
@@ -126,8 +110,8 @@ function AdminMarker({
             position: "absolute",
             width: 40, height: 40,
             borderRadius: "50%",
-            background: `radial-gradient(circle at 35% 30%, ${COLOR}FF 0%, ${COLOR}BB 55%, ${COLOR}88 100%)`,
-            boxShadow: `0 0 0 2.5px rgba(0,0,0,0.6), 0 0 0 5px ${COLOR}40, 0 8px 28px ${COLOR}55`,
+            background: `radial-gradient(circle at 35% 30%, ${color}FF 0%, ${color}BB 55%, ${color}88 100%)`,
+            boxShadow: `0 0 0 2.5px rgba(0,0,0,0.6), 0 0 0 5px ${color}40, 0 8px 28px ${color}55`,
             display: "flex", alignItems: "center", justifyContent: "center",
             animation: "smm-pop 0.35s cubic-bezier(.34,1.56,.64,1) both",
           }}>
@@ -144,7 +128,7 @@ function AdminMarker({
           <div style={{
             position: "absolute", bottom: -25, left: "50%", transform: "translateX(-50%)",
             width: 4, height: 10, borderRadius: "0 0 3px 3px",
-            background: `linear-gradient(180deg, ${COLOR} 0%, ${COLOR}44 100%)`,
+            background: `linear-gradient(180deg, ${color} 0%, ${color}44 100%)`,
           }} />
         </div>
       </MarkerContent>
@@ -155,12 +139,12 @@ function AdminMarker({
             fontSize: 11, fontWeight: 700, color: "#F0F0F2",
             background: "rgba(14,14,18,0.95)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
             padding: "4px 11px", borderRadius: 99,
-            border: `1px solid ${COLOR}45`,
+            border: `1px solid ${color}45`,
             whiteSpace: "nowrap", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis",
             marginTop: 14,
             boxShadow: "0 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
           }}>
-            📍 {label}
+            {label}
           </span>
         </MarkerLabel>
       )}
@@ -168,7 +152,19 @@ function AdminMarker({
   );
 }
 
-// ─── Modal principal ───────────────────────────────────────────────────────────
+// ─── Props ─────────────────────────────────────────────────────────────────────
+
+interface SitesMapModalProps {
+  open:       boolean;
+  onClose:    () => void;
+  site?:      Site | null;
+  mode?:      "view" | "pick";
+  initialLat?: number;
+  initialLng?: number;
+  onPick?:    (lat: number, lng: number) => void;
+}
+
+// ─── SitesMapModal ─────────────────────────────────────────────────────────────
 
 export function SitesMapModal({
   open,
@@ -181,11 +177,18 @@ export function SitesMapModal({
 }: SitesMapModalProps) {
   const mapRef = useRef<MapRef>(null);
   const [mapMode, setMapMode] = useState<"plan" | "satellite">("plan");
-  const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null);
+  const [picked,  setPicked]  = useState<{ lat: number; lng: number } | null>(null);
 
   const isPick = mode === "pick";
 
-  // Coordonnées affichées : site existant ou point sélectionné / initial
+  // Résolution couleur : catégorie du site ou bleu pour le mode pick
+  const siteCategory = (site as (Site & { category?: MarkerCategory }) | null | undefined)?.category
+  const markerColor  = isPick
+    ? "#4A9EFF"
+    : siteCategory
+      ? CATEGORY_COLORS[siteCategory]
+      : "#F5A623"  // fallback doré (ancien comportement)
+
   const displayLng = picked?.lng ?? site?.longitude ?? initialLng ?? OUIDAH_CENTER[0];
   const displayLat = picked?.lat ?? site?.latitude  ?? initialLat ?? OUIDAH_CENTER[1];
   const hasCoords  = !!(picked || site || (initialLat && initialLng));
@@ -201,16 +204,12 @@ export function SitesMapModal({
     }
   }, [open, initialLat, initialLng]);
 
-  // Fly to site au chargement
+  // Fly to au chargement
   useEffect(() => {
     if (!open) return;
     const timeout = setTimeout(() => {
       if (mapRef.current && hasCoords) {
-        mapRef.current.flyTo({
-          center: [displayLng, displayLat],
-          zoom: 16,
-          duration: 800,
-        });
+        mapRef.current.flyTo({ center: [displayLng, displayLat], zoom: 16, duration: 800 });
       }
     }, 400);
     return () => clearTimeout(timeout);
@@ -229,12 +228,10 @@ export function SitesMapModal({
     onClose();
   };
 
-  const center: [number, number] = hasCoords
-    ? [displayLng, displayLat]
-    : OUIDAH_CENTER;
+  const center: [number, number] = hasCoords ? [displayLng, displayLat] : OUIDAH_CENTER;
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={o => !o && onClose()}>
       <DialogContent
         className="p-0 overflow-hidden gap-0"
         style={{
@@ -249,20 +246,22 @@ export function SitesMapModal({
         <div style={{
           padding: "20px 22px 16px",
           borderBottom: "1px solid rgba(255,255,255,0.07)",
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          gap: 12,
+          display: "flex", alignItems: "flex-start",
+          justifyContent: "space-between", gap: 12,
         }}>
           <div>
             <DialogHeader>
               <DialogTitle style={{ fontSize: 16, fontWeight: 700, color: "#F0F0F2", letterSpacing: "-0.01em" }}>
-                {isPick ? "Sélectionner une position" : `📍 ${site?.name ?? "Carte du site"}`}
+                {isPick
+                  ? "Sélectionner une position"
+                  : `${site?.name ?? "Carte du site"}`
+                }
               </DialogTitle>
               <DialogDescription style={{ fontSize: 12, color: "#666678", marginTop: 4 }}>
                 {isPick
                   ? "Cliquez sur la carte pour définir les coordonnées GPS du site"
-                  : `Ouidah · ${displayLat.toFixed(6)}, ${displayLng.toFixed(6)}`}
+                  : `Ouidah · ${displayLat.toFixed(6)}, ${displayLng.toFixed(6)}`
+                }
               </DialogDescription>
             </DialogHeader>
           </div>
@@ -275,8 +274,7 @@ export function SitesMapModal({
               border: "1px solid rgba(74,158,255,0.28)",
               borderRadius: 10,
               padding: "6px 12px",
-              fontSize: 11,
-              fontWeight: 700,
+              fontSize: 11, fontWeight: 700,
               color: "#4A9EFF",
               fontFamily: "monospace",
               whiteSpace: "nowrap",
@@ -297,46 +295,35 @@ export function SitesMapModal({
             className="w-full h-full"
           >
             <MapControls position="bottom-right" showZoom showCompass showLocate={false} showFullscreen={false} />
-            {/* En mode pick : chaque clic repositionne le marqueur */}
             <MapClickCapture enabled={isPick} onPick={handlePick} />
 
             {hasCoords && (
               <AdminMarker
                 longitude={displayLng}
                 latitude={displayLat}
-                label={isPick ? (picked ? "Position sélectionnée — cliquez pour déplacer" : undefined) : site?.name}
-                isPicking={isPick}
+                label={
+                  isPick
+                    ? (picked ? "Position sélectionnée — cliquez pour déplacer" : undefined)
+                    : site?.name
+                }
+                color={markerColor}
               />
             )}
           </Map>
 
-          {/* Bouton bascule satellite */}
+          {/* Bouton satellite */}
           <button
-            onClick={() => setMapMode((m) => (m === "plan" ? "satellite" : "plan"))}
+            onClick={() => setMapMode(m => m === "plan" ? "satellite" : "plan")}
             style={{
-              position: "absolute",
-              top: 12,
-              right: 12,
-              zIndex: 300,
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "7px 13px",
-              borderRadius: 12,
-              background: mapMode === "satellite"
-                ? "rgba(245,166,35,0.15)"
-                : "rgba(14,14,18,0.92)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              border: mapMode === "satellite"
-                ? "1px solid rgba(245,166,35,0.45)"
-                : "1px solid rgba(255,255,255,0.12)",
+              position: "absolute", top: 12, right: 12, zIndex: 300,
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "7px 13px", borderRadius: 12,
+              background: mapMode === "satellite" ? "rgba(245,166,35,0.15)" : "rgba(14,14,18,0.92)",
+              backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+              border: mapMode === "satellite" ? "1px solid rgba(245,166,35,0.45)" : "1px solid rgba(255,255,255,0.12)",
               color: mapMode === "satellite" ? "#F5A623" : "#BBBBC8",
-              fontSize: 11,
-              fontWeight: 700,
-              cursor: "pointer",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
-              transition: "all 200ms ease",
+              fontSize: 11, fontWeight: 700, cursor: "pointer",
+              boxShadow: "0 2px 12px rgba(0,0,0,0.4)", transition: "all 200ms ease",
             }}
           >
             <Layers size={13} />
@@ -346,63 +333,41 @@ export function SitesMapModal({
           {/* Indicateur mode pick */}
           {isPick && (
             <div style={{
-              position: "absolute",
-              bottom: 60,
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: 300,
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              background: "rgba(14,14,18,0.95)",
-              backdropFilter: "blur(14px)",
-              WebkitBackdropFilter: "blur(14px)",
-              border: picked
-                ? "1px solid rgba(74,158,255,0.25)"
-                : "1px solid rgba(74,158,255,0.35)",
-              borderRadius: 12,
-              padding: "8px 16px",
-              fontSize: 12,
-              fontWeight: 600,
-              color: picked ? "#666678" : "#9090A8",
+              position: "absolute", bottom: 60, left: "50%", transform: "translateX(-50%)", zIndex: 300,
+              display: "flex", alignItems: "center", gap: 8,
+              background: "rgba(14,14,18,0.95)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
+              border: picked ? "1px solid rgba(74,158,255,0.25)" : "1px solid rgba(74,158,255,0.35)",
+              borderRadius: 12, padding: "8px 16px",
+              fontSize: 12, fontWeight: 600, color: picked ? "#666678" : "#9090A8",
               boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
-              pointerEvents: "none",
-              whiteSpace: "nowrap",
-              transition: "all 250ms ease",
+              pointerEvents: "none", whiteSpace: "nowrap", transition: "all 250ms ease",
             }}>
               <Crosshair size={14} style={{ color: "#4A9EFF", flexShrink: 0 }} />
               {picked
                 ? "Cliquez à nouveau pour repositionner le marqueur"
-                : "Cliquez sur la carte pour placer le marqueur"}
+                : "Cliquez sur la carte pour placer le marqueur"
+              }
             </div>
           )}
 
           {/* Overlay coords en mode view */}
           {!isPick && site && (
             <div style={{
-              position: "absolute",
-              bottom: 60,
-              left: 12,
-              zIndex: 300,
-              background: "rgba(14,14,18,0.94)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              border: "1px solid rgba(255,255,255,0.09)",
-              borderRadius: 12,
-              padding: "10px 14px",
-              fontSize: 11,
-              color: "#888896",
+              position: "absolute", bottom: 60, left: 12, zIndex: 300,
+              background: "rgba(14,14,18,0.94)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+              border: "1px solid rgba(255,255,255,0.09)", borderRadius: 12,
+              padding: "10px 14px", fontSize: 11, color: "#888896",
               boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
             }}>
               <div style={{ fontWeight: 700, color: "#F0F0F2", fontSize: 12, marginBottom: 4 }}>
                 {site.name}
               </div>
-              <div style={{ fontFamily: "monospace", color: "#4A9EFF", fontSize: 11 }}>
+              <div style={{ fontFamily: "monospace", color: markerColor, fontSize: 11 }}>
                 {site.latitude.toFixed(6)}, {site.longitude.toFixed(6)}
               </div>
               {site.type && (
                 <div style={{ marginTop: 4, color: "#666678", fontSize: 10 }}>
-                  {site.type.replace("_", " ")}
+                  {site.type.replace(/_/g, " ")}
                   {site.capacity ? ` · ${site.capacity.toLocaleString("fr-FR")} pers.` : ""}
                 </div>
               )}
@@ -414,29 +379,20 @@ export function SitesMapModal({
         <div style={{
           padding: "16px 22px",
           borderTop: "1px solid rgba(255,255,255,0.07)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
         }}>
-          {/* Lien Google Maps */}
           {hasCoords && (
             <a
               href={`https://www.google.com/maps?q=${displayLat},${displayLng}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                fontSize: 12,
-                fontWeight: 600,
-                color: "#888896",
-                textDecoration: "none",
-                transition: "color 150ms ease",
+                display: "inline-flex", alignItems: "center", gap: 6,
+                fontSize: 12, fontWeight: 600, color: "#888896",
+                textDecoration: "none", transition: "color 150ms ease",
               }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "#F5A623")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "#888896")}
+              onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.color = "#F5A623")}
+              onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.color = "#888896")}
             >
               <Navigation size={13} />
               Ouvrir dans Google Maps
@@ -445,8 +401,7 @@ export function SitesMapModal({
 
           <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
             <Button
-              variant="ghost"
-              size="sm"
+              variant="ghost" size="sm"
               onClick={onClose}
               style={{ color: "#888896", fontSize: 13 }}
             >
@@ -461,11 +416,9 @@ export function SitesMapModal({
                 disabled={!picked}
                 style={{
                   background: picked ? "#F5A623" : "rgba(255,255,255,0.06)",
-                  color: picked ? "#0E0E12" : "#666678",
-                  border: picked ? "none" : "1px solid rgba(255,255,255,0.1)",
-                  fontWeight: 700,
-                  fontSize: 13,
-                  transition: "all 200ms ease",
+                  color:      picked ? "#0E0E12" : "#666678",
+                  border:     picked ? "none"    : "1px solid rgba(255,255,255,0.1)",
+                  fontWeight: 700, fontSize: 13, transition: "all 200ms ease",
                 }}
               >
                 <Check size={14} style={{ marginRight: 6 }} />

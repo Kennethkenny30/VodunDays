@@ -1,11 +1,9 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -25,256 +23,219 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Separator } from "@/components/ui/separator"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog"
 import { EmptyState } from "@/components/dashboard/empty-state"
+import { EventCreateModal } from "./EventCreateModal"
 import {
-  IconPlus,
-  IconMore,
-  IconEdit,
-  IconDelete,
+  Eye,
+  MoreHorizontal,
+  Pencil,
+  WifiOff,
+} from "lucide-react"
+import {
   IconCalendar,
+  IconDelete,
+  IconPlus,
   IconSearch,
   IconSend,
-  IconClose,
-  IconLoading,
 } from "@/components/icons"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { toast } from "sonner"
-import { getEvents, createEvent, updateEvent, deleteEvent } from "@/lib/api/events"
+import { getEvents, updateEvent, deleteEvent } from "@/lib/api/events"
 import { getSites } from "@/lib/api/sites"
-import { getPrograms, createProgram, deleteProgram } from "@/lib/api/programs"
 import { api } from "@/lib/api/client"
-import type { Event, EventStatus, EventCreatePayload, Program, Site, EventType, ProgramCreatePayload } from "@/lib/types/api"
+import {
+  getOfflineDrafts,
+  offlineDraftToEvent,
+  offlineDraftToPayload,
+  removeOfflineDraft,
+  updateOfflineDraft,
+} from "@/lib/offline-drafts"
+import type {
+  Event,
+  EventStatus,
+  EventType,
+  Program,
+  Site,
+} from "@/lib/types/api"
 
-// Configuration des statuts
+// ─── Config statuts ───────────────────────────────────────────────────────────
+
 const statusConfig: Record<EventStatus, { label: string; color: string }> = {
-  DRAFT: { label: "Brouillon", color: "bg-muted-foreground/10 text-muted-foreground" },
-  PUBLISHED: { label: "Publié", color: "bg-green-500/10 text-green-500" },
-  CANCELLED: { label: "Annulé", color: "bg-red-500/10 text-red-500" },
-  ARCHIVED: { label: "Archivé", color: "bg-purple-500/10 text-purple-500" },
+  DRAFT:     { label: "Brouillon", color: "bg-muted-foreground/10 text-muted-foreground" },
+  PUBLISHED: { label: "Publié",    color: "bg-green-500/10 text-green-500"               },
+  CANCELLED: { label: "Annulé",   color: "bg-red-500/10 text-red-500"                   },
+  ARCHIVED:  { label: "Archivé",  color: "bg-purple-500/10 text-purple-500"              },
 }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatProgramTime(p: Program) {
+  try {
+    const start = format(new Date(p.startTime), "dd MMM yyyy, HH:mm", { locale: fr })
+    const end   = format(new Date(p.endTime),   "HH:mm",               { locale: fr })
+    return `${start} → ${end}`
+  } catch { return `${p.startTime} → ${p.endTime}` }
+}
+
+// ─── Composant principal ──────────────────────────────────────────────────────
 
 interface EventsManagerProps {
   className?: string
 }
 
-// Gestionnaire des événements avec API réelle
 export function EventsManager({ className }: EventsManagerProps) {
-  // États principaux
-  const [events, setEvents] = useState<Event[]>([])
-  const [sites, setSites] = useState<Site[]>([])
+  const [events,     setEvents]     = useState<Event[]>([])
+  const [sites,      setSites]      = useState<Site[]>([])
   const [eventTypes, setEventTypes] = useState<EventType[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [loading,    setLoading]    = useState(true)
+  const [saving,     setSaving]     = useState(false)
 
-  // États UI
-  const [sheetOpen, setSheetOpen] = useState(false)
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<EventStatus | "ALL">("ALL")
-  const [typeFilter, setTypeFilter] = useState<string>("ALL")
-  const [formData, setFormData] = useState<Partial<EventCreatePayload>>({})
+  const [modalOpen,     setModalOpen]     = useState(false)
+  const [editingEvent,  setEditingEvent]  = useState<Event | null>(null)
+  const [previewEvent,  setPreviewEvent]  = useState<Event | null>(null)
+  const [searchQuery,   setSearchQuery]   = useState("")
+  const [statusFilter,  setStatusFilter]  = useState<EventStatus | "ALL">("ALL")
+  const [typeFilter,    setTypeFilter]    = useState<string>("ALL")
 
-  // États créneaux dans le sheet
-  const [eventPrograms, setEventPrograms] = useState<Program[]>([])
-  const [loadingPrograms, setLoadingPrograms] = useState(false)
-  const [newProgram, setNewProgram] = useState<Partial<ProgramCreatePayload>>({})
-
-  // Chargement initial des données
+  // ── Chargement des données ─────────────────────────────────────────────────
   const loadData = useCallback(async () => {
     setLoading(true)
-    const [eventsRes, sitesRes, typesRes] = await Promise.all([
-      getEvents(),
-      getSites(),
-      api.get<EventType[]>("/event-types"),
-    ])
+    try {
+      const [eventsRes, sitesRes, typesRes] = await Promise.allSettled([
+        getEvents(),
+        getSites(),
+        api.get<EventType[]>("/events-types"),
+      ])
 
-    if (eventsRes.success) setEvents(eventsRes.data)
-    else toast.error(eventsRes.message)
+      let backendEvents: Event[] = []
 
-    if (sitesRes.success) setSites(sitesRes.data)
-    else toast.error(sitesRes.message)
+      if (eventsRes.status === "fulfilled" && eventsRes.value.success) {
+        backendEvents = eventsRes.value.data ?? []
+      }
 
-    if (typesRes.success) setEventTypes(typesRes.data)
-    else toast.error(typesRes.message)
+      if (sitesRes.status === "fulfilled" && sitesRes.value.success) {
+        setSites(sitesRes.value.data ?? [])
+      }
+      if (typesRes.status === "fulfilled" && typesRes.value.success) {
+        setEventTypes(typesRes.value.data ?? [])
+      }
 
-    setLoading(false)
+      // ── Sync automatique des brouillons offline ──────────────────────────
+      const offlineDrafts = getOfflineDrafts()
+      const syncedIds: string[] = []
+
+      if (backendEvents.length >= 0 && offlineDrafts.length > 0) {
+        // Backend accessible — on tente de synchroniser chaque draft
+        await Promise.allSettled(
+          offlineDrafts.map(async (draft) => {
+            try {
+              const res = await (await import("@/lib/api/events")).createEvent(offlineDraftToPayload(draft))
+              if (res.success && res.data?.id) {
+                // Sync des créneaux si nécessaire
+                if (draft.slots.length > 0) {
+                  const { createProgram } = await import("@/lib/api/programs")
+                  await Promise.allSettled(
+                    draft.slots.map((s) =>
+                      createProgram({ eventId: res.data.id, startTime: s.startTime, endTime: s.endTime } as import("@/lib/types/api").ProgramCreatePayload)
+                    )
+                  )
+                }
+                syncedIds.push(draft.id)
+              }
+            } catch { /* Draft reste en attente */ }
+          })
+        )
+        // Nettoyer les drafts synchronisés
+        syncedIds.forEach(removeOfflineDraft)
+        if (syncedIds.length > 0) {
+          toast.success(`${syncedIds.length} brouillon${syncedIds.length > 1 ? "s" : ""} synchronisé${syncedIds.length > 1 ? "s" : ""}`)
+          // Recharger les events depuis le backend après sync
+          const fresh = await getEvents()
+          if (fresh.success) backendEvents = fresh.data ?? []
+        }
+      }
+
+      // ── Fusion : events backend + brouillons encore offline ──────────────
+      const remainingDrafts = getOfflineDrafts()
+      // On capture sites/eventTypes au moment de la fusion pour reconstruire les objets liés
+      setSites((currentSites) => {
+        setEventTypes((currentTypes) => {
+          const offlineEvents = remainingDrafts.map((d) => offlineDraftToEvent(d, currentSites, currentTypes))
+          setEvents([...backendEvents, ...offlineEvents])
+          return currentTypes
+        })
+        return currentSites
+      })
+
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
-  useEffect(() => {
-    loadData()
-  }, [loadData])
+  useEffect(() => { loadData() }, [loadData])
 
-  // Chargement des créneaux pour un événement
-  const loadEventPrograms = async (eventId: string) => {
-    setLoadingPrograms(true)
-    const res = await getPrograms(eventId)
-    if (res.success) {
-      setEventPrograms(res.data)
-    } else {
-      toast.error(res.message)
-    }
-    setLoadingPrograms(false)
-  }
-
-  // Filtrage côté client
   const filteredEvents = events.filter((event) => {
     const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === "ALL" || event.status === statusFilter
-    const matchesType = typeFilter === "ALL" || event.eventTypeId === typeFilter
+    const matchesType   = typeFilter   === "ALL" || event.eventTypeId === typeFilter
     return matchesSearch && matchesStatus && matchesType
   })
 
-  // Ouvrir le sheet
-  const handleOpenSheet = async (event?: Event) => {
-    if (event) {
-      setEditingEvent(event)
-      setFormData({
-        name: event.name,
-        description: event.description || "",
-        status: event.status,
-        siteId: event.siteId,
-        eventTypeId: event.eventTypeId,
-      })
-      await loadEventPrograms(event.id)
-    } else {
-      setEditingEvent(null)
-      setFormData({ status: "DRAFT" })
-      setEventPrograms([])
-    }
-    setNewProgram({})
-    setSheetOpen(true)
+  const handleOpen = (event?: Event) => {
+    setEditingEvent(event ?? null)
+    setModalOpen(true)
   }
 
-  // Ajouter un créneau
-  const handleAddProgram = async () => {
-    if (!editingEvent?.id || !newProgram.startTime || !newProgram.endTime) {
-      toast.error("Veuillez remplir les dates de début et fin")
-      return
-    }
-
-    setSaving(true)
-    const res = await createProgram({
-      eventId: editingEvent.id,
-      startTime: new Date(newProgram.startTime).toISOString(),
-      endTime: new Date(newProgram.endTime).toISOString(),
-    })
-
-    if (res.success) {
-      toast.success(res.message)
-      setEventPrograms([...eventPrograms, res.data])
-      setNewProgram({})
-    } else {
-      toast.error(res.message)
-    }
-    setSaving(false)
-  }
-
-  // Supprimer un créneau
-  const handleDeleteProgram = async (programId: string) => {
-    setSaving(true)
-    const res = await deleteProgram(programId)
-    if (res.success) {
-      toast.success(res.message)
-      setEventPrograms(eventPrograms.filter((p) => p.id !== programId))
-    } else {
-      toast.error(res.message)
-    }
-    setSaving(false)
-  }
-
-  // Sauvegarder événement
-  const handleSave = async (publish: boolean = false) => {
-    if (!formData.name || !formData.siteId || !formData.eventTypeId) {
-      toast.error("Veuillez remplir tous les champs obligatoires")
-      return
-    }
-
-    const status = publish ? "PUBLISHED" : formData.status || "DRAFT"
-    const payload: EventCreatePayload = {
-      name: formData.name,
-      description: formData.description,
-      status: status as EventStatus,
-      siteId: formData.siteId,
-      eventTypeId: formData.eventTypeId,
-    }
-
-    setSaving(true)
-    if (editingEvent) {
-      const res = await updateEvent(editingEvent.id, payload)
-      if (res.success) {
-        toast.success(res.message)
-        await loadData()
-        setSheetOpen(false)
-      } else {
-        toast.error(res.message)
-      }
-    } else {
-      const res = await createEvent(payload)
-      if (res.success) {
-        toast.success(res.message)
-        await loadData()
-        setSheetOpen(false)
-      } else {
-        toast.error(res.message)
-      }
-    }
-    setSaving(false)
-  }
-
-  // Publier événement
   const handlePublish = async (id: string) => {
     setSaving(true)
-    const res = await updateEvent(id, { status: "PUBLISHED" })
-    if (res.success) {
-      toast.success(res.message)
-      await loadData()
-    } else {
-      toast.error(res.message)
+    try {
+      const res = await updateEvent(id, { status: "PUBLISHED" })
+      if (res.success) { toast.success(res.message); await loadData() }
+      else toast.error(res.message)
+    } finally {
+      setSaving(false)
     }
-    setSaving(false)
   }
 
-  // Supprimer événement
   const handleDelete = async (id: string) => {
-    setSaving(true)
-    const res = await deleteEvent(id)
-    if (res.success) {
-      toast.success(res.message)
-      await loadData()
-    } else {
-      toast.error(res.message)
+    // Brouillon offline — suppression directe dans localStorage
+    if (id.startsWith("local-")) {
+      removeOfflineDraft(id)
+      setEvents((prev) => prev.filter((e) => e.id !== id))
+      toast.success("Brouillon supprimé")
+      return
     }
-    setSaving(false)
-  }
-
-  // Formatage des créneaux
-  const formatProgramTime = (program: Program) => {
-    const start = format(new Date(program.startTime), "dd/MM HH:mm", { locale: fr })
-    const end = format(new Date(program.endTime), "HH:mm", { locale: fr })
-    return `${start} - ${end}`
+    setSaving(true)
+    try {
+      const res = await deleteEvent(id)
+      if (res.success) { toast.success(res.message); await loadData() }
+      else toast.error(res.message)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
     <div className={cn("glass-card p-6", className)} id="events">
-      {/* En-tête avec filtres */}
+
+      {/* En-tête + filtres */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <h2 className="text-lg font-semibold tracking-tight">Événements</h2>
 
@@ -309,27 +270,28 @@ export function EventsManager({ className }: EventsManagerProps) {
             <SelectContent>
               <SelectItem value="ALL">Tous les types</SelectItem>
               {eventTypes.map((type) => (
-                <SelectItem key={type.id} value={type.id}>
-                  {type.name}
-                </SelectItem>
+                <SelectItem key={type.id} value={type.id}>{type.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          <Button onClick={() => handleOpenSheet()} size="sm" disabled={loading}>
+          {/* ✅ Plus de disabled={loading} — le bouton reste toujours cliquable */}
+          <Button
+            onClick={() => handleOpen()}
+            size="sm"
+            className="bg-[var(--vd-gold)] text-[var(--vd-deep)] hover:bg-[var(--vd-gold)]/90"
+          >
             <IconPlus className="mr-2 size-4" />
             Nouvel événement
           </Button>
         </div>
       </div>
 
-      {/* Tabs pour la vue */}
+      {/* Tabs */}
       <Tabs defaultValue="table">
         <TabsList>
           <TabsTrigger value="table">Tableau</TabsTrigger>
-          <TabsTrigger value="calendar" disabled>
-            Calendrier
-          </TabsTrigger>
+          <TabsTrigger value="calendar" disabled>Calendrier</TabsTrigger>
         </TabsList>
 
         <TabsContent value="table" className="mt-4">
@@ -344,7 +306,7 @@ export function EventsManager({ className }: EventsManagerProps) {
               icon={IconCalendar}
               title="Aucun événement trouvé"
               description="Créez votre premier événement pour commencer à construire le programme du festival."
-              action={{ label: "Créer un événement", onClick: () => handleOpenSheet() }}
+              action={{ label: "Créer un événement", onClick: () => handleOpen() }}
             />
           ) : (
             <ScrollArea className="h-[400px]">
@@ -361,31 +323,38 @@ export function EventsManager({ className }: EventsManagerProps) {
                 </TableHeader>
                 <TableBody>
                   {filteredEvents.map((event) => (
-                    <TableRow key={event.id}>
+                    <TableRow key={event.id} className="group">
                       <TableCell className="font-medium">{event.name}</TableCell>
                       <TableCell className="hidden sm:table-cell">
-                        <Badge variant="outline">{event.eventType?.name || "-"}</Badge>
+                        <Badge variant="outline">{event.eventType?.name || "—"}</Badge>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
-                        <Badge variant="secondary">{event.site?.name || "-"}</Badge>
+                        <Badge variant="secondary">{event.site?.name || "—"}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge className={statusConfig[event.status].color}>
-                          {statusConfig[event.status].label}
-                        </Badge>
+                        <div className="flex items-center gap-1.5">
+                          <Badge className={statusConfig[event.status].color}>
+                            {statusConfig[event.status].label}
+                          </Badge>
+                          {(event as Event & { offlinePending?: boolean }).offlinePending && (
+                            <span title="Non synchronisé">
+                              <WifiOff className="size-3 text-amber-400" />
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="hidden lg:table-cell">
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="cursor-help">{event.programs?.length ?? 0}</span>
+                            <span className="cursor-help text-sm tabular-nums">
+                              {event.programs?.length ?? 0}
+                            </span>
                           </TooltipTrigger>
                           {event.programs && event.programs.length > 0 && (
                             <TooltipContent className="max-w-xs">
                               <div className="space-y-1">
                                 {event.programs.map((p) => (
-                                  <p key={p.id} className="text-xs">
-                                    {formatProgramTime(p)}
-                                  </p>
+                                  <p key={p.id} className="text-xs">{formatProgramTime(p)}</p>
                                 ))}
                               </div>
                             </TooltipContent>
@@ -395,16 +364,23 @@ export function EventsManager({ className }: EventsManagerProps) {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="size-8">
-                              <IconMore className="size-4" />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <MoreHorizontal className="size-4" />
                               <span className="sr-only">Actions</span>
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleOpenSheet(event)}>
-                              <IconEdit className="mr-2 size-4" />
-                              Modifier
+                            <DropdownMenuItem onClick={() => setPreviewEvent(event)}>
+                              <Eye className="mr-2 size-4" /> Aperçu
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOpen(event)}>
+                              <Pencil className="mr-2 size-4" /> Modifier
+                            </DropdownMenuItem>
+
                             {event.status === "DRAFT" && (
                               <ConfirmDialog
                                 title="Publier l'événement"
@@ -413,12 +389,14 @@ export function EventsManager({ className }: EventsManagerProps) {
                                 onConfirm={() => handlePublish(event.id)}
                                 trigger={
                                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                    <IconSend className="mr-2 size-4" />
-                                    Publier
+                                    <IconSend className="mr-2 size-4" /> Publier
                                   </DropdownMenuItem>
                                 }
                               />
                             )}
+
+                            <DropdownMenuSeparator />
+
                             <ConfirmDialog
                               title="Supprimer l'événement"
                               description={`Êtes-vous sûr de vouloir supprimer "${event.name}" ? Cette action est irréversible.`}
@@ -426,12 +404,8 @@ export function EventsManager({ className }: EventsManagerProps) {
                               variant="destructive"
                               onConfirm={() => handleDelete(event.id)}
                               trigger={
-                                <DropdownMenuItem
-                                  variant="destructive"
-                                  onSelect={(e) => e.preventDefault()}
-                                >
-                                  <IconDelete className="mr-2 size-4" />
-                                  Supprimer
+                                <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
+                                  <IconDelete className="mr-2 size-4" /> Supprimer
                                 </DropdownMenuItem>
                               }
                             />
@@ -455,193 +429,180 @@ export function EventsManager({ className }: EventsManagerProps) {
         </TabsContent>
       </Tabs>
 
-      {/* Sheet de création/édition */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{editingEvent ? "Modifier l'événement" : "Nouvel événement"}</SheetTitle>
-            <SheetDescription>
-              {editingEvent
-                ? "Modifiez les informations de l'événement"
-                : "Créez un nouvel événement pour le festival"}
-            </SheetDescription>
-          </SheetHeader>
+      {/* Modal création + édition */}
+      <EventCreateModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        editingEvent={editingEvent}
+        sites={sites}
+        eventTypes={eventTypes}
+        onEventTypeCreated={(t) => setEventTypes((prev) => [...prev, t])}
+        onDone={loadData}
+      />
 
-          <div className="space-y-6 py-6">
-            {/* Section Informations */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium">Informations</h3>
+      {/* Sheet aperçu */}
+      <EventPreviewSheet
+        event={previewEvent}
+        onClose={() => setPreviewEvent(null)}
+        onEdit={() => { setPreviewEvent(null); handleOpen(previewEvent!) }}
+        onPublish={previewEvent ? () => handlePublish(previewEvent.id) : undefined}
+        onDelete={previewEvent ? () => { setPreviewEvent(null); handleDelete(previewEvent.id) } : undefined}
+      />
+    </div>
+  )
+}
 
-              <div className="space-y-2">
-                <Label htmlFor="event-name">Nom de l&apos;événement *</Label>
-                <Input
-                  id="event-name"
-                  value={formData.name || ""}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Nom de l'événement"
-                />
-              </div>
+// ─── EventPreviewSheet ────────────────────────────────────────────────────────
 
-              <div className="space-y-2">
-                <Label htmlFor="event-description">Description</Label>
-                <Textarea
-                  id="event-description"
-                  value={formData.description || ""}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Description de l'événement"
-                  rows={3}
-                />
-              </div>
+interface EventPreviewSheetProps {
+  event:      Event | null
+  onClose:    () => void
+  onEdit:     () => void
+  onPublish?: () => void
+  onDelete?:  () => void
+}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="event-type">Type *</Label>
-                  <Select
-                    value={formData.eventTypeId}
-                    onValueChange={(value) => setFormData({ ...formData, eventTypeId: value })}
-                  >
-                    <SelectTrigger id="event-type">
-                      <SelectValue placeholder="Sélectionner" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {eventTypes.map((type) => (
-                        <SelectItem key={type.id} value={type.id}>
-                          {type.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+function EventPreviewSheet({ event, onClose, onEdit, onPublish, onDelete }: EventPreviewSheetProps) {
+  if (!event) return null
+  const cfg        = statusConfig[event.status]
+  const isOffline  = (event as Event & { offlinePending?: boolean }).offlinePending === true
+  const slotCount  = event.programs?.length ?? 0
 
-                <div className="space-y-2">
-                  <Label htmlFor="event-site">Site *</Label>
-                  <Select
-                    value={formData.siteId}
-                    onValueChange={(value) => setFormData({ ...formData, siteId: value })}
-                  >
-                    <SelectTrigger id="event-site">
-                      <SelectValue placeholder="Sélectionner" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sites.map((site) => (
-                        <SelectItem key={site.id} value={site.id}>
-                          {site.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+  return (
+    <Sheet open={!!event} onOpenChange={(o) => { if (!o) onClose() }}>
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-[480px] p-0 flex flex-col bg-[oklch(0.12_0.018_260/0.98)] border-white/[0.08]"
+      >
+        {/* Image / bandeau */}
+        <div className="relative h-[180px] shrink-0 bg-gradient-to-br from-[var(--vd-gold)]/15 to-transparent overflow-hidden">
+          {event.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={event.imageUrl} alt={event.name} className="w-full h-full object-cover opacity-75" />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <IconCalendar className="size-12 text-white/10" />
+            </div>
+          )}
+          {/* Dégradé bas */}
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[oklch(0.12_0.018_260/0.98)] to-transparent" />
+          {/* Badge statut */}
+          <div className="absolute top-3 left-3 flex items-center gap-2">
+            <span className={cn(
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold",
+              "border border-white/10 bg-black/50 backdrop-blur-sm",
+              cfg.color,
+            )}>
+              <span className={cn("size-1.5 rounded-full shrink-0", {
+                "bg-muted-foreground": event.status === "DRAFT",
+                "bg-green-500":        event.status === "PUBLISHED",
+                "bg-red-500":          event.status === "CANCELLED",
+                "bg-purple-500":       event.status === "ARCHIVED",
+              })} />
+              {cfg.label}
+            </span>
+            {isOffline && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium border border-amber-400/30 bg-amber-400/10 text-amber-400 backdrop-blur-sm">
+                <WifiOff className="size-3" /> Hors ligne
+              </span>
+            )}
+          </div>
+        </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="event-status">Statut</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value as EventStatus })}
-                >
-                  <SelectTrigger id="event-status">
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="DRAFT">Brouillon</SelectItem>
-                    <SelectItem value="PUBLISHED">Publié</SelectItem>
-                    <SelectItem value="CANCELLED">Annulé</SelectItem>
-                    <SelectItem value="ARCHIVED">Archivé</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        {/* Corps scrollable */}
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="px-6 py-5 space-y-6">
+
+            {/* Titre + header */}
+            <SheetHeader className="space-y-1 text-left">
+              <SheetTitle className="text-lg font-semibold leading-snug">{event.name}</SheetTitle>
+              {event.description && (
+                <p className="text-[13px] text-muted-foreground/70 leading-relaxed">{event.description}</p>
+              )}
+            </SheetHeader>
+
+            <Separator className="bg-white/[0.07]" />
+
+            {/* Métadonnées */}
+            <div className="space-y-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40">Informations</p>
+              <dl className="space-y-2.5">
+                {[
+                  { label: "Type",    value: event.eventType?.name },
+                  { label: "Site",    value: event.site?.name      },
+                  { label: "Créneaux", value: slotCount > 0 ? `${slotCount} créneau${slotCount > 1 ? "x" : ""}` : undefined },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex items-center gap-3 text-[13px]">
+                    <dt className="w-20 shrink-0 text-muted-foreground/50">{label}</dt>
+                    <dd className={cn("font-medium", value ? "text-foreground/80" : "text-muted-foreground/25 italic")}>
+                      {value ?? "—"}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
 
-            {/* Section Créneaux (uniquement en édition) */}
-            {editingEvent && (
+            {/* Créneaux */}
+            {event.programs && event.programs.length > 0 && (
               <>
-                <Separator />
-                <div className="space-y-4">
-                  <h3 className="text-sm font-medium">Créneaux horaires</h3>
-
-                  {loadingPrograms ? (
-                    <div className="space-y-2">
-                      <Skeleton className="h-10 w-full" />
-                      <Skeleton className="h-10 w-full" />
-                    </div>
-                  ) : (
-                    <>
-                      {/* Liste des créneaux existants */}
-                      {eventPrograms.length > 0 && (
-                        <div className="space-y-2">
-                          {eventPrograms.map((program) => (
-                            <div
-                              key={program.id}
-                              className="flex items-center justify-between p-2 rounded-lg border bg-muted/50"
-                            >
-                              <span className="text-sm">{formatProgramTime(program)}</span>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-7"
-                                onClick={() => handleDeleteProgram(program.id)}
-                                disabled={saving}
-                              >
-                                <IconClose className="size-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Formulaire ajout créneau */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1">
-                          <Label className="text-xs">Début</Label>
-                          <Input
-                            type="datetime-local"
-                            value={newProgram.startTime || ""}
-                            onChange={(e) => setNewProgram({ ...newProgram, startTime: e.target.value })}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Fin</Label>
-                          <Input
-                            type="datetime-local"
-                            value={newProgram.endTime || ""}
-                            onChange={(e) => setNewProgram({ ...newProgram, endTime: e.target.value })}
-                          />
-                        </div>
+                <Separator className="bg-white/[0.07]" />
+                <div className="space-y-3">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40">Créneaux horaires</p>
+                  <div className="space-y-2">
+                    {event.programs.map((p, i) => (
+                      <div key={p.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-[12px]">
+                        <span className="size-5 rounded-md bg-[var(--vd-gold)]/10 flex items-center justify-center text-[10px] font-bold text-[var(--vd-gold)] shrink-0">
+                          {i + 1}
+                        </span>
+                        <span className="text-foreground/70">{formatProgramTime(p)}</span>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleAddProgram}
-                        disabled={saving || !newProgram.startTime || !newProgram.endTime}
-                        className="w-full"
-                      >
-                        <IconPlus className="mr-2 size-4" />
-                        Ajouter un créneau
-                      </Button>
-                    </>
-                  )}
+                    ))}
+                  </div>
                 </div>
               </>
             )}
           </div>
+        </ScrollArea>
 
-          <SheetFooter className="gap-2">
-            <Button variant="outline" onClick={() => setSheetOpen(false)}>
-              Annuler
-            </Button>
-            <Button onClick={() => handleSave(false)} disabled={saving}>
-              {saving && <IconLoading className="mr-2 size-4" />}
-              Enregistrer
-            </Button>
-            {formData.status === "DRAFT" && (
-              <Button onClick={() => handleSave(true)} disabled={saving} variant="secondary">
-                {saving && <IconLoading className="mr-2 size-4" />}
-                Publier
-              </Button>
-            )}
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
-    </div>
+        {/* Footer actions */}
+        <div className="flex-none px-6 py-4 border-t border-white/[0.07] flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onEdit}
+            className="flex-1 h-9 text-[13px] border-white/12 hover:border-white/20 hover:bg-white/[0.04]"
+          >
+            <Pencil className="size-3.5 mr-1.5" /> Modifier
+          </Button>
+          {event.status === "DRAFT" && onPublish && (
+            <ConfirmDialog
+              title="Publier l'événement"
+              description={`Êtes-vous sûr de vouloir publier "${event.name}" ?`}
+              confirmLabel="Publier"
+              onConfirm={() => { onPublish(); onClose() }}
+              trigger={
+                <Button size="sm" className="flex-1 h-9 text-[13px] bg-[var(--vd-gold)] text-[var(--vd-deep)] hover:bg-[var(--vd-gold)]/90">
+                  <IconSend className="size-3.5 mr-1.5" /> Publier
+                </Button>
+              }
+            />
+          )}
+          {onDelete && (
+            <ConfirmDialog
+              title="Supprimer l'événement"
+              description={`Supprimer "${event.name}" ? Cette action est irréversible.`}
+              confirmLabel="Supprimer"
+              variant="destructive"
+              onConfirm={onDelete}
+              trigger={
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground/40 hover:text-red-400 hover:bg-red-500/10">
+                  <IconDelete className="size-4" />
+                </Button>
+              }
+            />
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
   )
 }

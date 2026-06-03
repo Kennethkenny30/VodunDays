@@ -3,7 +3,8 @@ import * as sitesService from "./sites.service.js";
 
 export const getAll = async (req, res, next) => {
   try {
-    const result = await sitesService.findAll();
+    const { category } = req.query;
+    const result = await sitesService.findAll({ category: category || undefined });
     return successResponse(res, result);
   } catch (error) {
     next(error);

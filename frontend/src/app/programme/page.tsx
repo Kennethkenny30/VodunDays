@@ -1,35 +1,162 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { DayFilter } from "@/components/programs/DayFilter";
-import { WeatherWidget } from "@/components/programs/WeatherWidget";
-import { BottomNav } from "@/components/layout/BottomNav";
-import { ProgramList } from "@/components/programs/ProgramList";
-import { useWeather } from "@/hooks/useWeather";
-import type { Program } from "@/lib/types";
+import { DayFilter }               from "@/components/programs/DayFilter";
+import { WeatherWidget }           from "@/components/programs/WeatherWidget";
+import { BottomNav }               from "@/components/layout/BottomNav";
+import { ProgramList }             from "@/components/programs/ProgramList";
+import { PlannerCard }             from "@/components/programs/PlannerCard";
+import { FestivalPlannerProvider } from "@/providers/FestivalPlannerProvider";
+import { useWeather }              from "@/hooks/useWeather";
+import type { Program, ProgramType } from "@/lib/types";
 
-const mockPrograms: Program[] = [
-  // Jour 1
-  { id: "1",  title: "Cérémonie d'Ouverture",   description: "Cérémonie traditionnelle d'ouverture du festival", type: "RITUAL",    startTime: "09:00", endTime: "11:30", location: "Plage de Ouidah",      rating: 5.0, image: "/images/vodundays-3.jpg",  isLive: true,  day: 1 },
-  { id: "2",  title: "Danse Zangbéto",          description: "Spectacle de danse traditionnelle Zangbéto",       type: "ANIMATION", startTime: "14:30", endTime: "16:00", location: "Place des Enchanteurs", rating: 4.8, image: "/images/vodundays-7.jpg",  isLive: false, day: 1 },
-  { id: "3",  title: "Procession Vodun Hounve", description: "Procession traditionnelle au Temple des Pythons",  type: "RITUAL",    startTime: "17:00", endTime: "19:00", location: "Temple des Pythons",    rating: 5.0, image: "/images/vodundays-9.jpg",  isLive: false, day: 1 },
-  // Jour 2
-  { id: "4",  title: "Danse des Egungun",       description: "Représentation des masques Egungun",               type: "RITUAL",    startTime: "10:00", endTime: "12:00", location: "Place Chacha",          rating: 4.9, image: "/images/vodundays-10.jpg", isLive: false, day: 2 },
-  { id: "5",  title: "Masques Guèlèdé",         description: "Spectacle des masques sacrés Guèlèdé",             type: "ANIMATION", startTime: "15:00", endTime: "17:30", location: "Forêt Sacrée",          rating: 4.7, image: "/images/vodundays-11.jpg", isLive: false, day: 2 },
-  { id: "9",  title: "Cérémonie des Ancêtres",  description: "Hommage aux ancêtres et esprits protecteurs",      type: "RITUAL",    startTime: "18:00", endTime: "20:00", location: "Temple Ancestral",      rating: 5.0, image: "/images/vodundays-18.jpg", isLive: false, day: 2 },
-  // Jour 3
-  { id: "6",  title: "Danse Guerrière",         description: "Performance de danse guerrière traditionnelle",    type: "CONCERT",   startTime: "09:30", endTime: "11:00", location: "Arène Centrale",        rating: 4.6, image: "/images/vodundays-12.jpg", isLive: false, day: 3 },
-  { id: "7",  title: "Cérémonie Sakpata",       description: "Cérémonie dédiée au vodun Sakpata",               type: "RITUAL",    startTime: "14:00", endTime: "16:30", location: "Temple Sakpata",        rating: 5.0, image: "/images/vodundays-13.jpg", isLive: false, day: 3 },
-  { id: "10", title: "Procession Royale",       description: "Grande procession avec les dignitaires royaux",    type: "RITUAL",    startTime: "17:30", endTime: "19:30", location: "Route des Esclaves",    rating: 4.9, image: "/images/vodundays-9.jpg",  isLive: false, day: 3 },
-];
+// ─── Config ───────────────────────────────────────────────────────────────────
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+const TYPE_IMAGES: Record<string, string> = {
+  RITUAL:      "/images/vodundays-3.jpg",
+  ANIMATION:   "/images/vodundays-7.jpg",
+  CONCERT:     "/images/vodundays-12.jpg",
+  EXHIBITION:  "/images/vodundays-9.jpg",
+  CONFERENCE:  "/images/vodundays-11.jpg",
+};
+
+const TYPE_MAP: Record<string, ProgramType> = {
+  RITUAL:     "RITUAL",
+  ANIMATION:  "ANIMATION",
+  CONCERT:    "CONCERT",
+  EXHIBITION: "EXHIBITION",
+  CONFERENCE: "CONFERENCE",
+};
+
+// ─── Types backend ────────────────────────────────────────────────────────────
+
+type BackendProgram = {
+  id:        string;
+  startTime: string;
+  endTime:   string;
+};
+
+type BackendSite = {
+  id:          string;
+  name:        string;
+  latitude:    number;
+  longitude:   number;
+  description?: string | null;
+  amenities?:  { name: string }[];
+};
+
+type BackendEvent = {
+  id:          string;
+  name:        string;
+  description: string;
+  status:      string;
+  imageUrl?:   string | null;
+  // ✅ site complet — le backend fait include: { site: true }
+  site?:       BackendSite;
+  eventType?:  { name: string };
+  programs?:   BackendProgram[];
+};
+
+// ─── Dates du festival ────────────────────────────────────────────────────────
+
+function getFestivalYear(): number {
+  const now = new Date();
+  const cutoff = new Date(now.getFullYear(), 0, 10, 23, 59, 59);
+  return now > cutoff ? now.getFullYear() + 1 : now.getFullYear();
+}
+
+function getFestivalStartDate(): Date {
+  return new Date(getFestivalYear(), 0, 8);
+}
+
+// ─── Mapper ───────────────────────────────────────────────────────────────────
+// Transporte maintenant siteId + siteLat + siteLng pour le deep-link carte.
+
+function mapEventToPrograms(event: BackendEvent): Program[] {
+  const typeName = event.eventType?.name?.toUpperCase() ?? "ANIMATION";
+  const type: ProgramType = TYPE_MAP[typeName] ?? "ANIMATION";
+  const image = event.imageUrl || TYPE_IMAGES[type] || "/images/vodundays-3.jpg";
+
+  const festivalStart = getFestivalStartDate();
+  const festivalDay = new Date(
+    festivalStart.getFullYear(),
+    festivalStart.getMonth(),
+    festivalStart.getDate()
+  );
+
+  // Coordonnées réelles du site BDD
+  const siteId  = event.site?.id       ?? null;
+  const siteLat = event.site?.latitude  ?? null;
+  const siteLng = event.site?.longitude ?? null;
+
+  if (!event.programs?.length) {
+    return [{
+      id:          event.id,
+      eventId:     event.id,
+      title:       event.name,
+      description: event.description,
+      type,
+      startTime:   "09:00",
+      endTime:     "11:00",
+      location:    event.site?.name ?? "Ouidah",
+      rating:      4.8,
+      image,
+      isLive:      false,
+      day:         1,
+      // ✅ Deep-link carte
+      siteId,
+      siteLat,
+      siteLng,
+    }];
+  }
+
+  return event.programs.map((program): Program => {
+    const startDate = new Date(program.startTime);
+    const endDate   = new Date(program.endTime);
+
+    const startTime = startDate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    const endTime   = endDate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+
+    const eventDay = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate()
+    );
+    const diffDays = Math.round(
+      (eventDay.getTime() - festivalDay.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const day = diffDays >= 0 && diffDays <= 2 ? diffDays + 1 : 1;
+
+    return {
+      id:          `${event.id}__${program.id}`,
+      eventId:     event.id,
+      title:       event.name,
+      description: event.description,
+      type,
+      startTime,
+      endTime,
+      location:    event.site?.name ?? "Ouidah",
+      rating:      4.8,
+      image,
+      isLive:      false,
+      day,
+      // ✅ Deep-link carte
+      siteId,
+      siteLat,
+      siteLng,
+    };
+  });
+}
+
+// ─── Animations ───────────────────────────────────────────────────────────────
 
 const pageVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
-  },
+  hidden:  {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
 };
 
 const itemVariants = {
@@ -45,16 +172,35 @@ const glowVariants = {
   visible: { opacity: 1, transition: { duration: 1.2, ease: "easeOut" } },
 };
 
-export default function ProgrammePage() {
+// ─── Contenu ──────────────────────────────────────────────────────────────────
+
+function ProgrammeContent() {
   const [activeDay, setActiveDay]   = useState(1);
   const [logoMerged, setLogoMerged] = useState(false);
-
-  // ── Météo réelle — position GPS du visiteur via useWeather ──
-  // weather === null pendant le chargement → le widget affiche ses données par défaut
-  // weather === données réelles dès que le GPS + l'API répondent
+  const [programs, setPrograms]     = useState<Program[]>([]);
+  const [loading, setLoading]       = useState(true);
   const { weather } = useWeather();
 
-  const filteredPrograms = mockPrograms.filter((p) => p.day === activeDay);
+  useEffect(() => {
+    async function loadPrograms() {
+      setLoading(true);
+      try {
+        const res  = await fetch(`${API_BASE}/events?status=PUBLISHED`, { credentials: "include" });
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          const mapped = json.data.flatMap((e: BackendEvent) => mapEventToPrograms(e));
+          setPrograms(mapped);
+        }
+      } catch {
+        // fallback silencieux
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadPrograms();
+  }, []);
+
+  const filteredPrograms = programs.filter((p) => p.day === activeDay);
 
   return (
     <motion.div
@@ -63,65 +209,82 @@ export default function ProgrammePage() {
       initial="hidden"
       animate="visible"
     >
-      {/* Glow ambient */}
       <motion.div
         variants={glowVariants}
-        className="fixed inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at top, rgba(245,110,15,0.08), transparent 60%)" }}
-      />
-
-      {/* Header */}
-      <motion.header
-        variants={itemVariants}
-        className="relative z-10 px-4 flex items-end pb-2"
+        className="pointer-events-none fixed inset-0 z-0"
         style={{
-          paddingTop: "max(12px, env(safe-area-inset-top))",
-          minHeight: "calc(52px + max(12px, env(safe-area-inset-top)))",
+          background: "radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.45 0.18 50 / 0.25), transparent)",
         }}
-      >
-        <AnimatePresence>
-          {!logoMerged && (
-            <motion.div
-              layoutId="vodun-logo"
-              key="logo-header"
-              className="relative w-11 h-11 shrink-0"
-              initial={{ opacity: 0, scale: 0.75 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.75 }}
-              transition={{ type: "spring", bounce: 0.28, duration: 0.42 }}
-            >
-              <Image
-                src="/images/logo.png"
-                alt="Vodun Days"
-                fill
-                className="rounded-full object-contain"
-                priority
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
-
-      {/* Dynamic Island — reçoit les données météo réelles */}
-      <WeatherWidget
-        weather={weather ?? undefined}
-        logoSrc="/images/logo.png"
-        logoMerged={logoMerged}
-        onLogoMerge={() => setLogoMerged(true)}
-        onLogoSeparate={() => setLogoMerged(false)}
       />
 
-      {/* Sélecteur de jour */}
-      <motion.div variants={itemVariants}>
-        <DayFilter activeDay={activeDay} onDayChange={setActiveDay} totalDays={3} />
-      </motion.div>
+      <WeatherWidget weather={weather} compact />
 
-      {/* Liste des programmes */}
-      <motion.main variants={itemVariants} className="relative z-10 py-2">
-        <ProgramList programs={filteredPrograms} activeDay={activeDay} />
-      </motion.main>
+      <div className="relative z-10 max-w-md mx-auto px-4 pt-6 pb-32">
+
+        <motion.div variants={itemVariants} className="flex items-center justify-between mb-6">
+          <motion.div
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => setLogoMerged((v) => !v)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Image
+              src="/images/logo.png"
+              alt="Vodun Days"
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
+            <AnimatePresence>
+              {!logoMerged && (
+                <motion.h1
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  className="text-white font-semibold text-lg"
+                >
+                  Programme
+                </motion.h1>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <PlannerCard />
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <DayFilter activeDay={activeDay} onDayChange={setActiveDay} totalDays={3} />
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="mt-6">
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-28 rounded-2xl bg-white/5 animate-pulse" />
+              ))}
+            </div>
+          ) : filteredPrograms.length === 0 ? (
+            <p className="text-center text-muted-foreground text-sm py-12">
+              Aucun événement pour ce jour.
+            </p>
+          ) : (
+            <ProgramList programs={filteredPrograms} />
+          )}
+        </motion.div>
+
+      </div>
 
       <BottomNav />
     </motion.div>
+  );
+}
+
+export default function ProgrammePage() {
+  return (
+    <FestivalPlannerProvider>
+      <ProgrammeContent />
+    </FestivalPlannerProvider>
   );
 }

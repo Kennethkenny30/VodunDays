@@ -9,16 +9,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { GlassSurface } from "@/components/glass-surface"
-// import { loginUser } from "@/lib/api/auth"
-// import { saveSession } from "@/lib/auth/session"
+import { loginUser } from "@/lib/auth/auth"
+import { saveSession } from "@/lib/auth/session"
 
-// ─── Comptes démo (à retirer une fois le backend connecté) ───────────────────
-const DEMO_USERS: Record<string, { role: "SUPER_ADMIN" | "ADMIN"; name: string }> = {
-  "superadmin@vodundays.bj": { role: "SUPER_ADMIN", name: "Super Admin Démo" },
-  "admin@vodundays.bj":      { role: "ADMIN",       name: "Admin Démo" },
-}
-const DEMO_PASSWORD = "demo1234"
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Icônes ───────────────────────────────────────────────────────────────────
 
 const MailIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor" className="text-muted-foreground">
@@ -62,6 +56,8 @@ const SpinnerIcon = () => (
   </svg>
 )
 
+// ─── Composant ────────────────────────────────────────────────────────────────
+
 export function GlassLoginCard() {
   const router = useRouter()
   const [email, setEmail] = useState("")
@@ -77,38 +73,33 @@ export function GlassLoginCard() {
     setLoading(true)
 
     try {
-      // ── Mode démo : vérification locale sans appel API ──────────────────────
-      const demoUser = DEMO_USERS[email.toLowerCase()]
+      const json = await loginUser({ email, password })
 
-      if (demoUser && password === DEMO_PASSWORD) {
-        await new Promise((r) => setTimeout(r, 800))
-
-        const session = {
-          token: "demo-token",
-          user: { id: "demo", email, role: demoUser.role, name: demoUser.name },
-        }
-        sessionStorage.setItem("vd_session", JSON.stringify(session))
-        if (rememberMe) {
-          localStorage.setItem("vd_session", JSON.stringify(session))
-        }
-
-        router.push(demoUser.role === "SUPER_ADMIN" ? "/superadmin" : "/admin")
+      if (!json.success) {
+        setError(json.message || "Email ou mot de passe incorrect.")
         return
       }
-      // ── Fin mode démo ────────────────────────────────────────────────────────
 
-      // TODO: décommenter quand le backend est prêt
-      // const json = await loginUser({ email, password })
-      // if (!json.success) { setError(json.message); return }
-      // const { user, token } = json.data
-      // if (user.role !== "SUPER_ADMIN" && user.role !== "ADMIN") {
-      //   setError("Accès non autorisé.")
-      //   return
-      // }
-      // saveSession(token, user, rememberMe)
-      // router.push(user.role === "SUPER_ADMIN" ? "/superadmin" : "/admin")
+      const { user } = json.data
 
-      setError("Email ou mot de passe incorrect.")
+      // Vérification du rôle : seuls ADMIN et SUPER_ADMIN ont accès au dashboard
+      if (user.role !== "SUPER_ADMIN" && user.role !== "ADMIN") {
+        setError("Accès non autorisé à cette interface.")
+        return
+      }
+
+      // Sauvegarde des infos affichage en sessionStorage
+      saveSession({
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        phone: user.phone ?? null,
+      })
+
+      // Redirection selon le rôle
+      router.push(user.role === "SUPER_ADMIN" ? "/superadmin" : "/admin")
     } catch {
       setError("Impossible de contacter le serveur. Vérifiez votre connexion.")
     } finally {
@@ -123,7 +114,7 @@ export function GlassLoginCard() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
-      {/* Glow ambiant derrière la carte */}
+      {/* Glow ambiant */}
       <div
         className="pointer-events-none absolute -inset-2 rounded-3xl"
         style={{
@@ -132,7 +123,6 @@ export function GlassLoginCard() {
         }}
       />
 
-      {/* Carte avec GlassSurface */}
       <GlassSurface
         borderRadius={20}
         brightness={30}
@@ -143,7 +133,7 @@ export function GlassLoginCard() {
         className="w-full"
       >
         <div className="w-full p-8">
-          {/* Header avec Logo */}
+          {/* Header */}
           <div className="flex flex-col items-center gap-4 mb-6">
             <Image
               src="/images/logo.png"
@@ -156,7 +146,7 @@ export function GlassLoginCard() {
               Connexion
             </div>
             <p className="text-sm text-muted-foreground text-center">
-              Accès reservé aux administrateurs de la plateforme.
+              Accès réservé aux administrateurs de la plateforme.
             </p>
           </div>
 

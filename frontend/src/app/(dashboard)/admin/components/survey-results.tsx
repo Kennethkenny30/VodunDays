@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { NumberTicker } from "@/components/magicui/number-ticker"
 import { EmptyState } from "@/components/dashboard/empty-state"
@@ -38,7 +37,7 @@ export function SurveyResults({ className }: SurveyResultsProps) {
     if (statsRes.success) setStats(statsRes.data)
     else toast.error(statsRes.message)
 
-    if (commentsRes.success) setComments(commentsRes.data)
+    if (commentsRes.success) setComments(Array.isArray(commentsRes.data) ? commentsRes.data : [])
     else toast.error(commentsRes.message)
 
     setLoading(false)
@@ -95,39 +94,43 @@ export function SurveyResults({ className }: SurveyResultsProps) {
       {/* Stats principales */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="text-center">
-          {loading ? (
-            <Skeleton className="h-8 w-16 mx-auto mb-1" />
-          ) : (
-            <div className="flex items-center justify-center gap-1 text-2xl font-semibold">
-              <NumberTicker value={stats?.averageRating ?? 0} decimals={1} />
-              <span className="text-muted-foreground">/5</span>
-            </div>
-          )}
+          <div className="flex items-center justify-center gap-1 text-2xl font-semibold">
+            {loading ? (
+              <span className="text-muted-foreground/40">—</span>
+            ) : (
+              <>
+                <NumberTicker value={stats?.averageRating ?? 0} decimals={1} />
+                <span className="text-muted-foreground">/5</span>
+              </>
+            )}
+          </div>
           <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mt-1">
             Note moyenne
           </p>
         </div>
         <div className="text-center">
-          {loading ? (
-            <Skeleton className="h-8 w-16 mx-auto mb-1" />
-          ) : (
-            <div className="text-2xl font-semibold">
+          <div className="text-2xl font-semibold">
+            {loading ? (
+              <span className="text-muted-foreground/40">—</span>
+            ) : (
               <NumberTicker value={stats?.totalResponses ?? 0} />
-            </div>
-          )}
+            )}
+          </div>
           <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mt-1">
             Réponses
           </p>
         </div>
         <div className="text-center">
-          {loading ? (
-            <Skeleton className="h-8 w-16 mx-auto mb-1" />
-          ) : (
-            <div className="flex items-center justify-center text-2xl font-semibold">
-              <NumberTicker value={stats?.satisfactionRate ?? 0} />
-              <span className="text-muted-foreground">%</span>
-            </div>
-          )}
+          <div className="flex items-center justify-center text-2xl font-semibold">
+            {loading ? (
+              <span className="text-muted-foreground/40">—</span>
+            ) : (
+              <>
+                <NumberTicker value={stats?.satisfactionRate ?? 0} />
+                <span className="text-muted-foreground">%</span>
+              </>
+            )}
+          </div>
           <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mt-1">
             Satisfaction
           </p>
@@ -138,11 +141,11 @@ export function SurveyResults({ className }: SurveyResultsProps) {
       <div className="space-y-2 mb-6">
         <h3 className="text-sm font-medium mb-3">Répartition des notes</h3>
         {loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-6 w-full" />
-            ))}
-          </div>
+          <EmptyState
+            icon={IconChart}
+            title="Chargement des notes…"
+            description="Récupération de la répartition en cours."
+          />
         ) : stats ? (
           [5, 4, 3, 2, 1].map((rating) => {
             const count = stats.ratingDistribution[rating as 1 | 2 | 3 | 4 | 5] ?? 0
@@ -172,11 +175,11 @@ export function SurveyResults({ className }: SurveyResultsProps) {
         </div>
 
         {loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 w-full" />
-            ))}
-          </div>
+          <EmptyState
+            icon={IconComment}
+            title="Chargement des commentaires…"
+            description="Récupération des avis en cours."
+          />
         ) : comments.length === 0 ? (
           <EmptyState
             icon={IconComment}

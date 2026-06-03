@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import type React from "react";
 import {
   Map,
   MapControls,
@@ -13,8 +15,9 @@ import {
   useMap,
   type MapRef,
 } from "@/components/ui/map";
-import { X, Layers, Mountain, LocateFixed, Clock, Route as RouteIcon } from "lucide-react";
-import { POI_DATA, MARKER_CATEGORIES, type POI } from "@/lib/markers";
+import { X, Layers, Mountain, LocateFixed, Clock, Route as RouteIcon, MapPin } from "lucide-react";
+// ✅ POI_DATA supprimé — toutes les données viennent de la BDD via loadPOIs()
+import { loadPOIs, MARKER_CATEGORIES, type POI } from "@/lib/markers";
 import { SiteMarker } from "./SiteMarker";
 import { BottomSheet, type RoutePoint } from "./BottomSheet";
 import { useGeolocation } from "@/hooks/useGeolocation";
@@ -27,28 +30,109 @@ const MAPTILER_KEY  = "rF42xkuvfnAvkNeWRop5";
 
 const MAP_STYLES = {
   plan:      "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-  satellite: `https://api.maptiler.com/maps/satellite/style.json?key=${MAPTILER_KEY}`,
+  satellite: `https://api.maptiler.com/maps/hybrid/style.json?key=${MAPTILER_KEY}`,
 } as const;
 
 type MapMode = keyof typeof MAP_STYLES;
 
-/**
- * Couleurs des trajets — distinctes du orange satellite et du fond sombre.
- * Route sélectionnée : bleu vif  #4A9EFF
- * Route alternative  : gris clair #8899AA (tiretée)
- */
+// ─── Types OSM ────────────────────────────────────────────────────────────────
+
+interface OsmPoi {
+  id:   number;
+  lat:  number;
+  lon:  number;
+  tags: Record<string, string>;
+  kind: OsmKind;
+}
+
+type OsmKind =
+  | "restaurant" | "cafe" | "bar" | "fast_food"
+  | "shop"       | "supermarket"
+  | "hospital"   | "pharmacy" | "clinic"
+  | "hotel"      | "school"   | "bank" | "fuel"
+  | "attraction" | "place_of_worship"
+  | "other";
+
+const OSM_KIND_META: Record<OsmKind, { emoji: string; color: string; label: string }> = {
+  restaurant:      { emoji: "🍽️",  color: "#FF8C42", label: "Restaurant"    },
+  cafe:            { emoji: "☕",   color: "#C8A97E", label: "Café"          },
+  bar:             { emoji: "🍺",   color: "#E8B86D", label: "Bar"           },
+  fast_food:       { emoji: "🍟",   color: "#FFB347", label: "Fast-food"     },
+  shop:            { emoji: "🛍️",  color: "#9B8FFF", label: "Commerce"      },
+  supermarket:     { emoji: "🏪",   color: "#7EC8A0", label: "Supermarché"   },
+  hospital:        { emoji: "🏥",   color: "#FF6B6B", label: "Hôpital"       },
+  pharmacy:        { emoji: "💊",   color: "#4EC9B0", label: "Pharmacie"     },
+  clinic:          { emoji: "🩺",   color: "#FF9999", label: "Clinique"      },
+  hotel:           { emoji: "🏨",   color: "#A8D8EA", label: "Hôtel"         },
+  school:          { emoji: "🏫",   color: "#87CEEB", label: "École"         },
+  bank:            { emoji: "🏦",   color: "#98FB98", label: "Banque"        },
+  fuel:            { emoji: "⛽",   color: "#FFD700", label: "Carburant"     },
+  attraction:      { emoji: "🏛️",  color: "#DDA0DD", label: "Attraction"    },
+  place_of_worship:{ emoji: "⛪",   color: "#F0E68C", label: "Lieu de culte" },
+  other:           { emoji: "📍",   color: "#888896", label: "Lieu"          },
+};
+
+function classifyOsmTags(tags: Record<string, string>): OsmKind {
+  const am = tags.amenity;
+  const sh = tags.shop;
+  const to = tags.tourism;
+  const re = tags.religion !== undefined || tags.amenity === "place_of_worship";
+  if (am === "restaurant")          return "restaurant";
+  if (am === "cafe")                return "cafe";
+  if (am === "bar" || am === "pub") return "bar";
+  if (am === "fast_food")           return "fast_food";
+  if (am === "hospital")            return "hospital";
+  if (am === "pharmacy")            return "pharmacy";
+  if (am === "clinic" || am === "doctors") return "clinic";
+  if (am === "school" || am === "university" || am === "college") return "school";
+  if (am === "bank")                return "bank";
+  if (am === "fuel")                return "fuel";
+  if (am === "place_of_worship" || re) return "place_of_worship";
+  if (sh === "supermarket" || sh === "convenience") return "supermarket";
+  if (sh !== undefined)             return "shop";
+  if (to === "hotel" || to === "guest_house" || to === "hostel") return "hotel";
+  if (to === "attraction" || to === "museum" || to === "artwork") return "attraction";
+  return "other";
+}
+
+async function fetchOsmPois(
+  south: number, west: number, north: number, east: number,
+): Promise<OsmPoi[]> {
+  const query = `
+    [out:json][timeout:15][maxsize:1000000];
+    (
+      node["amenity"~"restaurant|cafe|bar|pub|fast_food|hospital|pharmacy|clinic|doctors|school|university|college|bank|fuel|place_of_worship"](${south},${west},${north},${east});
+      node["shop"~"supermarket|convenience|clothes|electronics|bakery|butcher|hardware|furniture|books|gifts|jewelry|mall"](${south},${west},${north},${east});
+      node["tourism"~"hotel|guest_house|hostel|attraction|museum|artwork"](${south},${west},${north},${east});
+    );
+    out body 500;
+  `.trim();
+  const res = await fetch("https://overpass-api.de/api/interpreter", {
+    method: "POST",
+    body:   "data=" + encodeURIComponent(query),
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  });
+  if (!res.ok) throw new Error("Overpass error");
+  const json = await res.json();
+  return (json.elements as Array<{ id: number; lat: number; lon: number; tags?: Record<string, string> }>)
+    .filter(el => el.lat !== undefined)
+    .map(el => ({
+      id:   el.id,
+      lat:  el.lat,
+      lon:  el.lon,
+      tags: el.tags ?? {},
+      kind: classifyOsmTags(el.tags ?? {}),
+    }));
+}
+
 const ROUTE_COLOR_ACTIVE = "#4A9EFF";
 const ROUTE_COLOR_ALT    = "#8899AA";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface RouteAlternative {
   coordinates: [number, number][];
-  duration:    number; // secondes
-  distance:    number; // mètres
+  duration:    number;
+  distance:    number;
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDuration(s: number): string {
   const m = Math.round(s / 60);
@@ -61,39 +145,30 @@ function formatDistance(m: number): string {
   return m < 1_000 ? `${Math.round(m)} m` : `${(m / 1_000).toFixed(1)} km`;
 }
 
-/**
- * Génère un second trajet alternatif synthétique lorsque OSRM n'en retourne qu'un.
- * On décale les waypoints intermédiaires latéralement (~150 m) pour simuler
- * une variante plausible sans appel réseau supplémentaire.
- */
 function generateSyntheticAlt(
   primary: RouteAlternative,
   fromCoords: [number, number],
   toCoords: [number, number],
 ): RouteAlternative {
-  // Coordonnée médiane décalée perpendiculairement
   const midLng = (fromCoords[0] + toCoords[0]) / 2;
   const midLat = (fromCoords[1] + toCoords[1]) / 2;
-  // Décalage ~0.0015° ≈ 150 m
-  const dLng = toCoords[1] - fromCoords[1]; // perpendiculaire inversée
+  const dLng = toCoords[1] - fromCoords[1];
   const dLat = toCoords[0] - fromCoords[0];
   const len   = Math.sqrt(dLng * dLng + dLat * dLat) || 1;
   const offset = 0.0015;
-
   const altCoords: [number, number][] = [
     fromCoords,
     [midLng + (dLng / len) * offset, midLat - (dLat / len) * offset],
     toCoords,
   ];
-
   return {
     coordinates: altCoords,
-    duration:    primary.duration * 1.15,  // +15 % de temps
-    distance:    primary.distance * 1.12,  // +12 % de distance
+    duration:    primary.duration * 1.15,
+    distance:    primary.distance * 1.12,
   };
 }
 
-// ─── Sous-composants carte ────────────────────────────────────────────────────
+// ─── Sous-composants ──────────────────────────────────────────────────────────
 
 function MapClickHandler({ onMapClick }: { onMapClick: () => void }) {
   const { map } = useMap();
@@ -128,111 +203,202 @@ function TerrainHandler({ enabled }: { enabled: boolean }) {
   return null;
 }
 
-function ZoomAwareLegend() {
-  const { map } = useMap();
-  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
-  useEffect(() => {
-    if (!map) return;
-    const h = () => setZoom(map.getZoom());
-    map.on("zoom", h);
-    return () => { map.off("zoom", h); };
-  }, [map]);
-  if (zoom >= 14) return null;
-  return (
-    <div style={{ position: "absolute", bottom: 90, left: 16, zIndex: 100, background: "rgba(27,27,30,0.92)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, padding: "10px 14px" }}>
-      <p style={{ fontSize: 9, fontWeight: 800, color: "#878787", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Catégories</p>
-      {Object.entries(MARKER_CATEGORIES).map(([key, cat]) => (
-        <div key={key} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: cat.color, flexShrink: 0 }} />
-          <span style={{ fontSize: 11, color: "#a0a0a0" }}>{cat.emoji} {cat.label}</span>
-        </div>
-      ))}
-    </div>
-  );
+
+const LABEL_SOURCE_ID = "vd-labels-src";
+const LABEL_STYLE_URL = `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${MAPTILER_KEY}`;
+let cachedLabelStyle: Record<string, unknown> | null = null;
+async function getLabelStyle(): Promise<Record<string, unknown>> {
+  if (cachedLabelStyle) return cachedLabelStyle;
+  const res = await fetch(LABEL_STYLE_URL);
+  if (!res.ok) throw new Error("label style fetch failed");
+  cachedLabelStyle = await res.json();
+  return cachedLabelStyle as Record<string, unknown>;
 }
 
-// ─── UserLocationMarker ───────────────────────────────────────────────────────
+function LabelOverlayHandler({ enabled }: { enabled: boolean }) {
+  const { map, isLoaded } = useMap();
+  useEffect(() => {
+    if (!map || !isLoaded) return;
+    const injectedSources: string[] = [];
+    const injectedLayers:  string[] = [];
+    let cancelled = false;
+    const onImageMissing = () => {};
+    map.on("styleimagemissing", onImageMissing);
+    async function inject() {
+      try {
+        const style = await getLabelStyle();
+        if (cancelled || !enabled) return;
+        const sources = (style.sources as Record<string, unknown>) ?? {};
+        for (const [srcId, srcDef] of Object.entries(sources)) {
+          const def = srcDef as Record<string, unknown>;
+          if (def.type !== "vector") continue;
+          const mappedId = `${LABEL_SOURCE_ID}-${srcId}`;
+          if (!map.getSource(mappedId)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            map.addSource(mappedId, def as any);
+            injectedSources.push(mappedId);
+          }
+        }
+        const layers = (style.layers as Array<Record<string, unknown>>) ?? [];
+        for (const layer of layers) {
+          if (layer.type !== "symbol") continue;
+          const layout = (layer.layout as Record<string, unknown>) ?? {};
+          const iconImage = layout["icon-image"];
+          const hasIcon = iconImage !== undefined && iconImage !== "" && iconImage !== null && !(Array.isArray(iconImage) && iconImage.length === 0);
+          if (hasIcon) continue;
+          if (!layout["text-field"]) continue;
+          const newId = `vd-lbl-${layer.id as string}`;
+          if (map.getLayer(newId)) continue;
+          const remapped: Record<string, unknown> = { ...layer, id: newId };
+          if (layer.source) {
+            remapped.source = `${LABEL_SOURCE_ID}-${layer.source as string}`;
+            if (!map.getSource(remapped.source as string)) continue;
+          }
+          const cleanLayout = { ...layout };
+          delete cleanLayout["icon-image"];
+          remapped.layout = cleanLayout;
+          const paint = { ...(layer.paint as Record<string, unknown> ?? {}) };
+          paint["text-color"]      = "#E8E8F0";
+          paint["text-halo-color"] = "#151419";
+          paint["text-halo-width"] = 1.5;
+          remapped.paint = paint;
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            map.addLayer(remapped as any);
+            injectedLayers.push(newId);
+          } catch {}
+        }
+      } catch {}
+    }
+    function cleanup() {
+      map.off("styleimagemissing", onImageMissing);
+      for (const id of injectedLayers)  { try { map.removeLayer(id);  } catch {} }
+      for (const id of injectedSources) { try { map.removeSource(id); } catch {} }
+      injectedLayers.length  = 0;
+      injectedSources.length = 0;
+    }
+    if (enabled) inject();
+    return () => { cancelled = true; cleanup(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, isLoaded, enabled]);
+  return null;
+}
 
-function UserLocationMarker({ longitude, latitude, accuracy }: {
-  longitude: number; latitude: number; accuracy?: number;
-}) {
+function useOsmPois(enabled: boolean): { pois: OsmPoi[]; loading: boolean } {
+  const { map, isLoaded } = useMap();
+  const [pois, setPois]       = useState<OsmPoi[]>([]);
+  const [loading, setLoading] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchForCurrentView = useCallback(async () => {
+    if (!map || !enabled) return;
+    const bounds = map.getBounds();
+    const zoom   = map.getZoom();
+    if (zoom < 13) { setPois([]); return; }
+    setLoading(true);
+    try {
+      const data = await fetchOsmPois(bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast());
+      setPois(data);
+    } catch {} finally { setLoading(false); }
+  }, [map, enabled]);
+  useEffect(() => {
+    if (!map || !isLoaded || !enabled) { setPois([]); return; }
+    fetchForCurrentView();
+    const onMoveEnd = () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(fetchForCurrentView, 800);
+    };
+    map.on("moveend", onMoveEnd);
+    return () => { map.off("moveend", onMoveEnd); if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [map, isLoaded, enabled, fetchForCurrentView]);
+  return { pois, loading };
+}
+
+function hexToRgbTriple(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r}, ${g}, ${b}`;
+}
+
+function OsmPoiMarker({ poi }: { poi: OsmPoi }) {
+  const meta  = OSM_KIND_META[poi.kind];
+  const name  = poi.tags.name || poi.tags["name:fr"] || poi.tags["name:en"] || meta.label;
+  const [hovered, setHovered] = useState(false);
   return (
-    <MapMarker longitude={longitude} latitude={latitude}>
+    <MapMarker longitude={poi.lon} latitude={poi.lat}>
       <MarkerContent>
-        <style>{`
-          @keyframes _uLocSpin  { to { transform: rotate(360deg); } }
-          @keyframes _uLocPulse { 0%,100%{opacity:.18;transform:scale(1)} 50%{opacity:.06;transform:scale(1.5)} }
-          @keyframes _uLocBeat  { 0%,100%{opacity:.35;transform:scale(1)} 50%{opacity:.12;transform:scale(1.9)} }
-        `}</style>
-        <div style={{ position: "relative", width: 0, height: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {accuracy !== undefined && accuracy < 300 && (
-            <div style={{ position: "absolute", width: accuracy * 2, height: accuracy * 2, borderRadius: "50%", background: "rgba(68,136,255,0.07)", border: "1px solid rgba(68,136,255,0.18)", transform: "translate(-50%,-50%)", top: 0, left: 0, pointerEvents: "none" }} />
-          )}
-          <div style={{ position: "absolute", width: 44, height: 44, borderRadius: "50%", background: "rgba(68,136,255,0.14)", animation: "_uLocBeat 2.4s ease-in-out infinite", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", width: 28, height: 28, borderRadius: "50%", background: "rgba(68,136,255,0.20)", animation: "_uLocPulse 1.6s ease-in-out infinite", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", width: 18, height: 18, borderRadius: "50%", background: "conic-gradient(from 0deg, #4488FF, #a0c4ff, #ffffff, #4488FF)", padding: 2, animation: "_uLocSpin 4s linear infinite", boxShadow: "0 0 0 2px rgba(27,27,30,0.8), 0 4px 12px rgba(68,136,255,0.5)" }}>
-            <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "#1B1B1E" }} />
-          </div>
-          <div style={{ position: "absolute", width: 8, height: 8, borderRadius: "50%", background: "#4488FF", border: "1.5px solid #ffffff", boxShadow: "0 2px 8px rgba(68,136,255,0.7)", zIndex: 1 }} />
+        <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} style={{ width: 24, height: 24, borderRadius: "50%", background: `rgba(${hexToRgbTriple(meta.color)}, 0.15)`, border: `1.5px solid rgba(${hexToRgbTriple(meta.color)}, 0.55)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, cursor: "pointer", transition: "transform 150ms ease, background 150ms ease", transform: hovered ? "scale(1.25)" : "scale(1)", boxShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+          {meta.emoji}
         </div>
       </MarkerContent>
-      <MarkerLabel>
-        <span style={{ display: "block", fontSize: 10, fontWeight: 700, color: "#4488FF", background: "rgba(27,27,30,0.90)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", padding: "2px 8px", borderRadius: 99, border: "1px solid rgba(68,136,255,0.30)", whiteSpace: "nowrap", marginTop: 10, boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
-          📍 Ma position
-        </span>
-      </MarkerLabel>
       <MarkerTooltip>
-        <div style={{ background: "rgba(27,27,30,0.97)", backdropFilter: "blur(16px)", color: "#FBFBFB", padding: "5px 10px", borderRadius: 8, fontSize: 11, fontWeight: 600, border: "1px solid rgba(68,136,255,0.25)" }}>
-          Votre position actuelle
-          {accuracy !== undefined && (
-            <span style={{ color: "#878787", marginLeft: 6, fontSize: 10 }}>±{Math.round(accuracy)} m</span>
-          )}
+        <div style={{ background: "rgba(18,18,22,0.97)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", color: "#F0F0F2", padding: "6px 11px", borderRadius: 10, fontSize: 11, fontWeight: 600, border: `1px solid rgba(${hexToRgbTriple(meta.color)}, 0.30)`, maxWidth: 180, boxShadow: "0 4px 16px rgba(0,0,0,0.5)" }}>
+          <div style={{ color: meta.color, fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 2 }}>{meta.emoji} {meta.label}</div>
+          {name}
+          {poi.tags.opening_hours && <div style={{ color: "#55556a", fontSize: 9, marginTop: 2 }}>🕐 {poi.tags.opening_hours}</div>}
         </div>
       </MarkerTooltip>
     </MapMarker>
   );
 }
 
-// ─── GpsStatusBadge ───────────────────────────────────────────────────────────
+function OsmPoiLayer({ enabled }: { enabled: boolean }) {
+  const { pois } = useOsmPois(enabled);
+  return <>{enabled && pois.map(poi => <OsmPoiMarker key={`osm-${poi.id}`} poi={poi} />)}</>;
+}
 
-function GpsStatusBadge({ loading, permissionDenied, onRequestAgain }: {
-  loading: boolean; permissionDenied: boolean; onRequestAgain: () => void;
-}) {
-  if (!loading && !permissionDenied) return null;
+function UserLocationMarker({ longitude, latitude, accuracy }: { longitude: number; latitude: number; accuracy?: number }) {
   return (
-    <div style={{ position: "absolute", top: 52, left: "50%", transform: "translateX(-50%)", zIndex: 300, display: "flex", alignItems: "center", gap: 8, background: "rgba(27,27,30,0.95)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: permissionDenied ? "1px solid rgba(255,68,68,0.35)" : "1px solid rgba(68,136,255,0.30)", borderRadius: 99, padding: "6px 14px", boxShadow: "0 4px 16px rgba(0,0,0,0.4)" }}>
-      {loading ? (
-        <>
-          <div style={{ width: 10, height: 10, borderRadius: "50%", border: "2px solid rgba(68,136,255,0.3)", borderTopColor: "#4488FF", animation: "_uLocSpin 0.8s linear infinite", flexShrink: 0 }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: "#878787", whiteSpace: "nowrap" }}>Recherche de votre position…</span>
-        </>
-      ) : (
-        <>
-          <LocateFixed size={12} style={{ color: "#FF4444", flexShrink: 0 }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: "#FF4444", whiteSpace: "nowrap" }}>Position refusée</span>
-          <button onClick={onRequestAgain} style={{ fontSize: 11, fontWeight: 700, color: "#FBFBFB", background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 99, padding: "2px 8px", cursor: "pointer", marginLeft: 2 }}>
-            Réessayer
-          </button>
-        </>
-      )}
+    <MapMarker longitude={longitude} latitude={latitude}>
+      <MarkerContent>
+        <style>{`@keyframes _uLocSpin{to{transform:rotate(360deg)}} @keyframes _uLocPulse{0%,100%{opacity:.18;transform:scale(1)} 50%{opacity:.06;transform:scale(1.5)}} @keyframes _uLocBeat{0%,100%{opacity:.35;transform:scale(1)} 50%{opacity:.12;transform:scale(1.9)}}`}</style>
+        <div style={{ position: "relative", width: 0, height: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {accuracy !== undefined && accuracy < 300 && <div style={{ position: "absolute", width: accuracy * 2, height: accuracy * 2, borderRadius: "50%", background: "rgba(68,136,255,0.07)", border: "1px solid rgba(68,136,255,0.18)", transform: "translate(-50%,-50%)", top: 0, left: 0, pointerEvents: "none" }} />}
+          <div style={{ position: "absolute", width: 44, height: 44, borderRadius: "50%", background: "rgba(68,136,255,0.14)", animation: "_uLocBeat 2.4s ease-in-out infinite", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", width: 28, height: 28, borderRadius: "50%", background: "rgba(68,136,255,0.20)", animation: "_uLocPulse 1.6s ease-in-out infinite", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", width: 18, height: 18, borderRadius: "50%", background: "conic-gradient(from 0deg, #4488FF, #a0c4ff, #ffffff, #4488FF)", padding: 2, animation: "_uLocSpin 4s linear infinite", boxShadow: "0 0 0 2px rgba(27,27,30,0.8), 0 4px 12px rgba(68,136,255,0.5)" }}><div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "#1B1B1E" }} /></div>
+          <div style={{ position: "absolute", width: 8, height: 8, borderRadius: "50%", background: "#4488FF", border: "1.5px solid #ffffff", boxShadow: "0 2px 8px rgba(68,136,255,0.7)", zIndex: 1 }} />
+        </div>
+      </MarkerContent>
+      <MarkerLabel><span style={{ display: "block", fontSize: 10, fontWeight: 700, color: "#4488FF", background: "rgba(27,27,30,0.90)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", padding: "2px 8px", borderRadius: 99, border: "1px solid rgba(68,136,255,0.30)", whiteSpace: "nowrap", marginTop: 10, boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>📍 Ma position</span></MarkerLabel>
+      <MarkerTooltip><div style={{ background: "rgba(27,27,30,0.97)", backdropFilter: "blur(16px)", color: "#FBFBFB", padding: "5px 10px", borderRadius: 8, fontSize: 11, fontWeight: 600, border: "1px solid rgba(68,136,255,0.25)" }}>Votre position actuelle{accuracy !== undefined && <span style={{ color: "#878787", marginLeft: 6, fontSize: 10 }}>±{Math.round(accuracy)} m</span>}</div></MarkerTooltip>
+    </MapMarker>
+  );
+}
+
+function OsmLoadingIndicator({ mapRef }: { mapRef: React.RefObject<MapRef | null> }) {
+  const [loading, setLoading] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const onStart = () => { if (timerRef.current) clearTimeout(timerRef.current); setLoading(true); };
+    const onEnd   = () => { timerRef.current = setTimeout(() => setLoading(false), 900); };
+    map.on("movestart", onStart);
+    map.on("idle",      onEnd);
+    return () => { map.off("movestart", onStart); map.off("idle", onEnd); };
+  }, [mapRef]);
+  if (!loading) return null;
+  return (
+    <div style={{ position: "absolute", bottom: 100, right: 12, zIndex: 200, display: "flex", alignItems: "center", gap: 6, background: "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 99, padding: "5px 11px", boxShadow: "0 2px 10px rgba(0,0,0,0.4)" }}>
+      <div style={{ width: 8, height: 8, borderRadius: "50%", border: "1.5px solid rgba(245,110,15,0.3)", borderTopColor: "#F56E0F", animation: "_uLocSpin 0.9s linear infinite" }} />
+      <span style={{ fontSize: 10, fontWeight: 600, color: "#878787" }}>Chargement des lieux…</span>
     </div>
   );
 }
 
-// ─── RouteAlternativesPanel ───────────────────────────────────────────────────
+function GpsStatusBadge({ loading, permissionDenied, onRequestAgain }: { loading: boolean; permissionDenied: boolean; onRequestAgain: () => void }) {
+  if (!loading && !permissionDenied) return null;
+  return (
+    <div style={{ position: "absolute", top: 52, left: "50%", transform: "translateX(-50%)", zIndex: 300, display: "flex", alignItems: "center", gap: 8, background: "rgba(27,27,30,0.95)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: permissionDenied ? "1px solid rgba(255,68,68,0.35)" : "1px solid rgba(68,136,255,0.30)", borderRadius: 99, padding: "6px 14px", boxShadow: "0 4px 16px rgba(0,0,0,0.4)" }}>
+      {loading ? (<><div style={{ width: 10, height: 10, borderRadius: "50%", border: "2px solid rgba(68,136,255,0.3)", borderTopColor: "#4488FF", animation: "_uLocSpin 0.8s linear infinite", flexShrink: 0 }} /><span style={{ fontSize: 11, fontWeight: 600, color: "#878787", whiteSpace: "nowrap" }}>Recherche de votre position…</span></>) : (<><LocateFixed size={12} style={{ color: "#FF4444", flexShrink: 0 }} /><span style={{ fontSize: 11, fontWeight: 600, color: "#FF4444", whiteSpace: "nowrap" }}>Position refusée</span><button onClick={onRequestAgain} style={{ fontSize: 11, fontWeight: 700, color: "#FBFBFB", background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 99, padding: "2px 8px", cursor: "pointer", marginLeft: 2 }}>Réessayer</button></>)}
+    </div>
+  );
+}
 
-function RouteAlternativesPanel({ routes, selectedIndex, onSelect, onClose }: {
-  routes: RouteAlternative[];
-  selectedIndex: number;
-  onSelect: (i: number) => void;
-  onClose: () => void;
-}) {
+function RouteAlternativesPanel({ routes, selectedIndex, onSelect, onClose }: { routes: RouteAlternative[]; selectedIndex: number; onSelect: (i: number) => void; onClose: () => void }) {
   if (routes.length === 0) return null;
-
-  // Indicateur couleur par index
-  const routeColor = (i: number, active: boolean) =>
-    active ? ROUTE_COLOR_ACTIVE : ROUTE_COLOR_ALT;
-
+  const routeColor = (i: number, active: boolean) => active ? ROUTE_COLOR_ACTIVE : ROUTE_COLOR_ALT;
   return (
     <div style={{ position: "absolute", top: 12, left: 12, zIndex: 250, display: "flex", flexDirection: "column", gap: 6 }}>
       {routes.map((route, i) => {
@@ -241,36 +407,43 @@ function RouteAlternativesPanel({ routes, selectedIndex, onSelect, onClose }: {
         const color     = routeColor(i, isActive);
         return (
           <button key={i} onClick={() => onSelect(i)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", borderRadius: 12, cursor: "pointer", background: isActive ? "rgba(74,158,255,0.12)" : "rgba(27,27,30,0.92)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", border: `1px solid ${isActive ? "rgba(74,158,255,0.45)" : "rgba(255,255,255,0.10)"}`, boxShadow: "0 2px 12px rgba(0,0,0,0.4)", transition: "all 180ms ease", minWidth: 200 }}>
-            {/* Indicateur couleur */}
             <div style={{ width: 3, height: 28, borderRadius: 2, background: color, flexShrink: 0 }} />
-            {/* Durée */}
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <Clock size={12} style={{ color: isActive ? ROUTE_COLOR_ACTIVE : "#878787", flexShrink: 0 }} />
-              <span style={{ fontSize: 13, fontWeight: 800, color: isActive ? "#FBFBFB" : "#a0a0a0" }}>
-                {formatDuration(route.duration)}
-              </span>
-            </div>
-            {/* Distance */}
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <RouteIcon size={11} style={{ color: "#55556a", flexShrink: 0 }} />
-              <span style={{ fontSize: 11, color: "#55556a" }}>{formatDistance(route.distance)}</span>
-            </div>
-            {/* Badge */}
-            {isFastest && (
-              <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "#22c55e", background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: 99, padding: "1px 7px" }}>
-                + rapide
-              </span>
-            )}
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}><Clock size={12} style={{ color: isActive ? ROUTE_COLOR_ACTIVE : "#878787", flexShrink: 0 }} /><span style={{ fontSize: 13, fontWeight: 800, color: isActive ? "#FBFBFB" : "#a0a0a0" }}>{formatDuration(route.duration)}</span></div>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}><RouteIcon size={11} style={{ color: "#55556a", flexShrink: 0 }} /><span style={{ fontSize: 11, color: "#55556a" }}>{formatDistance(route.distance)}</span></div>
+            {isFastest && <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "#22c55e", background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: 99, padding: "1px 7px" }}>+ rapide</span>}
           </button>
         );
       })}
-      {/* Fin de navigation */}
       <button onClick={onClose} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 14px", borderRadius: 12, cursor: "pointer", background: "rgba(27,27,30,0.92)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.12)", color: "#878787", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
-        <X size={13} />
-        Fin de navigation
+        <X size={13} />Fin de navigation
       </button>
     </div>
   );
+}
+
+// ─── Hook : deep-link depuis URL ──────────────────────────────────────────────
+/**
+ * Lit les query params à l'ouverture de la page et retourne la cible de focal.
+ *
+ * Deux modes :
+ *   ?siteId=<uuid>              → on cherche le POI dans la liste chargée (BDD)
+ *   ?lat=<n>&lng=<n>&name=<s>  → focal sur coordonnées brutes (fallback)
+ */
+type FocalTarget =
+  | { mode: "siteId"; siteId: string }
+  | { mode: "coords"; lat: number; lng: number; name: string }
+  | null;
+
+function useMapFocalTarget(): FocalTarget {
+  const params = useSearchParams();
+  const siteId = params.get("siteId");
+  const lat    = params.get("lat");
+  const lng    = params.get("lng");
+  const name   = params.get("name");
+
+  if (siteId) return { mode: "siteId", siteId };
+  if (lat && lng) return { mode: "coords", lat: parseFloat(lat), lng: parseFloat(lng), name: name ?? "Site" };
+  return null;
 }
 
 // ─── CarteMapSection ──────────────────────────────────────────────────────────
@@ -282,6 +455,7 @@ interface CarteMapSectionProps {
 export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
   const mapRef = useRef<MapRef>(null);
 
+  const [pois,             setPois]             = useState<POI[]>([]);
   const [selectedSite,     setSelectedSite]     = useState<POI | null>(null);
   const [routeAlts,        setRouteAlts]        = useState<RouteAlternative[]>([]);
   const [selectedRouteIdx, setSelectedRouteIdx] = useState(0);
@@ -289,21 +463,78 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
   const [infoPopup,        setInfoPopup]        = useState<{ lng: number; lat: number; text: string } | null>(null);
   const [mapMode,          setMapMode]          = useState<MapMode>("plan");
   const [terrain3D,        setTerrain3D]        = useState(false);
+  const [osmEnabled,       setOsmEnabled]       = useState(true);
 
   const { location: userLocation, loading: gpsLoading, permissionDenied, requestLocation } = useGeolocation();
+  const focalTarget = useMapFocalTarget();
 
-  // Centre la carte à la première acquisition GPS — sans dézoom
+  // ── Chargement des POI depuis la BDD (toutes catégories) ─────────────────
+  // ✅ Fallback sur [] — plus de POI_DATA statique
+
+  useEffect(() => {
+    loadPOIs().then(setPois).catch(() => setPois([]));
+  }, []);
+
+  // ── Centrage GPS initial ──
+
   const hasCenteredRef = useRef(false);
   useEffect(() => {
-    if (userLocation && !hasCenteredRef.current) {
+    if (userLocation && !hasCenteredRef.current && !focalTarget) {
       hasCenteredRef.current = true;
-      mapRef.current?.flyTo({
-        center: [userLocation.longitude, userLocation.latitude],
-        zoom: 17,
-        duration: 1200,
-      });
+      mapRef.current?.flyTo({ center: [userLocation.longitude, userLocation.latitude], zoom: 17, duration: 1200 });
     }
-  }, [userLocation]);
+  }, [userLocation, focalTarget]);
+
+  // ── Deep-link : focal automatique quand la carte ET les POI sont prêts ────
+  //
+  // On attend que `pois` soit chargé ET que la carte soit montée.
+  // La carte est disponible dès que mapRef.current est non-null, ce qui arrive
+  // un peu après le premier render. On réessaie via un léger délai si la carte
+  // n'est pas encore prête (cas rare : navigation rapide).
+
+  const focalAppliedRef = useRef(false);
+
+  useEffect(() => {
+    if (!focalTarget || focalAppliedRef.current || pois.length === 0) return;
+
+    function applyFocal() {
+      if (!focalTarget) return;
+
+      if (focalTarget.mode === "siteId") {
+        // Cherche dans les POI chargés depuis la BDD (toutes catégories)
+        const poi = pois.find(p => p.id === focalTarget.siteId);
+        if (poi) {
+          setSelectedSite(poi);
+          mapRef.current?.flyTo({ center: [poi.longitude, poi.latitude], zoom: 17, duration: 1000 });
+          focalAppliedRef.current = true;
+          return;
+        }
+        console.warn(`[CarteMapSection] siteId=${focalTarget.siteId} non trouvé dans les POI chargés`);
+      }
+
+      if (focalTarget.mode === "coords") {
+        // Focal sur coordonnées brutes — crée un POI éphémère pour la sélection visuelle
+        const ephemeral: POI = {
+          id:          `focal-${Date.now()}`,
+          name:        focalTarget.name,
+          longitude:   focalTarget.lng,
+          latitude:    focalTarget.lat,
+          category:    "sites",
+        };
+        setSelectedSite(ephemeral);
+        mapRef.current?.flyTo({ center: [focalTarget.lng, focalTarget.lat], zoom: 17, duration: 1000 });
+        focalAppliedRef.current = true;
+      }
+    }
+
+    // Si la carte n'est pas encore prête on retente après 400 ms
+    if (!mapRef.current) {
+      const timer = setTimeout(applyFocal, 400);
+      return () => clearTimeout(timer);
+    }
+    applyFocal();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focalTarget, pois]);
 
   // ── Handlers ────────────────────────────────────────────────────────────
 
@@ -314,10 +545,10 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
 
   const toggleMapMode = useCallback(() => setMapMode(p => p === "plan" ? "satellite" : "plan"), []);
   const toggleTerrain = useCallback(() => setTerrain3D(p => !p), []);
+  const toggleOsm     = useCallback(() => setOsmEnabled(p => !p), []);
 
   const resolveCoords = useCallback((point: RoutePoint): [number, number] | null => {
-    if (point.type === "gps") return userLocation
-      ? [userLocation.longitude, userLocation.latitude] : null;
+    if (point.type === "gps") return userLocation ? [userLocation.longitude, userLocation.latitude] : null;
     return [point.poi.longitude, point.poi.latitude];
   }, [userLocation]);
 
@@ -330,66 +561,33 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
     setRouteActive(true);
     setSelectedRouteIdx(0);
 
-    // Fallback immédiat — ligne droite, remplacée dès qu'OSRM répond
-    const fallback: RouteAlternative = {
-      coordinates: [fromCoords, toCoords],
-      duration: 0,
-      distance: 0,
-    };
+    const fallback: RouteAlternative = { coordinates: [fromCoords, toCoords], duration: 0, distance: 0 };
     setRouteAlts([fallback, generateSyntheticAlt(fallback, fromCoords, toCoords)]);
 
     try {
-      const url =
-        `https://router.project-osrm.org/route/v1/foot/` +
-        `${fromCoords[0]},${fromCoords[1]};${toCoords[0]},${toCoords[1]}` +
-        `?overview=full&geometries=geojson&alternatives=true`;
+      const url = `https://router.project-osrm.org/route/v1/foot/${fromCoords[0]},${fromCoords[1]};${toCoords[0]},${toCoords[1]}?overview=full&geometries=geojson&alternatives=true`;
       const res  = await fetch(url);
       const data = await res.json();
-
       if (data.routes?.length > 0) {
-        const osrmAlts: RouteAlternative[] = data.routes.map((r: {
-          geometry: { coordinates: [number, number][] };
-          duration: number;
-          distance: number;
-        }) => ({
+        const osrmAlts: RouteAlternative[] = data.routes.map((r: { geometry: { coordinates: [number, number][] }; duration: number; distance: number }) => ({
           coordinates: r.geometry.coordinates,
           duration:    r.duration,
           distance:    r.distance,
         }));
-
-        // Garantit toujours 2 trajets : si OSRM n'en retourne qu'un, on génère le second
-        if (osrmAlts.length === 1) {
-          osrmAlts.push(generateSyntheticAlt(osrmAlts[0], fromCoords, toCoords));
-        }
-
+        if (osrmAlts.length === 1) osrmAlts.push(generateSyntheticAlt(osrmAlts[0], fromCoords, toCoords));
         setRouteAlts(osrmAlts);
       }
-    } catch {
-      // OSRM indisponible — fallback synthétique conservé
-    }
+    } catch {}
 
-    // ── fitBounds sécurisé ────────────────────────────────────────────────
-    // On calcule le zoom manuellement pour ne pas dézommer si les points
-    // sont déjà proches, et on ajoute un padding raisonnable.
     const map = mapRef.current;
     if (!map) return;
-
     const [lng1, lat1] = fromCoords;
     const [lng2, lat2] = toCoords;
-
-    // Distance angulaire approximative entre les deux points
     const dLng = Math.abs(lng2 - lng1);
     const dLat = Math.abs(lat2 - lat1);
     const span  = Math.max(dLng, dLat);
-
-    // Si les deux points sont très proches (< ~500 m ≈ 0.005°), on garde
-    // le zoom actuel et on centre simplement entre les deux.
     if (span < 0.005) {
-      map.flyTo({
-        center: [(lng1 + lng2) / 2, (lat1 + lat2) / 2],
-        zoom: Math.max(map.getZoom(), 16),
-        duration: 900,
-      });
+      map.flyTo({ center: [(lng1 + lng2) / 2, (lat1 + lat2) / 2], zoom: Math.max(map.getZoom(), 16), duration: 900 });
     } else {
       map.fitBounds(
         [[Math.min(lng1, lng2), Math.min(lat1, lat2)], [Math.max(lng1, lng2), Math.max(lat1, lat2)]],
@@ -413,7 +611,8 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
     }
   }, [userLocation, requestLocation]);
 
-  const filteredPOIs = POI_DATA.filter(
+  // ✅ POI filtrés depuis la BDD (toutes catégories)
+  const filteredPOIs = pois.filter(
     poi => activeFilters.has(poi.category) || activeFilters.has("all")
   );
 
@@ -421,7 +620,6 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
 
   return (
     <div className="relative" style={{ height: "calc(100vh - 180px)" }}>
-
       <Map
         ref={mapRef}
         center={OUIDAH_CENTER}
@@ -433,9 +631,10 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
         <MapControls position="bottom-right" showZoom showCompass showLocate showFullscreen={false} onLocate={handleLocate} />
         <MapClickHandler onMapClick={handleMapClick} />
         <TerrainHandler enabled={terrain3D} />
-        <ZoomAwareLegend />
 
-        {/* Voyant position */}
+        <LabelOverlayHandler enabled={mapMode === "plan"} />
+        <OsmPoiLayer enabled={osmEnabled} />
+
         {userLocation && (
           <UserLocationMarker
             longitude={userLocation.longitude}
@@ -444,7 +643,7 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
           />
         )}
 
-        {/* POI */}
+        {/* ✅ POI 100% depuis la BDD — toutes catégories */}
         {filteredPOIs.map(poi => (
           <SiteMarker
             key={poi.id}
@@ -461,11 +660,6 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
           />
         ))}
 
-        {/*
-         * Tracés des routes — pattern MapCN :
-         * alternatives rendues en dessous, sélectionnée au-dessus.
-         * Couleurs : bleu vif (active) / gris clair tiret (alternative).
-         */}
         {routeAlts
           .map((alt, i) => ({ alt, i }))
           .sort((a, b) => a.i === selectedRouteIdx ? 1 : b.i === selectedRouteIdx ? -1 : 0)
@@ -494,10 +688,10 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
         )}
       </Map>
 
-      {/* Badge GPS */}
       <GpsStatusBadge loading={gpsLoading} permissionDenied={permissionDenied} onRequestAgain={requestLocation} />
 
-      {/* Panel alternatives */}
+      {osmEnabled && <OsmLoadingIndicator mapRef={mapRef} />}
+
       {routeActive && (
         <RouteAlternativesPanel
           routes={routeAlts}
@@ -507,24 +701,25 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
         />
       )}
 
-      {/* Boutons vue — coin haut droit */}
       <div className="absolute top-3 right-3 flex gap-2" style={{ zIndex: 200 }}>
         <button onClick={toggleMapMode} className="flex items-center gap-1.5 px-3 py-2 rounded-xl cursor-pointer" style={{ background: mapMode === "satellite" ? "rgba(245,110,15,0.15)" : "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: mapMode === "satellite" ? "1px solid rgba(245,110,15,0.5)" : "1px solid rgba(255,255,255,0.12)", color: mapMode === "satellite" ? "#F56E0F" : "#FBFBFB", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 12px rgba(0,0,0,0.4)", transition: "all 200ms ease" }}>
-          <Layers className="w-3.5 h-3.5" />
-          {mapMode === "plan" ? "Satellite" : "Plan"}
+          <Layers className="w-3.5 h-3.5" />{mapMode === "plan" ? "Satellite" : "Plan"}
         </button>
         <button onClick={toggleTerrain} className="flex items-center gap-1.5 px-3 py-2 rounded-xl cursor-pointer" style={{ background: terrain3D ? "rgba(245,110,15,0.15)" : "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: terrain3D ? "1px solid rgba(245,110,15,0.5)" : "1px solid rgba(255,255,255,0.12)", color: terrain3D ? "#F56E0F" : "#FBFBFB", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 12px rgba(0,0,0,0.4)", transition: "all 200ms ease" }}>
-          <Mountain className="w-3.5 h-3.5" />
-          3D
+          <Mountain className="w-3.5 h-3.5" />3D
+        </button>
+        <button onClick={toggleOsm} className="flex items-center gap-1.5 px-3 py-2 rounded-xl cursor-pointer" style={{ background: osmEnabled ? "rgba(245,110,15,0.15)" : "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: osmEnabled ? "1px solid rgba(245,110,15,0.5)" : "1px solid rgba(255,255,255,0.12)", color: osmEnabled ? "#F56E0F" : "#FBFBFB", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 12px rgba(0,0,0,0.4)", transition: "all 200ms ease" }}>
+          <MapPin className="w-3.5 h-3.5" />Lieux
         </button>
       </div>
 
-      {/* BottomSheet */}
+      {/* ✅ allPois passé au BottomSheet pour alimenter le sélecteur de destination */}
       <BottomSheet
         site={selectedSite}
         userLocation={userLocation}
         onClose={() => setSelectedSite(null)}
         onNavigateFromTo={handleNavigateFromTo}
+        allPois={pois}
       />
     </div>
   );

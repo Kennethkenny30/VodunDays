@@ -2,7 +2,6 @@ import bcrypt from "bcryptjs";
 import prisma from "../../prisma/prisma.client.js";
 import { generateToken } from "../../utils/jwt.js";
 
-
 export const register = async ({
   email,
   password,
@@ -10,6 +9,7 @@ export const register = async ({
   lastname,
   phone,
   role,
+  createdBy,
 }) => {
   const existingUser = await prisma.users.findUnique({ where: { email } });
 
@@ -25,8 +25,9 @@ export const register = async ({
       password: hashedPassword,
       firstname,
       lastname,
-      phone,
-      role: role || "AGENT",
+      phone: phone || null,
+      role: role || "ADMIN",
+      createdBy: createdBy || null,
     },
     select: {
       id: true,
@@ -34,16 +35,14 @@ export const register = async ({
       firstname: true,
       lastname: true,
       role: true,
+      active: true,
+      phone: true,
+      createdBy: true,
+      createdAt: true,
     },
   });
 
-  const token = generateToken({
-    id: user.id,
-    email: user.email,
-    role: user.role,
-  });
-
-  return { user, token };
+  return { user };
 };
 
 export const login = async ({ email, password }) => {
@@ -73,4 +72,33 @@ export const login = async ({ email, password }) => {
   const { password: _, ...userWithoutPassword } = user;
 
   return { user: userWithoutPassword, token };
+};
+
+export const getMe = async (userId) => {
+  const user = await prisma.users.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      firstname: true,
+      lastname: true,
+      role: true,
+      active: true,
+      phone: true,
+      lastLoging: true,
+      createdBy: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!user) {
+    throw { status: 404, message: "Utilisateur introuvable" };
+  }
+
+  if (!user.active) {
+    throw { status: 403, message: "Compte désactivé" };
+  }
+
+  return user;
 };

@@ -59,6 +59,7 @@ export const update = async (id, data) => {
       ...(data.status !== undefined && { status: data.status }),
       ...(data.siteId !== undefined && { siteId: data.siteId }),
       ...(data.eventTypeId !== undefined && { eventTypeId: data.eventTypeId }),
+      ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
     },
     include: { site: true, eventType: true },
   });

@@ -6,11 +6,11 @@ import { cn } from "@/lib/utils"
 import { NumberTicker } from "@/components/magicui/number-ticker"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
 import { IconCalendar, IconClock, IconArrowRight } from "@/components/icons"
+import { EmptyState } from "@/components/dashboard/empty-state"
 import { toast } from "sonner"
 import { getEvents } from "@/lib/api/events"
-import type { Event, EventStatus } from "@/lib/types/api"
+import type { Event } from "@/lib/types/api"
 
 interface ProgramOverviewProps {
   className?: string
@@ -27,7 +27,7 @@ export function ProgramOverview({ className }: ProgramOverviewProps) {
       setLoading(true)
       const res = await getEvents()
       if (res.success) {
-        setEvents(res.data)
+        setEvents(res.data ?? [])
       } else {
         toast.error(res.message)
       }
@@ -60,14 +60,11 @@ export function ProgramOverview({ className }: ProgramOverviewProps) {
         </div>
         <div className="space-y-4">
           {loading ? (
-            <>
-              <Skeleton className="h-9 w-20" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-              </div>
-            </>
+            <EmptyState
+              icon={IconCalendar}
+              title="Chargement des événements…"
+              description="Récupération des événements publiés."
+            />
           ) : (
             <>
               <div className="flex items-baseline gap-2">
@@ -120,11 +117,11 @@ export function ProgramOverview({ className }: ProgramOverviewProps) {
         </div>
         <div className="space-y-4">
           {loading ? (
-            <>
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-full" />
-            </>
+            <EmptyState
+              icon={IconClock}
+              title="Chargement des statuts…"
+              description="Calcul de la répartition du programme."
+            />
           ) : (
             <>
               <StatusRow label="Brouillons" count={draftCount} total={total} color="bg-muted-foreground" />
@@ -145,7 +142,7 @@ export function ProgramOverview({ className }: ProgramOverviewProps) {
         </div>
         <div className="space-y-4">
           {loading ? (
-            <Skeleton className="h-12 w-24" />
+            <p className="text-4xl font-semibold text-muted-foreground/40">—</p>
           ) : (
             <>
               <p className="text-4xl font-semibold">

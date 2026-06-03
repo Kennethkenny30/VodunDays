@@ -1,13 +1,8 @@
 import { Router } from "express";
 import Joi from "joi";
 import { validate } from "../../middlewares/validate.middleware.js";
-import {
-  getAll,
-  getById,
-  create,
-  update,
-  remove,
-} from "./programs.controller.js";
+import { authenticate, authorize } from "../../middlewares/auth.middleware.js";
+import { getAll, getById, create, update, remove } from "./programs.controller.js";
 
 const router = Router();
 
@@ -23,10 +18,13 @@ const updateSchema = Joi.object({
   eventId: Joi.string().uuid().optional(),
 });
 
+// Lecture publique
 router.get("/", getAll);
 router.get("/:id", getById);
-router.post("/", validate(createSchema), create);
-router.patch("/:id", validate(updateSchema), update);
-router.delete("/:id", remove);
+
+// Écriture : ADMIN et SUPER_ADMIN
+router.post("/", authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(createSchema), create);
+router.patch("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(updateSchema), update);
+router.delete("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), remove);
 
 export default router;

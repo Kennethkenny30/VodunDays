@@ -27,7 +27,7 @@ const {
   Public,
   getRuntime,
   createParam,
-} = require('./runtime/wasm-compiler-edge.js')
+} = require('./runtime/wasm-engine-edge.js')
 
 
 const Prisma = {}
@@ -36,11 +36,11 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.19.2
+ * Prisma Client JS version: 6.19.3
  * Query Engine version: c2990dca591cba766e3b7ef5d9e8a84796e47ab7
  */
 Prisma.prismaVersion = {
-  client: "6.19.2",
+  client: "6.19.3",
   engine: "c2990dca591cba766e3b7ef5d9e8a84796e47ab7"
 }
 
@@ -129,7 +129,8 @@ exports.Prisma.EventsScalarFieldEnum = {
   eventTypeId: 'eventTypeId',
   createdBy: 'createdBy',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  imageUrl: 'imageUrl'
 };
 
 exports.Prisma.ProgramsScalarFieldEnum = {
@@ -220,9 +221,63 @@ exports.Prisma.UsersScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.NotificationsScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  message: 'message',
+  target: 'target',
+  targetId: 'targetId',
+  status: 'status',
+  scheduledAt: 'scheduledAt',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AlertsScalarFieldEnum = {
+  id: 'id',
+  uuid: 'uuid',
+  displayName: 'displayName',
+  type: 'type',
+  description: 'description',
+  status: 'status',
+  siteId: 'siteId',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AlertTimelineScalarFieldEnum = {
+  id: 'id',
+  alertId: 'alertId',
+  status: 'status',
+  note: 'note',
+  userId: 'userId',
+  userName: 'userName',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AuditLogsScalarFieldEnum = {
+  id: 'id',
+  action: 'action',
+  module: 'module',
+  description: 'description',
+  metadata: 'metadata',
+  userId: 'userId',
+  userName: 'userName',
+  ipAddress: 'ipAddress',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -233,6 +288,12 @@ exports.Prisma.QueryMode = {
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 
 
@@ -250,7 +311,11 @@ exports.Prisma.ModelName = {
   Questions_impressions: 'Questions_impressions',
   Choices: 'Choices',
   Answers: 'Answers',
-  Users: 'Users'
+  Users: 'Users',
+  Notifications: 'Notifications',
+  Alerts: 'Alerts',
+  AlertTimeline: 'AlertTimeline',
+  AuditLogs: 'AuditLogs'
 };
 /**
  * Create the Client
@@ -263,11 +328,11 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\adedis\\Desktop\\VDBackend\\src\\generated",
+      "value": "C:\\Users\\Utilisateur\\Documents\\projets\\vodundays\\backend\\src\\generated",
       "fromEnvVar": null
     },
     "config": {
-      "engineType": "client"
+      "engineType": "library"
     },
     "binaryTargets": [
       {
@@ -279,7 +344,7 @@ const config = {
     "previewFeatures": [
       "postgresqlExtensions"
     ],
-    "sourceFilePath": "C:\\Users\\adedis\\Desktop\\VDBackend\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\Utilisateur\\Documents\\projets\\vodundays\\backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -287,12 +352,13 @@ const config = {
     "schemaEnvPath": "../../.env"
   },
   "relativePath": "../../prisma",
-  "clientVersion": "6.19.2",
+  "clientVersion": "6.19.3",
   "engineVersion": "c2990dca591cba766e3b7ef5d9e8a84796e47ab7",
   "datasourceNames": [
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -301,23 +367,23 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider        = \"prisma-client-js\"\n  output          = \"../src/generated/\"\n  engineType      = \"client\"\n  previewFeatures = [\"postgresqlExtensions\"]\n}\n\ndatasource db {\n  provider   = \"postgresql\"\n  url        = env(\"DATABASE_URL\")\n  extensions = [postgis]\n}\n\nmodel Sites {\n  id          String                                  @id @default(uuid())\n  name        String\n  description String?\n  latitude    Float\n  longitude   Float\n  zoneGeo     Unsupported(\"geometry(Polygon, 4326)\")?\n  type        String\n  capacity    Int\n  createdAt   DateTime                                @default(now())\n  updatedAt   DateTime                                @updatedAt\n\n  amenities Amenities[]\n  events    Events[]\n}\n\nmodel Amenities {\n  id        String   @id @default(uuid())\n  name      String\n  siteId    String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  site Sites @relation(fields: [siteId], references: [id])\n}\n\nmodel EventsTypes {\n  id        String   @id @default(uuid())\n  name      String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  events Events[]\n}\n\nmodel Events {\n  id          String   @id @default(uuid())\n  name        String\n  description String?\n  status      String\n  siteId      String\n  eventTypeId String\n  createdBy   String\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  site      Sites       @relation(fields: [siteId], references: [id])\n  eventType EventsTypes @relation(fields: [eventTypeId], references: [id])\n  programs  Programs[]\n  artists   Artists[]\n  quizzes   Quiz[]\n}\n\nmodel Programs {\n  id        String   @id @default(uuid())\n  startTime DateTime\n  endTime   DateTime\n  eventId   String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  event Events @relation(fields: [eventId], references: [id])\n}\n\nmodel Artists {\n  id        String   @id @default(uuid())\n  name      String\n  eventId   String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  event Events @relation(fields: [eventId], references: [id])\n}\n\nmodel Quiz {\n  id          String   @id @default(uuid())\n  title       String\n  description String?\n  active      Boolean  @default(false)\n  eventId     String\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  event     Events      @relation(fields: [eventId], references: [id])\n  questions Questions[]\n}\n\nmodel QuestionsTypes {\n  id        String   @id @default(uuid())\n  types     String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  questions Questions[]\n}\n\nmodel Questions {\n  id             String   @id @default(uuid())\n  wording        String\n  questionTypeId String\n  quizId         String\n  createdAt      DateTime @default(now())\n  updatedAt      DateTime @updatedAt\n\n  questionType QuestionsTypes          @relation(fields: [questionTypeId], references: [id])\n  quiz         Quiz                    @relation(fields: [quizId], references: [id])\n  impressions  Questions_impressions[]\n  choices      Choices[]\n  answers      Answers[]\n}\n\nmodel Impressions {\n  id        String   @id @default(uuid())\n  name      String\n  emoji     String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  questions Questions_impressions[]\n}\n\nmodel Questions_impressions {\n  questionId   String\n  impressionId String\n\n  question   Questions   @relation(fields: [questionId], references: [id])\n  impression Impressions @relation(fields: [impressionId], references: [id])\n\n  @@id([questionId, impressionId])\n}\n\nmodel Choices {\n  id         String   @id @default(uuid())\n  wording    String\n  questionId String\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n\n  question Questions @relation(fields: [questionId], references: [id])\n}\n\nmodel Answers {\n  id         String   @id @default(uuid())\n  uuid       String   @unique @default(uuid())\n  response   String\n  questionId String\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n\n  question Questions @relation(fields: [questionId], references: [id])\n}\n\nmodel Users {\n  id         String    @id @default(uuid())\n  email      String    @unique\n  password   String\n  role       String\n  active     Boolean   @default(true)\n  firstname  String\n  lastname   String\n  phone      String?\n  lastLoging DateTime?\n  createdBy  String?\n  createdAt  DateTime  @default(now())\n  updatedAt  DateTime  @updatedAt\n}\n",
-  "inlineSchemaHash": "b9eba6e5d2c6f22fad4fcec042d37200560e9a1fc0fcb4e2372594aff96d2d55",
+  "inlineSchema": "generator client {\n  provider        = \"prisma-client-js\"\n  output          = \"../src/generated/\"\n  previewFeatures = [\"postgresqlExtensions\"]\n}\n\ndatasource db {\n  provider   = \"postgresql\"\n  url        = env(\"DATABASE_URL\")\n  directUrl  = env(\"DIRECT_URL\")\n  extensions = [pgcrypto, postgis, uuid_ossp(map: \"uuid-ossp\")]\n}\n\nmodel Sites {\n  id          String                   @id @default(uuid())\n  name        String\n  description String?\n  latitude    Float\n  longitude   Float\n  type        String\n  capacity    Int\n  createdAt   DateTime                 @default(now())\n  updatedAt   DateTime                 @updatedAt\n  zoneGeo     Unsupported(\"geometry\")?\n  alerts      Alerts[]\n  amenities   Amenities[]\n  events      Events[]\n}\n\nmodel Amenities {\n  id        String   @id @default(uuid())\n  name      String\n  siteId    String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  site      Sites    @relation(fields: [siteId], references: [id])\n}\n\nmodel EventsTypes {\n  id        String   @id @default(uuid())\n  name      String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  events    Events[]\n}\n\nmodel Events {\n  id          String      @id @default(uuid())\n  name        String\n  description String?\n  status      String\n  siteId      String\n  eventTypeId String\n  createdBy   String\n  createdAt   DateTime    @default(now())\n  updatedAt   DateTime    @updatedAt\n  imageUrl    String?\n  artists     Artists[]\n  eventType   EventsTypes @relation(fields: [eventTypeId], references: [id])\n  site        Sites       @relation(fields: [siteId], references: [id])\n  programs    Programs[]\n  quizzes     Quiz[]\n}\n\nmodel Programs {\n  id        String   @id @default(uuid())\n  startTime DateTime\n  endTime   DateTime\n  eventId   String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  event     Events   @relation(fields: [eventId], references: [id])\n}\n\nmodel Artists {\n  id        String   @id @default(uuid())\n  name      String\n  eventId   String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  event     Events   @relation(fields: [eventId], references: [id])\n}\n\nmodel Quiz {\n  id          String      @id @default(uuid())\n  title       String\n  description String?\n  active      Boolean     @default(false)\n  eventId     String\n  createdAt   DateTime    @default(now())\n  updatedAt   DateTime    @updatedAt\n  questions   Questions[]\n  event       Events      @relation(fields: [eventId], references: [id])\n}\n\nmodel QuestionsTypes {\n  id        String      @id @default(uuid())\n  types     String\n  createdAt DateTime    @default(now())\n  updatedAt DateTime    @updatedAt\n  questions Questions[]\n}\n\nmodel Questions {\n  id             String                  @id @default(uuid())\n  wording        String\n  questionTypeId String\n  quizId         String\n  createdAt      DateTime                @default(now())\n  updatedAt      DateTime                @updatedAt\n  answers        Answers[]\n  choices        Choices[]\n  questionType   QuestionsTypes          @relation(fields: [questionTypeId], references: [id])\n  quiz           Quiz                    @relation(fields: [quizId], references: [id])\n  impressions    Questions_impressions[]\n}\n\nmodel Impressions {\n  id        String                  @id @default(uuid())\n  name      String\n  emoji     String\n  createdAt DateTime                @default(now())\n  updatedAt DateTime                @updatedAt\n  questions Questions_impressions[]\n}\n\nmodel Questions_impressions {\n  questionId   String\n  impressionId String\n  impression   Impressions @relation(fields: [impressionId], references: [id])\n  question     Questions   @relation(fields: [questionId], references: [id])\n\n  @@id([questionId, impressionId])\n}\n\nmodel Choices {\n  id         String    @id @default(uuid())\n  wording    String\n  questionId String\n  createdAt  DateTime  @default(now())\n  updatedAt  DateTime  @updatedAt\n  question   Questions @relation(fields: [questionId], references: [id])\n}\n\nmodel Answers {\n  id         String    @id @default(uuid())\n  uuid       String    @unique @default(uuid())\n  response   String\n  questionId String\n  createdAt  DateTime  @default(now())\n  updatedAt  DateTime  @updatedAt\n  question   Questions @relation(fields: [questionId], references: [id])\n}\n\nmodel Users {\n  id             String          @id @default(uuid())\n  email          String          @unique\n  password       String\n  role           String\n  active         Boolean         @default(true)\n  firstname      String\n  lastname       String\n  phone          String?\n  lastLoging     DateTime?\n  createdBy      String?\n  createdAt      DateTime        @default(now())\n  updatedAt      DateTime        @updatedAt\n  alertTimelines AlertTimeline[]\n}\n\nmodel Notifications {\n  id          String    @id @default(dbgenerated(\"(gen_random_uuid())::text\"))\n  title       String\n  message     String\n  target      String    @default(\"ALL\")\n  targetId    String?\n  status      String    @default(\"PENDING\")\n  scheduledAt DateTime? @db.Timestamptz(6)\n  sentAt      DateTime? @db.Timestamptz(6)\n  createdAt   DateTime  @default(now()) @db.Timestamptz(6)\n  updatedAt   DateTime  @default(now()) @updatedAt @db.Timestamptz(6)\n\n  @@index([status], map: \"idx_notifications_status\")\n}\n\nmodel Alerts {\n  id          String          @id @default(dbgenerated(\"gen_random_uuid()\")) @db.Uuid\n  uuid        String\n  displayName String\n  type        String\n  description String\n  status      String          @default(\"OPEN\")\n  siteId      String?\n  latitude    Float?\n  longitude   Float?\n  createdAt   DateTime        @default(now()) @db.Timestamptz(6)\n  updatedAt   DateTime        @default(now()) @updatedAt @db.Timestamptz(6)\n  timeline    AlertTimeline[]\n  site        Sites?          @relation(fields: [siteId], references: [id], onUpdate: NoAction)\n\n  @@index([status], map: \"idx_alerts_status\")\n  @@index([type], map: \"idx_alerts_type\")\n  @@index([uuid], map: \"idx_alerts_uuid\")\n}\n\nmodel AlertTimeline {\n  id        String   @id @default(dbgenerated(\"gen_random_uuid()\")) @db.Uuid\n  alertId   String   @db.Uuid\n  status    String\n  note      String?\n  userId    String?\n  userName  String?\n  createdAt DateTime @default(now()) @db.Timestamptz(6)\n  alert     Alerts   @relation(fields: [alertId], references: [id], onDelete: Cascade, onUpdate: NoAction)\n  user      Users?   @relation(fields: [userId], references: [id], onUpdate: NoAction)\n\n  @@index([alertId], map: \"idx_timeline_alert\")\n}\n\n/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.\nmodel AuditLogs {\n  id          String    @id @default(dbgenerated(\"gen_random_uuid()\")) @db.Uuid\n  action      String\n  module      String\n  description String\n  metadata    Json?\n  userId      String?   @db.Uuid\n  userName    String?\n  ipAddress   String?\n  createdAt   DateTime? @default(now()) @db.Timestamptz(6)\n\n  @@index([action])\n  @@index([createdAt(sort: Desc)])\n  @@index([module])\n}\n",
+  "inlineSchemaHash": "7008512319bc8781022df64ce1489c8b17cd4fb7c426a8cd838db80d9805a08f",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"Sites\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"latitude\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"longitude\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"type\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"capacity\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"amenities\",\"kind\":\"object\",\"type\":\"Amenities\",\"relationName\":\"AmenitiesToSites\"},{\"name\":\"events\",\"kind\":\"object\",\"type\":\"Events\",\"relationName\":\"EventsToSites\"}],\"dbName\":null},\"Amenities\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"siteId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"site\",\"kind\":\"object\",\"type\":\"Sites\",\"relationName\":\"AmenitiesToSites\"}],\"dbName\":null},\"EventsTypes\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"events\",\"kind\":\"object\",\"type\":\"Events\",\"relationName\":\"EventsToEventsTypes\"}],\"dbName\":null},\"Events\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"siteId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"eventTypeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdBy\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"site\",\"kind\":\"object\",\"type\":\"Sites\",\"relationName\":\"EventsToSites\"},{\"name\":\"eventType\",\"kind\":\"object\",\"type\":\"EventsTypes\",\"relationName\":\"EventsToEventsTypes\"},{\"name\":\"programs\",\"kind\":\"object\",\"type\":\"Programs\",\"relationName\":\"EventsToPrograms\"},{\"name\":\"artists\",\"kind\":\"object\",\"type\":\"Artists\",\"relationName\":\"ArtistsToEvents\"},{\"name\":\"quizzes\",\"kind\":\"object\",\"type\":\"Quiz\",\"relationName\":\"EventsToQuiz\"}],\"dbName\":null},\"Programs\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"eventId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"event\",\"kind\":\"object\",\"type\":\"Events\",\"relationName\":\"EventsToPrograms\"}],\"dbName\":null},\"Artists\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"eventId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"event\",\"kind\":\"object\",\"type\":\"Events\",\"relationName\":\"ArtistsToEvents\"}],\"dbName\":null},\"Quiz\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"active\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"eventId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"event\",\"kind\":\"object\",\"type\":\"Events\",\"relationName\":\"EventsToQuiz\"},{\"name\":\"questions\",\"kind\":\"object\",\"type\":\"Questions\",\"relationName\":\"QuestionsToQuiz\"}],\"dbName\":null},\"QuestionsTypes\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"types\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"questions\",\"kind\":\"object\",\"type\":\"Questions\",\"relationName\":\"QuestionsToQuestionsTypes\"}],\"dbName\":null},\"Questions\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"wording\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"questionTypeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"quizId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"questionType\",\"kind\":\"object\",\"type\":\"QuestionsTypes\",\"relationName\":\"QuestionsToQuestionsTypes\"},{\"name\":\"quiz\",\"kind\":\"object\",\"type\":\"Quiz\",\"relationName\":\"QuestionsToQuiz\"},{\"name\":\"impressions\",\"kind\":\"object\",\"type\":\"Questions_impressions\",\"relationName\":\"QuestionsToQuestions_impressions\"},{\"name\":\"choices\",\"kind\":\"object\",\"type\":\"Choices\",\"relationName\":\"ChoicesToQuestions\"},{\"name\":\"answers\",\"kind\":\"object\",\"type\":\"Answers\",\"relationName\":\"AnswersToQuestions\"}],\"dbName\":null},\"Impressions\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"emoji\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"questions\",\"kind\":\"object\",\"type\":\"Questions_impressions\",\"relationName\":\"ImpressionsToQuestions_impressions\"}],\"dbName\":null},\"Questions_impressions\":{\"fields\":[{\"name\":\"questionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"impressionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"question\",\"kind\":\"object\",\"type\":\"Questions\",\"relationName\":\"QuestionsToQuestions_impressions\"},{\"name\":\"impression\",\"kind\":\"object\",\"type\":\"Impressions\",\"relationName\":\"ImpressionsToQuestions_impressions\"}],\"dbName\":null},\"Choices\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"wording\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"questionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"question\",\"kind\":\"object\",\"type\":\"Questions\",\"relationName\":\"ChoicesToQuestions\"}],\"dbName\":null},\"Answers\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"uuid\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"response\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"questionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"question\",\"kind\":\"object\",\"type\":\"Questions\",\"relationName\":\"AnswersToQuestions\"}],\"dbName\":null},\"Users\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"active\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"firstname\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastname\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastLoging\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdBy\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"Sites\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"latitude\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"longitude\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"type\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"capacity\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"alerts\",\"kind\":\"object\",\"type\":\"Alerts\",\"relationName\":\"AlertsToSites\"},{\"name\":\"amenities\",\"kind\":\"object\",\"type\":\"Amenities\",\"relationName\":\"AmenitiesToSites\"},{\"name\":\"events\",\"kind\":\"object\",\"type\":\"Events\",\"relationName\":\"EventsToSites\"}],\"dbName\":null},\"Amenities\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"siteId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"site\",\"kind\":\"object\",\"type\":\"Sites\",\"relationName\":\"AmenitiesToSites\"}],\"dbName\":null},\"EventsTypes\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"events\",\"kind\":\"object\",\"type\":\"Events\",\"relationName\":\"EventsToEventsTypes\"}],\"dbName\":null},\"Events\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"siteId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"eventTypeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdBy\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"imageUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"artists\",\"kind\":\"object\",\"type\":\"Artists\",\"relationName\":\"ArtistsToEvents\"},{\"name\":\"eventType\",\"kind\":\"object\",\"type\":\"EventsTypes\",\"relationName\":\"EventsToEventsTypes\"},{\"name\":\"site\",\"kind\":\"object\",\"type\":\"Sites\",\"relationName\":\"EventsToSites\"},{\"name\":\"programs\",\"kind\":\"object\",\"type\":\"Programs\",\"relationName\":\"EventsToPrograms\"},{\"name\":\"quizzes\",\"kind\":\"object\",\"type\":\"Quiz\",\"relationName\":\"EventsToQuiz\"}],\"dbName\":null},\"Programs\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"eventId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"event\",\"kind\":\"object\",\"type\":\"Events\",\"relationName\":\"EventsToPrograms\"}],\"dbName\":null},\"Artists\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"eventId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"event\",\"kind\":\"object\",\"type\":\"Events\",\"relationName\":\"ArtistsToEvents\"}],\"dbName\":null},\"Quiz\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"active\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"eventId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"questions\",\"kind\":\"object\",\"type\":\"Questions\",\"relationName\":\"QuestionsToQuiz\"},{\"name\":\"event\",\"kind\":\"object\",\"type\":\"Events\",\"relationName\":\"EventsToQuiz\"}],\"dbName\":null},\"QuestionsTypes\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"types\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"questions\",\"kind\":\"object\",\"type\":\"Questions\",\"relationName\":\"QuestionsToQuestionsTypes\"}],\"dbName\":null},\"Questions\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"wording\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"questionTypeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"quizId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"answers\",\"kind\":\"object\",\"type\":\"Answers\",\"relationName\":\"AnswersToQuestions\"},{\"name\":\"choices\",\"kind\":\"object\",\"type\":\"Choices\",\"relationName\":\"ChoicesToQuestions\"},{\"name\":\"questionType\",\"kind\":\"object\",\"type\":\"QuestionsTypes\",\"relationName\":\"QuestionsToQuestionsTypes\"},{\"name\":\"quiz\",\"kind\":\"object\",\"type\":\"Quiz\",\"relationName\":\"QuestionsToQuiz\"},{\"name\":\"impressions\",\"kind\":\"object\",\"type\":\"Questions_impressions\",\"relationName\":\"QuestionsToQuestions_impressions\"}],\"dbName\":null},\"Impressions\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"emoji\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"questions\",\"kind\":\"object\",\"type\":\"Questions_impressions\",\"relationName\":\"ImpressionsToQuestions_impressions\"}],\"dbName\":null},\"Questions_impressions\":{\"fields\":[{\"name\":\"questionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"impressionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"impression\",\"kind\":\"object\",\"type\":\"Impressions\",\"relationName\":\"ImpressionsToQuestions_impressions\"},{\"name\":\"question\",\"kind\":\"object\",\"type\":\"Questions\",\"relationName\":\"QuestionsToQuestions_impressions\"}],\"dbName\":null},\"Choices\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"wording\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"questionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"question\",\"kind\":\"object\",\"type\":\"Questions\",\"relationName\":\"ChoicesToQuestions\"}],\"dbName\":null},\"Answers\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"uuid\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"response\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"questionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"question\",\"kind\":\"object\",\"type\":\"Questions\",\"relationName\":\"AnswersToQuestions\"}],\"dbName\":null},\"Users\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"active\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"firstname\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastname\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastLoging\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdBy\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"alertTimelines\",\"kind\":\"object\",\"type\":\"AlertTimeline\",\"relationName\":\"AlertTimelineToUsers\"}],\"dbName\":null},\"Notifications\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"target\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"targetId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"scheduledAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"sentAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Alerts\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"uuid\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"displayName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"siteId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"latitude\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"longitude\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"timeline\",\"kind\":\"object\",\"type\":\"AlertTimeline\",\"relationName\":\"AlertTimelineToAlerts\"},{\"name\":\"site\",\"kind\":\"object\",\"type\":\"Sites\",\"relationName\":\"AlertsToSites\"}],\"dbName\":null},\"AlertTimeline\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"alertId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"note\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"alert\",\"kind\":\"object\",\"type\":\"Alerts\",\"relationName\":\"AlertTimelineToAlerts\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"Users\",\"relationName\":\"AlertTimelineToUsers\"}],\"dbName\":null},\"AuditLogs\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"action\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"module\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"metadata\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"ipAddress\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
-config.engineWasm = undefined
-config.compilerWasm = {
-  getRuntime: async () => require('./query_compiler_bg.js'),
-  getQueryCompilerWasmModule: async () => {
-    const loader = (await import('#wasm-compiler-loader')).default
-    const compiler = (await loader).default
-    return compiler
+config.engineWasm = {
+  getRuntime: async () => require('./query_engine_bg.js'),
+  getQueryEngineWasmModule: async () => {
+    const loader = (await import('#wasm-engine-loader')).default
+    const engine = (await loader).default
+    return engine
   }
 }
+config.compilerWasm = undefined
 
 config.injectableEdgeEnv = () => ({
   parsed: {

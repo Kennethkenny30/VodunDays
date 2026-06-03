@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -50,71 +50,64 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { RoleBadge } from "@/components/dashboard/role-badge"
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog"
 import { EmptyState } from "@/components/dashboard/empty-state"
-import { Plus, MoreHorizontal, Pencil, UserX, UserCheck, Trash2, Users, ChevronRight } from "lucide-react"
+import { Plus, MoreHorizontal, Pencil, UserX, UserCheck, Trash2, Users, Loader2 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
 import { toast } from "sonner"
-import type { User, UserRole, UserUpdatePayload } from "@/lib/types/api"
-
-// Données simulées
-const mockUsers: User[] = [
-  {
-    id: "1",
-    email: "superadmin@vodundays.bj",
-    role: "SUPER_ADMIN",
-    active: true,
-    firstname: "Admin",
-    lastname: "Principal",
-    phone: "+229 97 00 00 00",
-    lastLoging: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-    createdBy: null,
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    email: "culture@vodundays.bj",
-    role: "ADMIN",
-    active: true,
-    firstname: "Marie",
-    lastname: "Ahouangan",
-    phone: "+229 96 00 00 00",
-    lastLoging: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    createdBy: "1",
-    createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    email: "events@vodundays.bj",
-    role: "ADMIN",
-    active: false,
-    firstname: "Jean",
-    lastname: "Dossou",
-    phone: null,
-    lastLoging: null,
-    createdBy: "1",
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
+import type { User, UserRole, UserUpdatePayload, UserCreatePayload } from "@/lib/types/api"
+import { getUsers, updateUser, deleteUser, toggleUserActive } from "@/lib/api/users"
+import { api } from "@/lib/api/client"
 
 interface UsersRolesManagerProps {
   className?: string
 }
 
-// Gestionnaire des utilisateurs et rôles
 export function UsersRolesManager({ className }: UsersRolesManagerProps) {
-  const [users, setUsers] = useState<User[]>(mockUsers)
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+
   const [sheetOpen, setSheetOpen] = useState(false)
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [inviteStep, setInviteStep] = useState(1)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [formData, setFormData] = useState<Partial<UserUpdatePayload>>({})
-  const [inviteData, setInviteData] = useState({ firstname: "", lastname: "", email: "", phone: "", role: "ADMIN" as UserRole })
+  const [inviteData, setInviteData] = useState<UserCreatePayload & { confirmPassword: string }>({
+    firstname: "",
+    lastname: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    role: "ADMIN" as UserRole,
+  })
+
+  // ─── Chargement ─────────────────────────────────────────────────────────────
+
+  const fetchUsers = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await getUsers()
+      if (res.success) {
+        setUsers(res.data)
+      } else {
+        toast.error(res.message || "Impossible de charger les utilisateurs")
+      }
+    } catch {
+      toast.error("Erreur réseau lors du chargement des utilisateurs")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchUsers()
+  }, [fetchUsers])
 
   const activeUsers = users.filter((u) => u.active)
   const inactiveUsers = users.filter((u) => !u.active)
+
+  // ─── Édition ────────────────────────────────────────────────────────────────
 
   const handleOpenSheet = (user: User) => {
     setEditingUser(user)
@@ -128,76 +121,100 @@ export function UsersRolesManager({ className }: UsersRolesManagerProps) {
     setSheetOpen(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingUser) return
-
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === editingUser.id
-          ? { ...u, ...formData, updatedAt: new Date().toISOString() }
-          : u
-      )
-    )
-    toast.success("Utilisateur mis à jour avec succès")
-    setSheetOpen(false)
-    setEditingUser(null)
-    setFormData({})
+    setSaving(true)
+    try {
+      const res = await updateUser(editingUser.id, formData)
+      if (res.success) {
+        setUsers((prev) => prev.map((u) => (u.id === editingUser.id ? res.data : u)))
+        toast.success("Utilisateur mis à jour avec succès")
+        setSheetOpen(false)
+        setEditingUser(null)
+        setFormData({})
+      } else {
+        toast.error(res.message || "Erreur lors de la mise à jour")
+      }
+    } catch {
+      toast.error("Erreur réseau")
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleToggleActive = (id: string, active: boolean) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === id ? { ...u, active, updatedAt: new Date().toISOString() } : u
-      )
-    )
-    toast.success(active ? "Utilisateur réactivé" : "Utilisateur désactivé")
+  const handleToggleActive = async (id: string, active: boolean) => {
+    try {
+      const res = await toggleUserActive(id, active)
+      if (res.success) {
+        setUsers((prev) => prev.map((u) => (u.id === id ? res.data : u)))
+        toast.success(active ? "Utilisateur réactivé" : "Utilisateur désactivé")
+      } else {
+        toast.error(res.message || "Erreur")
+      }
+    } catch {
+      toast.error("Erreur réseau")
+    }
   }
 
-  const handleDelete = (id: string) => {
-    setUsers((prev) => prev.filter((u) => u.id !== id))
-    toast.success("Utilisateur supprimé avec succès")
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await deleteUser(id)
+      if (res.success) {
+        setUsers((prev) => prev.filter((u) => u.id !== id))
+        toast.success("Utilisateur supprimé avec succès")
+      } else {
+        toast.error(res.message || "Erreur lors de la suppression")
+      }
+    } catch {
+      toast.error("Erreur réseau")
+    }
   }
 
-  const handleInvite = () => {
-    if (!inviteData.email || !inviteData.firstname || !inviteData.lastname) {
+  const handleInvite = async () => {
+    if (!inviteData.email || !inviteData.firstname || !inviteData.lastname || !inviteData.password) {
       toast.error("Veuillez remplir tous les champs obligatoires")
       return
     }
-
-    const newUser: User = {
-      id: String(Date.now()),
-      email: inviteData.email,
-      role: inviteData.role,
-      active: true,
-      firstname: inviteData.firstname,
-      lastname: inviteData.lastname,
-      phone: inviteData.phone || null,
-      lastLoging: null,
-      createdBy: "1",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    if (inviteData.password !== inviteData.confirmPassword) {
+      toast.error("Les mots de passe ne correspondent pas")
+      return
+    }
+    if (inviteData.password.length < 8) {
+      toast.error("Le mot de passe doit contenir au moins 8 caractères")
+      return
     }
 
-    setUsers((prev) => [...prev, newUser])
-    toast.success("Invitation envoyée avec succès")
-    setInviteDialogOpen(false)
-    setInviteStep(1)
-    setInviteData({ firstname: "", lastname: "", email: "", phone: "", role: "ADMIN" })
+    setSaving(true)
+    try {
+      const { confirmPassword: _, ...payload } = inviteData
+      const res = await api.post<{ user: User }>("/auth/register", payload)
+      if (res.success) {
+        setUsers((prev) => [...prev, res.data.user])
+        toast.success(`Compte créé pour ${inviteData.firstname} ${inviteData.lastname}`)
+        setInviteDialogOpen(false)
+        setInviteStep(1)
+        setInviteData({ firstname: "", lastname: "", email: "", phone: "", password: "", confirmPassword: "", role: "ADMIN" })
+      } else {
+        toast.error(res.message || "Erreur lors de la création")
+      }
+    } catch {
+      toast.error("Erreur réseau")
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const getInitials = (firstname: string, lastname: string) => {
-    return `${firstname.charAt(0)}${lastname.charAt(0)}`.toUpperCase()
-  }
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  const getInitials = (firstname: string, lastname: string) =>
+    `${firstname.charAt(0)}${lastname.charAt(0)}`.toUpperCase()
 
   const formatLastLogin = (date: string | null) => {
     if (!date) return "Jamais connecté"
     return formatDistanceToNow(new Date(date), { addSuffix: true, locale: fr })
   }
 
-  const formatCreatedBy = (id: string | null) => {
-    if (!id) return "—"
-    return `${id.slice(0, 8)}…`
-  }
+  // ─── Table ────────────────────────────────────────────────────────────────
 
   const renderUserTable = (userList: User[]) => (
     <ScrollArea className="h-[300px]">
@@ -208,233 +225,223 @@ export function UsersRolesManager({ className }: UsersRolesManagerProps) {
             <TableHead className="hidden sm:table-cell">Email</TableHead>
             <TableHead>Rôle</TableHead>
             <TableHead className="hidden md:table-cell">Dernière connexion</TableHead>
-            <TableHead className="hidden lg:table-cell">Créé par</TableHead>
             <TableHead className="w-[50px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {userList.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <Avatar className="size-8">
-                    <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                      {getInitials(user.firstname, user.lastname)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="font-medium">
-                    {user.firstname} {user.lastname}
-                  </span>
-                </div>
+          {userList.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                Aucun utilisateur
               </TableCell>
-              <TableCell className="hidden sm:table-cell text-muted-foreground">
-                {user.email}
-              </TableCell>
-              <TableCell>
-                <RoleBadge role={user.role} />
-              </TableCell>
-              <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                {formatLastLogin(user.lastLoging)}
-              </TableCell>
-              <TableCell className="hidden lg:table-cell font-mono text-xs text-muted-foreground">
-                {formatCreatedBy(user.createdBy)}
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="size-8">
-                      <MoreHorizontal className="size-4" />
-                      <span className="sr-only">Actions</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleOpenSheet(user)}>
-                      <Pencil className="mr-2 size-4" />
-                      Modifier
-                    </DropdownMenuItem>
-                    <ConfirmDialog
-                      title={user.active ? "Désactiver l'utilisateur" : "Réactiver l'utilisateur"}
-                      description={
-                        user.active
-                          ? `L'utilisateur ${user.firstname} ${user.lastname} ne pourra plus se connecter.`
-                          : `L'utilisateur ${user.firstname} ${user.lastname} pourra à nouveau se connecter.`
-                      }
-                      confirmLabel={user.active ? "Désactiver" : "Réactiver"}
-                      variant={user.active ? "destructive" : "default"}
-                      onConfirm={() => handleToggleActive(user.id, !user.active)}
-                      trigger={
+            </TableRow>
+          ) : (
+            userList.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="size-8">
+                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                        {getInitials(user.firstname, user.lastname)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">
+                      {user.firstname} {user.lastname}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden sm:table-cell text-muted-foreground">
+                  {user.email}
+                </TableCell>
+                <TableCell>
+                  <RoleBadge role={user.role} />
+                </TableCell>
+                <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                  {formatLastLogin(user.lastLoging)}
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="size-8">
+                        <MoreHorizontal className="size-4" />
+                        <span className="sr-only">Actions</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleOpenSheet(user)}>
+                        <Pencil className="mr-2 size-4" />
+                        Modifier
+                      </DropdownMenuItem>
+                      <ConfirmDialog
+                        title={user.active ? "Désactiver l'utilisateur" : "Réactiver l'utilisateur"}
+                        description={
+                          user.active
+                            ? `${user.firstname} ${user.lastname} ne pourra plus se connecter.`
+                            : `${user.firstname} ${user.lastname} pourra à nouveau se connecter.`
+                        }
+                        confirmLabel={user.active ? "Désactiver" : "Réactiver"}
+                        variant={user.active ? "destructive" : "default"}
+                        onConfirm={() => handleToggleActive(user.id, !user.active)}
+                      >
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                           {user.active ? (
-                            <>
-                              <UserX className="mr-2 size-4" />
-                              Désactiver
-                            </>
+                            <><UserX className="mr-2 size-4" />Désactiver</>
                           ) : (
-                            <>
-                              <UserCheck className="mr-2 size-4" />
-                              Réactiver
-                            </>
+                            <><UserCheck className="mr-2 size-4" />Réactiver</>
                           )}
                         </DropdownMenuItem>
-                      }
-                    />
-                    <ConfirmDialog
-                      title="Supprimer l'utilisateur"
-                      description={`Êtes-vous sûr de vouloir supprimer définitivement ${user.firstname} ${user.lastname} ? Cette action est irréversible.`}
-                      confirmLabel="Supprimer"
-                      variant="destructive"
-                      onConfirm={() => handleDelete(user.id)}
-                      trigger={
-                        <DropdownMenuItem variant="destructive" onSelect={(e) => e.preventDefault()}>
+                      </ConfirmDialog>
+                      <ConfirmDialog
+                        title="Supprimer l'utilisateur"
+                        description={`Cette action est irréversible. Le compte de ${user.firstname} ${user.lastname} sera définitivement supprimé.`}
+                        confirmLabel="Supprimer"
+                        variant="destructive"
+                        onConfirm={() => handleDelete(user.id)}
+                      >
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
                           <Trash2 className="mr-2 size-4" />
                           Supprimer
                         </DropdownMenuItem>
-                      }
-                    />
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
+                      </ConfirmDialog>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </ScrollArea>
   )
 
+  // ─── Render ───────────────────────────────────────────────────────────────
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-48 text-muted-foreground gap-2">
+        <Loader2 className="size-4 animate-spin" />
+        Chargement des utilisateurs…
+      </div>
+    )
+  }
+
   return (
-    <div className={cn("glass-card p-6", className)}>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold tracking-tight">Gestion des rôles</h2>
+    <div className={cn("space-y-4", className)}>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Users className="size-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Gestion des utilisateurs</h2>
+          <Badge variant="secondary">{users.length}</Badge>
+        </div>
         <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm">
               <Plus className="mr-2 size-4" />
-              Inviter un admin
+              Nouveau compte
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Inviter un administrateur</DialogTitle>
+              <DialogTitle>Créer un compte administrateur</DialogTitle>
               <DialogDescription>
-                Étape {inviteStep} sur 3
+                {inviteStep === 1 ? "Informations personnelles" : "Accès et sécurité"}
               </DialogDescription>
             </DialogHeader>
 
-            {/* Indicateur d'étapes */}
-            <div className="flex items-center gap-2 py-4">
-              {[1, 2, 3].map((step) => (
-                <div key={step} className="flex items-center">
-                  <div
-                    className={cn(
-                      "size-8 rounded-full flex items-center justify-center text-sm font-medium",
-                      inviteStep >= step
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                    )}
-                  >
-                    {step}
-                  </div>
-                  {step < 3 && (
-                    <ChevronRight className={cn(
-                      "size-4 mx-1",
-                      inviteStep > step ? "text-primary" : "text-muted-foreground"
-                    )} />
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {inviteStep === 1 && (
+            {inviteStep === 1 ? (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="firstname">Prénom *</Label>
+                    <Label>Prénom *</Label>
                     <Input
-                      id="firstname"
                       value={inviteData.firstname}
-                      onChange={(e) => setInviteData({ ...inviteData, firstname: e.target.value })}
+                      onChange={(e) => setInviteData((d) => ({ ...d, firstname: e.target.value }))}
+                      placeholder="Kofi"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastname">Nom *</Label>
+                    <Label>Nom *</Label>
                     <Input
-                      id="lastname"
                       value={inviteData.lastname}
-                      onChange={(e) => setInviteData({ ...inviteData, lastname: e.target.value })}
+                      onChange={(e) => setInviteData((d) => ({ ...d, lastname: e.target.value }))}
+                      placeholder="Ahouangan"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
+                  <Label>Email *</Label>
                   <Input
-                    id="email"
                     type="email"
                     value={inviteData.email}
-                    onChange={(e) => setInviteData({ ...inviteData, email: e.target.value })}
+                    onChange={(e) => setInviteData((d) => ({ ...d, email: e.target.value }))}
+                    placeholder="admin@vodundays.bj"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Téléphone</Label>
+                  <Label>Téléphone</Label>
                   <Input
-                    id="phone"
                     value={inviteData.phone}
-                    onChange={(e) => setInviteData({ ...inviteData, phone: e.target.value })}
+                    onChange={(e) => setInviteData((d) => ({ ...d, phone: e.target.value }))}
+                    placeholder="+229 97 00 00 00"
                   />
                 </div>
               </div>
-            )}
-
-            {inviteStep === 2 && (
+            ) : (
               <div className="space-y-4">
-                <Label>Rôle à attribuer</Label>
-                <Select
-                  value={inviteData.role}
-                  onValueChange={(value) => setInviteData({ ...inviteData, role: value as UserRole })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                    <SelectItem value="ADMIN">Admin Culture</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-muted-foreground">
-                  {inviteData.role === "SUPER_ADMIN"
-                    ? "Accès complet à la plateforme et à la configuration système."
-                    : "Accès à la gestion du programme culturel et des notifications."}
-                </p>
-              </div>
-            )}
-
-            {inviteStep === 3 && (
-              <div className="space-y-4">
-                <p className="text-sm">Récapitulatif de l'invitation :</p>
-                <div className="rounded-lg border p-4 space-y-2">
-                  <p><strong>Nom :</strong> {inviteData.firstname} {inviteData.lastname}</p>
-                  <p><strong>Email :</strong> {inviteData.email}</p>
-                  {inviteData.phone && <p><strong>Téléphone :</strong> {inviteData.phone}</p>}
-                  <p><strong>Rôle :</strong> <RoleBadge role={inviteData.role} /></p>
+                <div className="space-y-2">
+                  <Label>Rôle *</Label>
+                  <Select
+                    value={inviteData.role}
+                    onValueChange={(v) => setInviteData((d) => ({ ...d, role: v as UserRole }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ADMIN">Admin Culture</SelectItem>
+                      <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Un email d'invitation sera envoyé à {inviteData.email} avec un lien pour créer son mot de passe.
-                </p>
+                <div className="space-y-2">
+                  <Label>Mot de passe *</Label>
+                  <Input
+                    type="password"
+                    value={inviteData.password}
+                    onChange={(e) => setInviteData((d) => ({ ...d, password: e.target.value }))}
+                    placeholder="Minimum 8 caractères"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Confirmer le mot de passe *</Label>
+                  <Input
+                    type="password"
+                    value={inviteData.confirmPassword}
+                    onChange={(e) => setInviteData((d) => ({ ...d, confirmPassword: e.target.value }))}
+                    placeholder="Répéter le mot de passe"
+                  />
+                </div>
               </div>
             )}
 
             <DialogFooter>
-              {inviteStep > 1 && (
-                <Button variant="outline" onClick={() => setInviteStep(inviteStep - 1)}>
-                  Précédent
+              {inviteStep === 2 && (
+                <Button variant="ghost" onClick={() => setInviteStep(1)}>
+                  Retour
                 </Button>
               )}
-              {inviteStep < 3 ? (
-                <Button onClick={() => setInviteStep(inviteStep + 1)}>
+              {inviteStep === 1 ? (
+                <Button
+                  onClick={() => setInviteStep(2)}
+                  disabled={!inviteData.firstname || !inviteData.lastname || !inviteData.email}
+                >
                   Suivant
                 </Button>
               ) : (
-                <Button onClick={handleInvite}>
-                  Envoyer l'invitation
+                <Button onClick={handleInvite} disabled={saving}>
+                  {saving ? <Loader2 className="size-4 animate-spin mr-2" /> : null}
+                  Créer le compte
                 </Button>
               )}
             </DialogFooter>
@@ -442,6 +449,7 @@ export function UsersRolesManager({ className }: UsersRolesManagerProps) {
         </Dialog>
       </div>
 
+      {/* Tabs actifs / inactifs */}
       <Tabs defaultValue="active">
         <TabsList>
           <TabsTrigger value="active">
@@ -453,104 +461,83 @@ export function UsersRolesManager({ className }: UsersRolesManagerProps) {
             <Badge variant="secondary" className="ml-2">{inactiveUsers.length}</Badge>
           </TabsTrigger>
         </TabsList>
-
         <TabsContent value="active" className="mt-4">
-          {activeUsers.length === 0 ? (
-            <EmptyState
-              icon={Users}
-              title="Aucun utilisateur actif"
-              description="Invitez des administrateurs pour gérer la plateforme."
-              action={{ label: "Inviter un admin", onClick: () => setInviteDialogOpen(true) }}
-            />
-          ) : (
-            renderUserTable(activeUsers)
-          )}
+          {activeUsers.length === 0
+            ? <EmptyState title="Aucun utilisateur actif" description="Créez un premier compte administrateur." icon={<Users className="size-8" />} />
+            : renderUserTable(activeUsers)
+          }
         </TabsContent>
-
         <TabsContent value="inactive" className="mt-4">
-          {inactiveUsers.length === 0 ? (
-            <EmptyState
-              icon={Users}
-              title="Aucun utilisateur désactivé"
-              description="Les utilisateurs désactivés apparaîtront ici."
-            />
-          ) : (
-            renderUserTable(inactiveUsers)
-          )}
+          {inactiveUsers.length === 0
+            ? <EmptyState title="Aucun compte désactivé" description="Tous les comptes sont actifs." icon={<Users className="size-8" />} />
+            : renderUserTable(inactiveUsers)
+          }
         </TabsContent>
       </Tabs>
 
-      {/* Sheet de modification */}
+      {/* Sheet d'édition */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="sm:max-w-lg">
+        <SheetContent>
           <SheetHeader>
             <SheetTitle>Modifier l'utilisateur</SheetTitle>
             <SheetDescription>
-              Modifiez les informations de {editingUser?.firstname} {editingUser?.lastname}
+              Modifiez les informations du compte.
             </SheetDescription>
           </SheetHeader>
-
           <div className="space-y-4 py-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="edit-firstname">Prénom</Label>
+                <Label>Prénom</Label>
                 <Input
-                  id="edit-firstname"
-                  value={formData.firstname || ""}
-                  onChange={(e) => setFormData({ ...formData, firstname: e.target.value })}
+                  value={formData.firstname ?? ""}
+                  onChange={(e) => setFormData((d) => ({ ...d, firstname: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-lastname">Nom</Label>
+                <Label>Nom</Label>
                 <Input
-                  id="edit-lastname"
-                  value={formData.lastname || ""}
-                  onChange={(e) => setFormData({ ...formData, lastname: e.target.value })}
+                  value={formData.lastname ?? ""}
+                  onChange={(e) => setFormData((d) => ({ ...d, lastname: e.target.value }))}
                 />
               </div>
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="edit-email">Email</Label>
+              <Label>Email</Label>
               <Input
-                id="edit-email"
                 type="email"
-                value={formData.email || ""}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                value={formData.email ?? ""}
+                onChange={(e) => setFormData((d) => ({ ...d, email: e.target.value }))}
               />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="edit-phone">Téléphone</Label>
+              <Label>Téléphone</Label>
               <Input
-                id="edit-phone"
-                value={formData.phone || ""}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                value={formData.phone ?? ""}
+                onChange={(e) => setFormData((d) => ({ ...d, phone: e.target.value }))}
               />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="edit-role">Rôle</Label>
+              <Label>Rôle</Label>
               <Select
-                value={formData.role}
-                onValueChange={(value) => setFormData({ ...formData, role: value as UserRole })}
+                value={formData.role ?? "ADMIN"}
+                onValueChange={(v) => setFormData((d) => ({ ...d, role: v as UserRole }))}
               >
-                <SelectTrigger id="edit-role">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
                   <SelectItem value="ADMIN">Admin Culture</SelectItem>
+                  <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-
           <SheetFooter>
-            <Button variant="outline" onClick={() => setSheetOpen(false)}>
-              Annuler
+            <Button variant="ghost" onClick={() => setSheetOpen(false)}>Annuler</Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? <Loader2 className="size-4 animate-spin mr-2" /> : null}
+              Enregistrer
             </Button>
-            <Button onClick={handleSave}>Enregistrer</Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>

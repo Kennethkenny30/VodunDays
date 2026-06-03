@@ -44,8 +44,11 @@ const galleryItems = [
   },
 ];
 
+// Hauteur de scroll allouee a la section (controle la vitesse du defilement horizontal)
+const SCROLL_HEIGHT = "250vh";
+
 export function GallerySection() {
-  const sectionRef = useRef<HTMLElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const scrollTriggerRef = useRef<{ start: number; end: number } | null>(null);
 
@@ -61,7 +64,6 @@ export function GallerySection() {
     window.scrollTo({ top: cible, behavior: "smooth" });
   }, []);
 
-  // Init GSAP + ScrollTrigger pour le scroll horizontal
   useEffect(() => {
     let ctx: { revert: () => void } | null = null;
 
@@ -73,6 +75,14 @@ export function GallerySection() {
       const gsap = gsapModule.default;
       const ScrollTrigger = stModule.ScrollTrigger;
       gsap.registerPlugin(ScrollTrigger);
+
+      const track = trackRef.current;
+      const outer = outerRef.current;
+      if (!track || !outer) return;
+
+      // Fonction dynamique : recalculee a chaque refresh (resize inclus)
+      const getScrollDist = () => track.scrollWidth - window.innerWidth + 40;
+      if (getScrollDist() <= 0) return;
 
       ctx = gsap.context(() => {
         // Animation d'entree du titre
@@ -88,35 +98,25 @@ export function GallerySection() {
           }
         );
 
-        const track = trackRef.current;
-        const section = sectionRef.current;
-        if (!track || !section) return;
+        // Tween avec valeur fonctionnelle : x recalcule a chaque ScrollTrigger.refresh()
+        const tween = gsap.to(track, { x: () => -getScrollDist(), ease: "none" });
 
-        // Distance totale a parcourir horizontalement
-        const totalWidth = track.scrollWidth;
-        const viewportWidth = window.innerWidth;
-        const scrollDist = totalWidth - viewportWidth + 40;
-        if (scrollDist <= 0) return;
-
-        // Detecte mobile pour ajuster le point de declenchement du pin
-        const mobile = window.innerWidth < 768;
-
-        // Sur mobile : le pin demarre quand le titre "Decouvrez" est visible (top 15% du viewport)
-        // Sur desktop : le pin demarre classiquement en haut de page
-        const trigger = ScrollTrigger.create({
-          trigger: section,
-          start: mobile ? "top 15%" : "top top",
-          end: () => `+=${scrollDist}`,
+        // Scroll horizontal pilote par scrub — pas de pin GSAP, pas de pin-spacer
+        // Le layout est gere entierement par CSS (outer height + sticky)
+        const st = ScrollTrigger.create({
+          trigger: outer,
+          start: "top top",
+          end: "bottom bottom",
           scrub: 0.8,
-          pin: true,
-          pinSpacing: true,
-          anticipatePin: 1,
+          refreshPriority: -1,
           invalidateOnRefresh: true,
-          animation: gsap.to(track, { x: -scrollDist, ease: "none" }),
+          animation: tween,
+          onRefresh: (self) => {
+            scrollTriggerRef.current = { start: self.start, end: self.end };
+          },
         });
 
-        // On stocke les bornes pour la navigation par boutons
-        scrollTriggerRef.current = { start: trigger.start, end: trigger.end };
+        scrollTriggerRef.current = { start: st.start, end: st.end };
 
         // Animation d'entree progressive des cartes
         const cards = gsap.utils.toArray<HTMLElement>(".gallery-card");
@@ -131,22 +131,31 @@ export function GallerySection() {
               duration: 0.6,
               delay: i * 0.1,
               ease: "power3.out",
-              scrollTrigger: { trigger: section, start: "top 110%" },
+              scrollTrigger: { trigger: outer, start: "top 90%" },
             }
           );
         });
-      }, sectionRef);
+      });
     }
 
     init();
-    return () => { ctx?.revert(); };
+    return () => {
+      ctx?.revert();
+      if (trackRef.current) {
+        trackRef.current.style.transform = "";
+      }
+      scrollTriggerRef.current = null;
+    };
   }, []);
 
   return (
-    <>
-      <section ref={sectionRef} className="relative pt-4 pb-2 md:py-0" suppressHydrationWarning>
+    // Outer : hauteur explicite dans le DOM React — cree l'espace de scroll
+    // GSAP ne touche plus au layout, donc plus de pin-spacer et plus de gaps
+    <div ref={outerRef} style={{ height: SCROLL_HEIGHT }}>
+      {/* Sticky CSS : reste visible pendant tout le scroll de l'outer */}
+      <div className="sticky top-0 overflow-hidden" style={{ height: "100vh" }}>
         {/* En-tete de la section */}
-        <div className="mx-auto max-w-7xl px-4 md:px-6 pb-4 md:pt-24 md:pb-10">
+        <div className="mx-auto max-w-7xl px-4 md:px-6 pb-4 pt-4 md:pt-24 md:pb-10">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="gallery-title">
               <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-primary md:text-sm">
@@ -183,8 +192,8 @@ export function GallerySection() {
           </div>
         </div>
 
-        {/* Piste horizontale : GSAP translateX, centree sur mobile */}
-        <div className="overflow-hidden flex items-center min-h-[60vh] md:min-h-0">
+        {/* Piste horizontale */}
+        <div className="overflow-hidden flex items-center" style={{ height: "calc(100vh - 160px)" }}>
           <div
             ref={trackRef}
             className="flex gap-4 md:gap-6 px-[calc((100vw-80vw)/2)] md:px-0 md:pl-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))]"
@@ -193,12 +202,11 @@ export function GallerySection() {
             {galleryItems.map((item, index) => (
               <CarteDeLaGalerie key={item.title} item={item} index={index} />
             ))}
-            {/* Espacement final */}
             <div className="shrink-0 w-4 md:w-8" aria-hidden="true" />
           </div>
         </div>
-      </section>
-    </>
+      </div>
+    </div>
   );
 }
 
@@ -212,7 +220,6 @@ function CarteDeLaGalerie({
 }) {
   return (
     <div className="gallery-card group relative shrink-0 w-[75vw] sm:w-[55vw] md:w-[28vw] lg:w-[22vw] xl:w-[20vw]">
-      {/* Image avec ratio 3/4 */}
       <div className="relative aspect-3/4 overflow-hidden rounded-2xl">
         <Image
           src={item.image || "/placeholder.svg"}
@@ -222,15 +229,10 @@ function CarteDeLaGalerie({
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           sizes="(max-width: 640px) 75vw, (max-width: 768px) 55vw, (max-width: 1024px) 28vw, 22vw"
         />
-        {/* Degrade pour la lisibilite du texte */}
         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
-
-        {/* Numero decoratif */}
         <span className="absolute top-3 left-3 md:top-4 md:left-4 font-serif text-4xl md:text-5xl font-bold text-white/5">
           {String(index + 1).padStart(2, "0")}
         </span>
-
-        {/* Contenu glassmorphism */}
         <div className="absolute bottom-0 left-0 right-0 p-2.5 md:p-3">
           <div className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 md:px-3.5 md:py-1.5 backdrop-blur-md shadow-lg">
             <h3 className="mb-0.5 text-sm font-serif font-bold text-white md:text-base lg:text-lg leading-tight">

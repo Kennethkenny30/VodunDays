@@ -1,15 +1,25 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   MapMarker,
   MarkerContent,
-  MarkerLabel,
   MarkerTooltip,
   MarkerPopup,
+  useMap,
 } from "@/components/ui/map";
-import { Landmark, Bath, HeartPulse, Car, Info, Navigation, Zap } from "lucide-react";
+// Scan ajouté pour la catégorie PRA
+import { Landmark, Toilet, Siren, Bus, LifeBuoy, Navigation, Scan } from "lucide-react";
 import { MARKER_CATEGORIES, type POI, type MarkerCategory } from "@/lib/markers";
+
+// ─── Utilitaire couleur ────────────────────────────────────────────────────────
+
+function hexToRgbParts(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r}, ${g}, ${b}`;
+}
 
 // ─── Icônes par catégorie ─────────────────────────────────────────────────────
 
@@ -17,11 +27,12 @@ const CATEGORY_ICONS: Record<
   MarkerCategory,
   React.ComponentType<{ className?: string; size?: number; style?: React.CSSProperties }>
 > = {
-  sites:      Landmark,
-  toilettes:  Bath,
-  urgences:   HeartPulse,
-  transport:  Car,
-  assistance: Info,
+  sites:      Landmark,   // Site culturel / lieu emblématique
+  toilettes:  Toilet,     // Sanitaires
+  urgences:   Siren,      // Urgences / secours
+  transport:  Bus,        // Transport / navette
+  assistance: LifeBuoy,   // Point d'assistance / info
+  pra:        Scan,       // Point de Réalité Augmentée
 };
 
 // ─── Keyframes injectées une seule fois ───────────────────────────────────────
@@ -47,6 +58,18 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
   const cat  = MARKER_CATEGORIES[poi.category];
   const Icon = CATEGORY_ICONS[poi.category];
   const ref  = useRef<HTMLDivElement>(null);
+
+  // Zoom courant — le label disparaît sous le seuil LABEL_MIN_ZOOM
+  const LABEL_MIN_ZOOM = 14;
+  const { map } = useMap();
+  const [zoom, setZoom] = useState(() => map?.getZoom() ?? 15);
+  useEffect(() => {
+    if (!map) return;
+    const onZoom = () => setZoom(map.getZoom());
+    map.on("zoom", onZoom);
+    return () => { map.off("zoom", onZoom); };
+  }, [map]);
+  const showLabel = isSelected || zoom >= LABEL_MIN_ZOOM;
 
   // Gestion click natif (capture + touch) pour bypass MapLibre mobile
   useEffect(() => {
@@ -75,125 +98,132 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
       <MarkerContent>
         <style>{KEYFRAMES}</style>
 
-        <div
-          ref={ref}
-          style={{
-            position: "relative",
-            width: size,
-            height: size,
-            cursor: "pointer",
-            transition: "width 200ms ease, height 200ms ease",
-          }}
-        >
-          {/* ── Halo ping (sélection) ── */}
-          {isSelected && (
-            <>
-              <div style={{
-                position: "absolute",
-                inset: -10,
-                borderRadius: "50%",
-                border: `1.5px solid ${cat.color}`,
-                opacity: 0,
-                animation: "sm-ping 1.8s ease-out infinite",
-              }} />
-              <div style={{
-                position: "absolute",
-                inset: -5,
-                borderRadius: "50%",
-                border: `1px solid ${cat.color}60`,
-                opacity: 0,
-                animation: "sm-ping 1.8s ease-out 0.6s infinite",
-              }} />
-            </>
-          )}
+        {/* Wrapper global : marqueur + label empilés verticalement */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
 
-          {/* ── Corps du marqueur ── */}
+          {/* ── Marqueur ── */}
           <div
+            ref={ref}
             style={{
-              position: "absolute",
-              inset: 0,
-              borderRadius: "50%",
-              background: isSelected
-                ? `radial-gradient(circle at 35% 35%, ${cat.color}FF 0%, ${cat.color}CC 55%, ${cat.color}99 100%)`
-                : `radial-gradient(circle at 35% 35%, ${cat.color}EE 0%, ${cat.color}AA 60%, ${cat.color}77 100%)`,
-              boxShadow: isSelected
-                ? `0 0 0 2.5px rgba(0,0,0,0.55), 0 0 0 4px ${cat.color}55, 0 8px 24px ${cat.color}60, 0 2px 6px rgba(0,0,0,0.6)`
-                : `0 0 0 2px rgba(0,0,0,0.45), 0 4px 14px ${cat.color}45, 0 2px 5px rgba(0,0,0,0.4)`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              animation: isSelected ? "sm-breathe 2.4s ease-in-out infinite" : "none",
-              transition: "box-shadow 250ms ease, background 250ms ease",
+              position: "relative",
+              width: size,
+              height: size,
+              cursor: "pointer",
+              transition: "width 200ms ease, height 200ms ease",
             }}
           >
-            {/* Reflet spéculaire */}
+            {/* ── Halo ping (sélection) ── */}
+            {isSelected && (
+              <>
+                <div style={{
+                  position: "absolute",
+                  inset: -10,
+                  borderRadius: "50%",
+                  border: `1.5px solid ${cat.color}`,
+                  opacity: 0,
+                  animation: "sm-ping 1.8s ease-out infinite",
+                }} />
+                <div style={{
+                  position: "absolute",
+                  inset: -5,
+                  borderRadius: "50%",
+                  border: `1px solid ${cat.color}60`,
+                  opacity: 0,
+                  animation: "sm-ping 1.8s ease-out 0.6s infinite",
+                }} />
+              </>
+            )}
+
+            {/* ── Corps du marqueur ── */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                borderRadius: "50%",
+                background: isSelected
+                  ? `rgba(${hexToRgbParts(cat.color)}, 0.18)`
+                  : `rgba(${hexToRgbParts(cat.color)}, 0.12)`,
+                border: isSelected
+                  ? `1.5px solid rgba(${hexToRgbParts(cat.color)}, 0.80)`
+                  : `1.5px solid rgba(${hexToRgbParts(cat.color)}, 0.55)`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: isSelected
+                  ? `0 0 0 3px rgba(${hexToRgbParts(cat.color)}, 0.15), 0 4px 16px rgba(0,0,0,0.5)`
+                  : `0 2px 8px rgba(0,0,0,0.4)`,
+                animation: isSelected ? "sm-breathe 2.4s ease-in-out infinite" : "none",
+                transition: "box-shadow 250ms ease, background 250ms ease, border-color 250ms ease",
+                backdropFilter: "blur(4px)",
+                WebkitBackdropFilter: "blur(4px)",
+              }}
+            >
+              <Icon
+                size={isSelected ? 18 : 15}
+                style={{
+                  color: cat.color,
+                  position: "relative",
+                  zIndex: 1,
+                  transition: "font-size 200ms ease",
+                }}
+              />
+            </div>
+
+            {/* ── Tige / ancre ── */}
             <div style={{
               position: "absolute",
-              top: "12%",
-              left: "18%",
-              width: "55%",
-              height: "36%",
-              borderRadius: "50%",
-              background: "radial-gradient(ellipse, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 100%)",
-              pointerEvents: "none",
+              bottom: -7,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: 3,
+              height: 7,
+              borderRadius: "0 0 3px 3px",
+              background: `rgba(${hexToRgbParts(cat.color)}, 0.6)`,
+              animation: isSelected ? "sm-dot 2.4s ease-in-out infinite" : "none",
             }} />
-
-            <Icon
-              size={isSelected ? 18 : 15}
-              style={{
-                color: "#fff",
-                filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.5))",
-                position: "relative",
-                zIndex: 1,
-                transition: "font-size 200ms ease",
-              }}
-            />
           </div>
 
-          {/* ── Tige / ancre ── */}
+          {/* ── Label — visible selon zoom, toujours sélectionné ── */}
           <div style={{
-            position: "absolute",
-            bottom: -7,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 5,
-            height: 7,
-            borderRadius: "0 0 3px 3px",
-            background: `linear-gradient(180deg, ${cat.color} 0%, ${cat.color}55 100%)`,
-            animation: isSelected ? "sm-dot 2.4s ease-in-out infinite" : "none",
-          }} />
+            marginTop: 10,
+            pointerEvents: "none",
+            opacity: showLabel ? 1 : 0,
+            transform: showLabel ? "scale(1)" : "scale(0.8)",
+            transition: "opacity 200ms ease, transform 200ms ease",
+          }}>
+            <span style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: isSelected ? 5 : 4,
+              fontSize: isSelected ? 11 : 10,
+              fontWeight: isSelected ? 700 : 600,
+              color: isSelected ? "#F0F0F2" : "#C8C8D8",
+              background: isSelected
+                ? "rgba(18,18,22,0.94)"
+                : "rgba(18,18,22,0.72)",
+              backdropFilter: "blur(14px)",
+              WebkitBackdropFilter: "blur(14px)",
+              padding: isSelected ? "4px 11px" : "3px 8px",
+              borderRadius: 99,
+              border: isSelected
+                ? `1px solid ${cat.color}40`
+                : "1px solid rgba(255,255,255,0.08)",
+              whiteSpace: "nowrap",
+              maxWidth: 160,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              boxShadow: isSelected
+                ? "0 2px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06)"
+                : "0 1px 6px rgba(0,0,0,0.35)",
+              letterSpacing: "0.01em",
+              transition: "all 200ms ease",
+            }}>
+                            {poi.name}
+            </span>
+          </div>
+
         </div>
       </MarkerContent>
-
-      {/* ── Label (sélection) ── */}
-      {isSelected && (
-        <MarkerLabel position="bottom">
-          <span style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 5,
-            fontSize: 11,
-            fontWeight: 700,
-            color: "#F0F0F2",
-            background: "rgba(18,18,22,0.94)",
-            backdropFilter: "blur(14px)",
-            WebkitBackdropFilter: "blur(14px)",
-            padding: "4px 11px",
-            borderRadius: 99,
-            border: `1px solid ${cat.color}40`,
-            whiteSpace: "nowrap",
-            maxWidth: 170,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            marginTop: 10,
-            boxShadow: `0 2px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 1px rgba(0,0,0,0.3)`,
-            letterSpacing: "0.01em",
-          }}>
-            <span style={{ fontSize: 12 }}>{cat.emoji}</span>
-            {poi.name}
-          </span>
-        </MarkerLabel>
-      )}
 
       {/* ── Tooltip (au repos) ── */}
       {!isSelected && (
@@ -220,7 +250,7 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
               textTransform: "uppercase",
               opacity: 0.9,
             }}>
-              {cat.emoji} {cat.label}
+              {cat.label}
             </div>
             {poi.name}
           </div>
@@ -267,8 +297,7 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
               padding: "3px 10px",
               marginBottom: 12,
             }}>
-              <span style={{ fontSize: 11 }}>{cat.emoji}</span>
-              <span style={{
+                            <span style={{
                 color: cat.color,
                 fontSize: 9,
                 fontWeight: 800,

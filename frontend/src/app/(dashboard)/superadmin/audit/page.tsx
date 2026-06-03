@@ -47,10 +47,10 @@ import {
 } from "@/components/icons"
 import { toast } from "sonner"
 import { api } from "@/lib/api/client"
-import type { AuditLog, AuditActionType } from "@/lib/types/api"
+import type { AuditLog, AuditAction } from "@/lib/types/api"
 
 // Configuration des badges par type
-const typeConfig: Record<AuditActionType, { label: string; className: string; icon: React.ComponentType<{ className?: string }> }> = {
+const typeConfig: Record<AuditAction, { label: string; className: string; icon: React.ComponentType<{ className?: string }> }> = {
   CREATE: { label: "Création", className: "bg-blue-500/10 text-blue-500 border-blue-500/20", icon: IconPlus },
   UPDATE: { label: "Modification", className: "bg-amber-500/10 text-amber-500 border-amber-500/20", icon: IconEdit },
   DELETE: { label: "Suppression", className: "bg-red-500/10 text-red-500 border-red-500/20", icon: IconDelete },
@@ -74,20 +74,22 @@ export default function AuditPage() {
     setLoading(true)
     try {
       const params = new URLSearchParams()
-      params.set("page", page.toString())
-      params.set("perPage", perPage.toString())
-      if (typeFilter !== "ALL") params.set("type", typeFilter)
-      if (userFilter) params.set("user", userFilter)
+      params.set("page",  page.toString())
+      params.set("limit", perPage.toString())
+      if (typeFilter !== "ALL") params.set("action", typeFilter)
+      if (userFilter) params.set("search", userFilter)
 
-      const res = await api.get<{ data: AuditLog[]; total: number }>(`/audit/logs?${params.toString()}`)
-      
+      const res = await api.get<{ logs: AuditLog[]; pagination: { total: number } }>(
+        `/audit?${params.toString()}`
+      )
+
       if (res.success) {
-        setLogs(res.data.data)
-        setTotal(res.data.total)
+        setLogs(res.data.logs)
+        setTotal(res.data.pagination.total)
       } else {
         toast.error(res.message)
       }
-    } catch (error) {
+    } catch {
       toast.error("Erreur lors du chargement des logs")
     } finally {
       setLoading(false)

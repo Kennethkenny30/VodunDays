@@ -6,6 +6,8 @@ import Link from "next/link"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
 import { useSidebarStore } from "@/lib/stores/sidebar-store"
+import { useSession } from "@/hooks/useSession"
+import { getDisplayName, getInitials } from "@/lib/auth/session"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -47,17 +49,22 @@ function Breadcrumbs() {
 
   // Labels lisibles pour les segments
   const labels: Record<string, string> = {
-    superadmin: "Super Admin",
-    admin: "Admin Culture",
-    config: "Configuration",
-    sites: "Sites",
-    roles: "Rôles",
-    audit: "Audit",
-    incidents: "Incidents",
-    events: "Événements",
-    programs: "Créneaux",
+    superadmin:    "Super Admin",
+    admin:         "Admin Culture",
+    config:        "Configuration",
+    sites:         "Sites",
+    roles:         "Rôles",
+    users:         "Utilisateurs",
+    audit:         "Audit & Logs",
+    incidents:     "Incidents",
+    urgences:      "Urgences",
+    events:        "Événements",
+    programs:      "Créneaux",
     notifications: "Notifications",
-    survey: "Enquête",
+    survey:        "Enquête & Avis",
+    quiz:          "Questionnaires",
+    performance:   "Performance",
+    artists:       "Artistes",
   }
 
   return (
@@ -86,6 +93,7 @@ export function DashboardTopBar() {
   const { theme, setTheme } = useTheme()
   const pathname = usePathname()
   const [commandOpen, setCommandOpen] = useState(false)
+  const { user, logout } = useSession()
 
   // Raccourci clavier pour la recherche
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -100,7 +108,6 @@ export function DashboardTopBar() {
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [handleKeyDown])
 
-  // Détermination du rôle selon le chemin
   const isSuperAdmin = pathname.startsWith("/superadmin")
 
   return (
@@ -147,35 +154,7 @@ export function DashboardTopBar() {
         </Button>
 
         {/* Notifications */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
-              <IconBell className="size-5" />
-              <span className="absolute -top-1 -right-1 size-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
-                3
-              </span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-80">
-            <div className="space-y-3">
-              <p className="text-sm font-medium">Notifications récentes</p>
-              <div className="space-y-2">
-                <NotificationItem
-                  title="Nouvel événement créé"
-                  time="Il y a 5 min"
-                />
-                <NotificationItem
-                  title="Site mis à jour"
-                  time="Il y a 15 min"
-                />
-                <NotificationItem
-                  title="Connexion admin détectée"
-                  time="Il y a 1h"
-                />
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+        <NotificationsBell />
 
         {/* Menu utilisateur */}
         <DropdownMenu>
@@ -183,7 +162,7 @@ export function DashboardTopBar() {
             <Button variant="ghost" size="icon" className="rounded-full">
               <Avatar className="size-8">
                 <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                  AD
+                  {getInitials(user)}
                 </AvatarFallback>
               </Avatar>
             </Button>
@@ -191,8 +170,8 @@ export function DashboardTopBar() {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium">Admin Vodun</p>
-                <p className="text-xs text-muted-foreground">admin@vodundays.bj</p>
+                <p className="text-sm font-medium">{getDisplayName(user)}</p>
+                <p className="text-xs text-muted-foreground">{user?.email ?? ""}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -216,7 +195,7 @@ export function DashboardTopBar() {
                 </Link>
               </DropdownMenuItem>
             )}
-            {!isSuperAdmin && (
+            {!isSuperAdmin && user?.role === "SUPER_ADMIN" && (
               <DropdownMenuItem asChild>
                 <Link href="/superadmin">
                   <IconSwitch className="mr-2 size-4" />
@@ -225,7 +204,7 @@ export function DashboardTopBar() {
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive">
+            <DropdownMenuItem variant="destructive" onClick={logout}>
               <IconLogout className="mr-2 size-4" />
               Déconnexion
             </DropdownMenuItem>
@@ -270,15 +249,70 @@ export function DashboardTopBar() {
   )
 }
 
-// Composant item de notification
-function NotificationItem({ title, time }: { title: string; time: string }) {
+// ─── Cloche de notifications avec badge en temps réel ────────────────────────
+
+function NotificationsBell() {
+  const [pending, setPending]           = useState(0)
+  const [notifications, setNotifications] = useState<{ id: string; title: string; message: string; createdAt: string }[]>([])
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    let mounted = true
+    async function fetchPending() {
+      try {
+        const { api } = await import("@/lib/api/client")
+        const res = await api.get<{ notifications: { id: string; title: string; message: string; status: string; createdAt: string }[]; pagination: unknown }>("/notifications?limit=5&status=PENDING")
+        if (mounted && res.success) {
+          const list = res.data.notifications ?? []
+          setPending(list.length)
+          setNotifications(list.map((n) => ({ id: n.id, title: n.title, message: n.message, createdAt: n.createdAt })))
+        }
+      } catch { /* silencieux */ }
+    }
+    fetchPending()
+    const timer = setInterval(fetchPending, 60_000) // refresh toutes les 60s
+    return () => { mounted = false; clearInterval(timer) }
+  }, [])
+
   return (
-    <div className="flex items-start gap-3 rounded-lg p-2 hover:bg-accent transition-colors cursor-pointer">
-      <div className="size-2 mt-1.5 rounded-full bg-primary shrink-0" />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm">{title}</p>
-        <p className="text-xs text-muted-foreground">{time}</p>
-      </div>
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+          <IconBell className="size-5" />
+          {pending > 0 && (
+            <span className="absolute -top-1 -right-1 size-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
+              {pending > 9 ? "9+" : pending}
+            </span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-80">
+        <div className="space-y-3">
+          <p className="text-sm font-medium">
+            {pending > 0 ? `${pending} notification${pending > 1 ? "s" : ""} en attente` : "Notifications"}
+          </p>
+          <div className="space-y-2">
+            {notifications.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-4">Aucune notification en attente</p>
+            ) : (
+              notifications.map((n) => (
+                <div key={n.id} className="flex items-start gap-3 rounded-lg p-2 hover:bg-accent transition-colors cursor-pointer">
+                  <div className="size-2 mt-1.5 rounded-full bg-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{n.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{n.message}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          {pending > 0 && (
+            <Link href="/admin/notifications" onClick={() => setOpen(false)} className="block text-xs text-center text-primary hover:underline">
+              Voir toutes les notifications →
+            </Link>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }

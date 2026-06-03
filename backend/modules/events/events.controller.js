@@ -21,7 +21,8 @@ export const getById = async (req, res, next) => {
 
 export const create = async (req, res, next) => {
   try {
-    const result = await eventsService.create(req.body);
+    // createdBy est injecté depuis le token JWT, pas depuis le body
+    const result = await eventsService.create({ ...req.body, createdBy: req.user.id });
     return successResponse(res, result, "Événement créé avec succès", 201);
   } catch (error) {
     next(error);
