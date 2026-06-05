@@ -1,17 +1,20 @@
 /**
- * Module Survey — Enquête satisfaction
+ * Module Survey - Enquête satisfaction
  *
  * Exploite les modèles existants (Answers, Questions, Quiz)
  * pour produire des statistiques de satisfaction.
  *
  * Convention : la "note" d'un festivalier est une réponse numérique (1-5)
- * à une question de type "Note étoilée" (ex: QuestionType.types = "Note étoilée").
- * Les commentaires sont les réponses texte libres (QuestionType.types = "Texte libre").
+ * à une question dont QuestionType.types contient RATING_TYPE_KEYWORD.
+ * Les commentaires sont les réponses texte libres dont le type contient TEXT_TYPE_KEYWORD.
+ * Si les libellés changent en base, mettre à jour ces deux constantes.
  */
 
 import prisma from "../../prisma/prisma.client.js";
 
-// ─── Stats globales de satisfaction ──────────────────────────────────────────
+// Mots-clés attendus dans QuestionType.types pour identifier les types de question
+const RATING_TYPE_KEYWORD = "Note";   // ex : "Note étoilée"
+const TEXT_TYPE_KEYWORD   = "Texte";  // ex : "Texte libre"
 
 export const getStats = async ({ eventId } = {}) => {
   // Récupère les réponses numériques (réponses parsables en 1-5)
@@ -19,7 +22,7 @@ export const getStats = async ({ eventId } = {}) => {
     where: {
       question: {
         ...(eventId && { quiz: { eventId } }),
-        questionType: { types: { contains: "Note", mode: "insensitive" } },
+        questionType: { types: { contains: RATING_TYPE_KEYWORD, mode: "insensitive" } },
       },
     },
     select: { response: true, createdAt: true },
@@ -85,8 +88,6 @@ export const getStats = async ({ eventId } = {}) => {
   };
 };
 
-// ─── Commentaires ─────────────────────────────────────────────────────────────
-
 export const getComments = async ({
   eventId,
   page = 1,
@@ -100,7 +101,7 @@ export const getComments = async ({
   const where = {
     question: {
       ...(eventId && { quiz: { eventId } }),
-      questionType: { types: { contains: "Texte", mode: "insensitive" } },
+      questionType: { types: { contains: TEXT_TYPE_KEYWORD, mode: "insensitive" } },
     },
     NOT: { response: "" },
   };
@@ -143,8 +144,6 @@ export const getComments = async ({
     },
   };
 };
-
-// ─── Export CSV ───────────────────────────────────────────────────────────────
 
 export const exportCsv = async ({ eventId } = {}) => {
   const answers = await prisma.answers.findMany({

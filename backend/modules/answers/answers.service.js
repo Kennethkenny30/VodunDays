@@ -25,6 +25,7 @@ export const create = async (data) => {
     data: {
       response: data.response,
       questionId: data.questionId,
+      ...(data.uuid && { uuid: data.uuid }),
     },
     include: { question: true },
   });

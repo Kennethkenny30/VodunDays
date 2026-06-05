@@ -161,7 +161,8 @@ model Choices {
 
 model Answers {
   id         String    @id @default(uuid())
-  uuid       String    @unique @default(uuid())
+  // uuid festivalier pour déduplication - non-unique car plusieurs réponses d'un même festivalier
+  uuid       String?
   response   String
   questionId String
   createdAt  DateTime  @default(now())
