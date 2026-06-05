@@ -51,7 +51,7 @@ export type Site = {
   longitude: number
   // sous-type fonctionnel libre (ex: "CULTUREL", "NAVETTE", "PRA_SCENE"…)
   type: string
-  // catégorie de marqueur carte — pilote l'icône et le filtre
+  // catégorie de marqueur carte - pilote l'icône et le filtre
   category: MarkerCategory
   capacity: number
   // ── Champs PRA (nuls si category !== "PRA") ───────────────────────────────
@@ -152,6 +152,8 @@ export type Quiz = {
   eventId: string
   createdAt: string
   updatedAt: string
+  questions?: Question[]
+  event?: Event
 }
 
 export type AuditActionType = "CREATE" | "UPDATE" | "DELETE" | "AUTH" | "INCIDENT" | "CONFIG"
@@ -318,11 +320,15 @@ export type SurveyStats = {
   totalResponses: number
   satisfactionRate: number
   ratingDistribution: Record<1 | 2 | 3 | 4 | 5, number>
+  trend?: { date: string; count: number; avg: number }[]
 }
 
 export type SurveyComment = {
   id: string
   text: string
-  rating: number
+  question: string
+  quiz: string
+  event: string
+  uuid: string | null
   createdAt: string
 }

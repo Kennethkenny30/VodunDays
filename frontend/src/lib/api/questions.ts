@@ -1,6 +1,6 @@
 // API Questions - Vodun Days Dashboard
 import { api } from "./client"
-import type { Question, QuestionCreatePayload, QuestionType, Impression } from "@/lib/types/api"
+import type { Question, QuestionCreatePayload, QuestionType, Impression, Choice } from "@/lib/types/api"
 
 // ─── Questions ────────────────────────────────────────────────────────────────
 
@@ -53,17 +53,48 @@ export async function deleteImpression(id: string) {
   return api.delete<null>(`/impressions/${id}`)
 }
 
-// ─── Choix (réponses possibles) ───────────────────────────────────────────────
+// ─── Choix (options QCM) ──────────────────────────────────────────────────────
 
 export async function getChoices(questionId?: string) {
   const query = questionId ? `?questionId=${questionId}` : ""
-  return api.get<{ id: string; wording: string; questionId: string }[]>(`/choices${query}`)
+  return api.get<Choice[]>(`/choices${query}`)
 }
 
 export async function createChoice(payload: { wording: string; questionId: string }) {
-  return api.post<{ id: string; wording: string; questionId: string }>("/choices", payload)
+  return api.post<Choice>("/choices", payload)
+}
+
+export async function updateChoice(id: string, payload: { wording: string }) {
+  return api.patch<Choice>(`/choices/${id}`, payload)
 }
 
 export async function deleteChoice(id: string) {
   return api.delete<null>(`/choices/${id}`)
+}
+
+// ─── Liaisons question-impression ────────────────────────────────────────────
+
+type QuestionImpression = { questionId: string; impressionId: string; impression: Impression }
+
+export async function getQuestionsImpressions(questionId?: string) {
+  const query = questionId ? `?questionId=${questionId}` : ""
+  return api.get<QuestionImpression[]>(`/questions-impressions${query}`)
+}
+
+export async function linkImpression(questionId: string, impressionId: string) {
+  return api.post<QuestionImpression>("/questions-impressions", { questionId, impressionId })
+}
+
+export async function unlinkImpression(questionId: string, impressionId: string) {
+  return api.delete<null>(`/questions-impressions/${questionId}/${impressionId}`)
+}
+
+// ─── Réponses festivaliers ────────────────────────────────────────────────────
+
+export async function submitAnswer(payload: {
+  response: string
+  questionId: string
+  uuid?: string
+}) {
+  return api.post<{ id: string; response: string; questionId: string; uuid: string | null }>("/answers", payload)
 }
