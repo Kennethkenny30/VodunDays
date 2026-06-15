@@ -55,11 +55,12 @@ export function TransitionSplash({
     return () => clearInterval(interval);
   }, [isAnimating, greetings.length, intervalMs]);
 
-  // Redirection apres la fin de l'animation
+  // Redirection apres la fin de l'animation - bascule vers /offline si pas de réseau
   useEffect(() => {
     if (!isAnimating) {
       const timeout = setTimeout(() => {
-        router.push(redirectTo);
+        const destination = navigator.onLine ? redirectTo : "/offline";
+        router.push(destination);
       }, 800);
       return () => clearTimeout(timeout);
     }
@@ -82,12 +83,12 @@ export function TransitionSplash({
         style={{ marginTop: "-120px" }}
       >
         <Image
-          src="/images/vodundays_logo2.png"
+          src="/images/logo.png"
           alt="Vodun Days logo"
           width={280}
           height={280}
           priority
-          className=" w-24 sm:w-32 md:w-40 lg:w-48"
+          className="w-24 sm:w-32 md:w-40 lg:w-48 rounded-full"
         />
 
         <div className="relative flex h-20 w-80 flex-col items-center justify-center overflow-visible">

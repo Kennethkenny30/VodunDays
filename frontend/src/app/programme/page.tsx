@@ -12,6 +12,7 @@ import { PlannerCard }             from "@/components/programs/PlannerCard";
 import { FestivalPlannerProvider } from "@/providers/FestivalPlannerProvider";
 import { useWeather }              from "@/hooks/useWeather";
 import type { Program, ProgramType } from "@/lib/types";
+import { PwaInstallPrompt }        from "@/components/pwa-install-prompt";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -258,6 +259,7 @@ function ProgrammeContent() {
 
       </div>
 
+      <PwaInstallPrompt />
       <BottomNav />
     </motion.div>
   );

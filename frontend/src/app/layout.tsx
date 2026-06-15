@@ -10,6 +10,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { cookies } from 'next/headers';
 import { LOCALES, DEFAULT_LOCALE, type Locale } from '@/i18n/locale';
 import { IntlClientProvider } from '@/i18n/IntlClientProvider';
+import { SWRegister } from '@/components/sw-register';
 
 const SITE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3001'
 const OG_IMAGE = '/arene-ouidah.JPG'
@@ -96,6 +97,7 @@ export default async function RootLayout({
             {children}
           </ThemeProvider>
         </IntlClientProvider>
+        <SWRegister />
         <Analytics />
         <Script id="json-ld-event" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org",
