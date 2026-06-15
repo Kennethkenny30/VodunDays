@@ -4,7 +4,7 @@ import { getAll, getStats } from "./audit.controller.js";
 
 const router = Router();
 
-// Lecture seule — SUPER_ADMIN uniquement
+// Lecture seule - SUPER_ADMIN uniquement
 router.use(authenticate, authorize("SUPER_ADMIN"));
 
 router.get("/",       getAll);

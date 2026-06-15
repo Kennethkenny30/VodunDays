@@ -20,7 +20,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           className="relative min-h-screen overflow-hidden"
           style={{ background: "var(--vd-deep)" }}
         >
-          {/* Motif hexagonal — même style que la page connexion */}
+          {/* Motif hexagonal - même style que la page connexion */}
           <HexagonPattern
             hexagons={[
               [1, 1], [4, 4], [2, 2], [3, 4],

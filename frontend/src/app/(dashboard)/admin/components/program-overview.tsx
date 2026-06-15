@@ -142,7 +142,7 @@ export function ProgramOverview({ className }: ProgramOverviewProps) {
         </div>
         <div className="space-y-4">
           {loading ? (
-            <p className="text-4xl font-semibold text-muted-foreground/40">—</p>
+            <p className="text-4xl font-semibold text-muted-foreground/40">-</p>
           ) : (
             <>
               <p className="text-4xl font-semibold">

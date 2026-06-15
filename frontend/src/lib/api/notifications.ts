@@ -6,7 +6,7 @@ type NotificationsResult = {
   pagination: { total: number; page: number; limit: number; totalPages: number }
 }
 
-type NotifStats = { total: number; sent: number; pending: number; failed: number }
+export type NotifStats = { total: number; sent: number; pending: number; failed: number }
 
 type NotifQueryParams = {
   target?: string

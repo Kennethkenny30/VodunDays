@@ -2,8 +2,10 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export function ConfirmationScreen() {
+  const t = useTranslations("avis");
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.92 }}
@@ -37,7 +39,7 @@ export function ConfirmationScreen() {
           }}
         />
 
-        {/* SVG checkmark — self-drawing */}
+        {/* SVG checkmark - self-drawing */}
         <svg
           width="96"
           height="96"
@@ -98,7 +100,7 @@ export function ConfirmationScreen() {
         transition={{ delay: 0.8, duration: 0.4 }}
         className="text-[28px] font-black text-white mb-3"
       >
-        Merci !
+        {t("confirmation.title")}
       </motion.h2>
 
       {/* Subtext */}
@@ -108,7 +110,7 @@ export function ConfirmationScreen() {
         transition={{ delay: 0.95, duration: 0.4 }}
         className="text-[14px] text-[#878787] leading-relaxed max-w-xs mb-10"
       >
-        Votre avis contribue à améliorer les prochaines éditions des Vodun Days.
+        {t("confirmation.subtitle")}
       </motion.p>
 
       {/* Return link */}
@@ -121,7 +123,7 @@ export function ConfirmationScreen() {
           href="/"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#F56E0F] text-white text-[14px] font-bold hover:bg-[#D4600C] transition-colors duration-150 shadow-[0_4px_24px_rgba(245,110,15,0.4)]"
         >
-          Retour au programme
+          {t("confirmation.backToProgramme")}
         </Link>
       </motion.div>
     </motion.div>

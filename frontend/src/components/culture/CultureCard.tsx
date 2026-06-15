@@ -24,7 +24,7 @@ export function CultureCard({ site, index }: CultureCardProps) {
   return (
     <motion.div
       ref={ref}
-      // Animation au scroll — monte depuis le bas avec un léger flou
+      // Animation au scroll - monte depuis le bas avec un léger flou
       initial={{ opacity: 0, y: 28, filter: "blur(4px)" }}
       animate={isInView
         ? { opacity: 1, y: 0, filter: "blur(0px)" }

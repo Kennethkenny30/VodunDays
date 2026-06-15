@@ -47,10 +47,10 @@ import {
 } from "@/components/icons"
 import { toast } from "sonner"
 import { api } from "@/lib/api/client"
-import type { AuditLog, AuditAction } from "@/lib/types/api"
+import type { AuditLog, AuditActionType } from "@/lib/types/api"
 
 // Configuration des badges par type
-const typeConfig: Record<AuditAction, { label: string; className: string; icon: React.ComponentType<{ className?: string }> }> = {
+const typeConfig: Record<AuditActionType, { label: string; className: string; icon: React.ComponentType<{ className?: string }> }> = {
   CREATE: { label: "Création", className: "bg-blue-500/10 text-blue-500 border-blue-500/20", icon: IconPlus },
   UPDATE: { label: "Modification", className: "bg-amber-500/10 text-amber-500 border-amber-500/20", icon: IconEdit },
   DELETE: { label: "Suppression", className: "bg-red-500/10 text-red-500 border-red-500/20", icon: IconDelete },

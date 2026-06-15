@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Calendar, BookOpenText, Map, Star, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { getQuizzes } from "@/lib/api/quiz";
 
 interface NavItem {
   id: string;
@@ -12,45 +14,63 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: "programme",  icon: Calendar,     href: "/programme"           },
-  { id: "culture",    icon: BookOpenText, href: "/pedagogie"  },
-  { id: "carte",      icon: Map,          href: "/carte"      },
-  { id: "avis",       icon: Star,         href: "/avis"       },
-  { id: "parametres", icon: Settings,     href: "/parametres" },
+  { id: "programme",  icon: Calendar,     href: "/programme" },
+  { id: "culture",    icon: BookOpenText, href: "/pedagogie" },
+  { id: "carte",      icon: Map,          href: "/carte"     },
+  { id: "avis",       icon: Star,         href: "/avis"      },
+  { id: "parametres", icon: Settings,     href: "/parametres"},
 ];
 
 // Détermine l'onglet actif à partir du pathname courant
 function getActiveTab(pathname: string): string {
   if (pathname === "/programme")           return "programme";
-  if (pathname === "/pedagogie")  return "culture";
-  if (pathname === "/carte")      return "carte";
-  if (pathname === "/avis")       return "avis";
-  if (pathname === "/parametres") return "parametres";
+  if (pathname === "/pedagogie"
+   || pathname.startsWith("/culture"))     return "culture";
+  if (pathname === "/carte")               return "carte";
+  if (pathname === "/avis")                return "avis";
+  if (pathname === "/parametres")          return "parametres";
   return "programme";
+}
+
+// Clé localStorage partagée avec avis/page.tsx
+const submittedKey = (quizId: string) => `vd_submitted_${quizId}`;
+
+// Vérifie si un questionnaire actif n'a pas encore été soumis par cet utilisateur
+async function checkHasPendingQuiz(): Promise<boolean> {
+  try {
+    const res = await getQuizzes({ active: true });
+    if (!res.success || res.data.length === 0) return false;
+    return res.data.some((q) => !localStorage.getItem(submittedKey(q.id)));
+  } catch {
+    return false;
+  }
 }
 
 export function BottomNav() {
   const router   = useRouter();
   const pathname = usePathname();
   const active   = getActiveTab(pathname);
+  const [hasPendingQuiz, setHasPendingQuiz] = useState(false);
+
+  // Re-vérification à chaque navigation pour refléter une soumission récente
+  useEffect(() => {
+    checkHasPendingQuiz().then(setHasPendingQuiz);
+  }, [pathname]);
 
   return (
     <nav
       className={cn(
         "fixed bottom-6 left-1/2 -translate-x-1/2 z-50",
         "rounded-full",
-        // Bordure gradient oblique — même technique que le reste de l'UI
         "bg-[linear-gradient(135deg,rgba(255,255,255,0.15)_0%,rgba(0,0,0,0)_100%)]",
         "shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
         "p-px",
-        // Masqué sur desktop
         "lg:hidden"
       )}
     >
       <div
         className={cn(
           "rounded-full",
-          // Fond liquid glass — même rgba/blur que DayFilter et Dynamic Island
           "bg-[rgba(30,30,30,0.55)]",
           "backdrop-blur-[10px] backdrop-saturate-180",
           "shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]",
@@ -61,6 +81,7 @@ export function BottomNav() {
           {navItems.map((item) => {
             const Icon     = item.icon;
             const isActive = active === item.id;
+            const showBadge = item.id === "avis" && hasPendingQuiz && !isActive;
 
             return (
               <motion.button
@@ -73,11 +94,10 @@ export function BottomNav() {
                 className={cn(
                   "relative flex items-center justify-center w-12 h-12 rounded-full",
                   "transition-all duration-200 ease-out",
-                  // Fond subtil sur l'onglet actif
                   isActive && "bg-white/15"
                 )}
               >
-                {/* Point indicateur animé sous l'icône active */}
+                {/* Point indicateur sous l'icône active */}
                 {isActive && (
                   <motion.span
                     layoutId="nav-dot"
@@ -95,6 +115,24 @@ export function BottomNav() {
                   )}
                   strokeWidth={isActive ? 2 : 1.5}
                 />
+
+                {/* Badge questionnaire en attente */}
+                {showBadge && (
+                  <motion.span
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 420, damping: 18 }}
+                    className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#F56E0F]"
+                    style={{ boxShadow: "0 0 6px 2px rgba(245,110,15,0.55)" }}
+                  >
+                    {/* Anneau pulsant */}
+                    <motion.span
+                      animate={{ scale: [1, 1.8, 1], opacity: [0.7, 0, 0.7] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute inset-0 rounded-full bg-[#F56E0F]"
+                    />
+                  </motion.span>
+                )}
               </motion.button>
             );
           })}

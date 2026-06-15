@@ -27,7 +27,7 @@ import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
 import { toast } from "sonner"
 import {
-  type AlertRequest, type EmergencyService, type EmergencyType,
+  type AlertRequest, type EmergencyService, type EmergencyType, type AlertStatus,
   SERVICE_LABELS, TYPE_LABELS, STATUS_CONFIG, SERVICE_CONFIG,
 } from "./emergency-mock"
 
@@ -549,7 +549,7 @@ export function AlertDetailModal({ alert, advancing = false, onClose, onAdvance 
                   <p className="text-[12px] text-center text-muted-foreground/60">
                     Confirmer : <span className="text-foreground/80 font-medium">{next.label}</span> pour <span className="font-mono text-[#F56E0F]">{alert.ref}</span> ?
                   </p>
-                  {/* Champ note optionnel — transmis à la timeline BDD */}
+                  {/* Champ note optionnel - transmis à la timeline BDD */}
                   <textarea
                     value={noteValue}
                     onChange={(e) => setNoteValue(e.target.value)}

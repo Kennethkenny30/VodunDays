@@ -306,7 +306,7 @@ function DateTimePicker({
             className="absolute inset-0 overflow-y-auto"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
           >
-            {/* Top padding — half items above center */}
+            {/* Top padding - half items above center */}
             <div style={{ height: half * ITEM_H }} />
             {items.map((item) => (
               <div
@@ -385,7 +385,7 @@ function DateTimePicker({
       >
         {/* Layout : calendrier à gauche, roues à droite */}
         <div className="flex items-stretch">
-          {/* Calendrier — restreint aux 3 dates du festival */}
+          {/* Calendrier - restreint aux 3 dates du festival */}
           <Calendar
             mode="single"
             selected={parsed && !isNaN(parsed.getTime()) ? parsed : undefined}
@@ -394,15 +394,15 @@ function DateTimePicker({
             className="p-3 flex-shrink-0"
             month={festivalMonth}
             onMonthChange={() => {}}
-            fromMonth={festivalMonth}
-            toMonth={festivalMonth}
+            startMonth={festivalMonth}
+            endMonth={festivalMonth}
             disabled={isDisabledDate}
             classNames={{
-              day_selected:
+              selected:
                 "bg-[var(--vd-gold)] text-[var(--vd-deep)] hover:bg-[var(--vd-gold)]/90 focus:bg-[var(--vd-gold)]",
-              day_today:
+              today:
                 "border border-[var(--vd-gold)]/40 text-[var(--vd-gold)]",
-              day_disabled:
+              disabled:
                 "text-muted-foreground/20 cursor-not-allowed opacity-30",
             }}
           />
@@ -617,6 +617,9 @@ export function EventCreateModal({
   const dragStartRef = useRef<{ mx: number; my: number; ox: number; oy: number } | null>(null)
 
   const [publicDesc,    setPublicDesc]    = useState("")
+  const [publicDescEn, setPublicDescEn]  = useState("")
+  const [nameTab,      setNameTab]       = useState<"fr" | "en">("fr")
+  const [descTab,      setDescTab]       = useState<"fr" | "en">("fr")
   const [slots,         setSlots]         = useState<Program[]>([])
   const [loadingSlots,  setLoadingSlots]  = useState(false)
   const [slotDraft,     setSlotDraft]     = useState<SlotDraft>({ startTime: "", endTime: "" })
@@ -649,7 +652,7 @@ export function EventCreateModal({
       setShowNewType(false)
       toast.success(`Type "${created.name}" créé`, { description: "Sélectionné automatiquement." })
     } catch {
-      setNewTypeError("Erreur réseau — réessayez")
+      setNewTypeError("Erreur réseau - réessayez")
     } finally {
       setNewTypeLoading(false)
     }
@@ -681,11 +684,13 @@ export function EventCreateModal({
         status:      editingEvent.status,
         siteId:      editingEvent.siteId,
         eventTypeId: editingEvent.eventTypeId,
+        nameEn:      editingEvent.nameEn || undefined,
       })
       setPublicDesc(editingEvent.description || "")
+      setPublicDescEn(editingEvent.descriptionEn || "")
       if (editingEvent.imageUrl) setImagePreview(editingEvent.imageUrl)
       if (isOffline) {
-        // Brouillon offline — créneaux déjà dans programs, pas d'appel API
+        // Brouillon offline - créneaux déjà dans programs, pas d'appel API
         setSlots(editingEvent.programs ?? [])
         setLoadingSlots(false)
       } else {
@@ -726,11 +731,12 @@ export function EventCreateModal({
     setCreatingEvent(true)
     try {
       const payload: EventCreatePayload = {
-        name:        formData.name!,
-        description: formData.description || undefined,
-        status:      "DRAFT",
-        siteId:      formData.siteId!,
-        eventTypeId: formData.eventTypeId!,
+        name:          formData.name!,
+        description:   formData.description || undefined,
+        status:        "DRAFT",
+        siteId:        formData.siteId!,
+        eventTypeId:   formData.eventTypeId!,
+        ...(formData.nameEn?.trim() ? { nameEn: formData.nameEn.trim() } : {}),
       }
       const res = await createEvent(payload)
       if (res.success && res.data?.id) {
@@ -738,7 +744,7 @@ export function EventCreateModal({
         setBackendSynced(true)
         toast.success("Événement créé en brouillon", { description: "Ajoutez créneaux et médias." })
       } else {
-        // Backend inaccessible — on persiste immédiatement en localStorage
+        // Backend inaccessible - on persiste immédiatement en localStorage
         const localId = genLocalId()
         const draft: OfflineDraft = {
           id:             localId,
@@ -754,10 +760,10 @@ export function EventCreateModal({
         saveOfflineDraft(draft)
         setActiveEventId(localId)
         setBackendSynced(false)
-        toast.warning("Mode hors ligne", { description: "Brouillon sauvegardé localement — synchronisé dès reconnexion." })
+        toast.warning("Mode hors ligne", { description: "Brouillon sauvegardé localement - synchronisé dès reconnexion." })
       }
     } catch {
-      // Erreur réseau — même traitement
+      // Erreur réseau - même traitement
       const localId = genLocalId()
       const draft: OfflineDraft = {
         id:             localId,
@@ -773,7 +779,7 @@ export function EventCreateModal({
       saveOfflineDraft(draft)
       setActiveEventId(localId)
       setBackendSynced(false)
-      toast.warning("Mode hors ligne", { description: "Brouillon sauvegardé localement — synchronisé dès reconnexion." })
+      toast.warning("Mode hors ligne", { description: "Brouillon sauvegardé localement - synchronisé dès reconnexion." })
     } finally {
       setCreatingEvent(false)
       setStep(2)
@@ -784,9 +790,9 @@ export function EventCreateModal({
     const file = e.target.files?.[0]
     if (!file) return
     setImageError(null)
-    if (!file.type.startsWith("image/")) { setImageError("Format non supporté — JPEG, PNG ou WebP"); return }
+    if (!file.type.startsWith("image/")) { setImageError("Format non supporté - JPEG, PNG ou WebP"); return }
     if (file.size > MAX_FILE_SIZE)        { setImageError("Fichier trop volumineux (max 5 Mo)");       return }
-    // Load raw image for cropper — no auto-crop
+    // Load raw image for cropper - no auto-crop
     const url = URL.createObjectURL(file)
     rawImageUrlRef.current = url
     setRawImageUrl(url)
@@ -832,7 +838,7 @@ export function EventCreateModal({
       img.onerror = () => reject(new Error("Image load failed"))
       img.src = url
     })
-  }, []) // stable — reads only from refs
+  }, []) // stable - reads only from refs
 
   // Called by the Confirm button inside ImageCropper.
   // cw/ch are measured at click time directly from the button's nearest container.
@@ -876,7 +882,7 @@ export function EventCreateModal({
   /** Inline image cropper UI */
   function ImageCropper() {
     if (!rawImageUrl) return null
-    // Local ref to the viewport div — used only for display and to measure dimensions at confirm time
+    // Local ref to the viewport div - used only for display and to measure dimensions at confirm time
     const viewportRef = useRef<HTMLDivElement>(null)
 
     return (
@@ -887,7 +893,7 @@ export function EventCreateModal({
           </span>
           <span className="text-[10px] font-mono text-[var(--vd-gold)]/60">16:10</span>
         </div>
-        {/* Crop viewport — fixed 16:10 */}
+        {/* Crop viewport - fixed 16:10 */}
         <div
           ref={viewportRef}
           className="relative rounded-xl overflow-hidden cursor-grab active:cursor-grabbing border border-[var(--vd-gold)]/30 select-none"
@@ -946,7 +952,7 @@ export function EventCreateModal({
             type="button" size="sm"
             disabled={imageLoading}
             onClick={() => {
-              // Measure viewport dimensions right now, at click time — guaranteed to be non-null
+              // Measure viewport dimensions right now, at click time - guaranteed to be non-null
               const el = viewportRef.current
               if (!el) { setImageError("Erreur: zone de recadrage introuvable"); return }
               handleCropConfirm(el.clientWidth, el.clientHeight)
@@ -1048,12 +1054,14 @@ export function EventCreateModal({
       if (!backendSynced) {
         // Tentative de sync vers le backend
         const payload: EventCreatePayload = {
-          name:        formData.name!,
-          description: publicDesc.trim() || formData.description || undefined,
-          status:      publish ? "PUBLISHED" : "DRAFT",
-          siteId:      formData.siteId!,
-          eventTypeId: formData.eventTypeId!,
+          name:          formData.name!,
+          description:   publicDesc.trim() || formData.description || undefined,
+          status:        publish ? "PUBLISHED" : "DRAFT",
+          siteId:        formData.siteId!,
+          eventTypeId:   formData.eventTypeId!,
           ...(imageDataUrl ? { imageUrl: imageDataUrl } : {}),
+          ...(formData.nameEn?.trim()   ? { nameEn: formData.nameEn.trim() }           : {}),
+          ...(publicDescEn.trim()       ? { descriptionEn: publicDescEn.trim() }       : {}),
         }
         const res = await createEvent(payload)
         if (res.success && res.data?.id) {
@@ -1062,13 +1070,13 @@ export function EventCreateModal({
           await Promise.allSettled(
             slots.map((s) => createProgram({ eventId: realId, startTime: s.startTime, endTime: s.endTime } as ProgramCreatePayload))
           )
-          // Brouillon local synchronisé — on le retire du localStorage
+          // Brouillon local synchronisé - on le retire du localStorage
           if (activeEventId) removeOfflineDraft(activeEventId)
-          toast.success(publish ? "Événement publié ✓" : "Événement enregistré",
+          toast.success(publish ? "Événement publié" : "Événement enregistré",
             { description: publish ? "Visible par les festivaliers." : undefined })
           onDone(); onClose()
         } else {
-          // Toujours offline — on met à jour le draft avec les dernières données (image, description…)
+          // Toujours offline - on met à jour le draft avec les dernières données (image, description…)
           if (activeEventId) {
             const drafts = getOfflineDrafts()
             const draft = drafts.find((d) => d.id === activeEventId)
@@ -1085,7 +1093,7 @@ export function EventCreateModal({
       }
       // ── Cas backend synchronisé ──────────────────────────────────────────────
       if (!activeEventId) return
-      // Édition d'un brouillon offline — mise à jour localStorage uniquement
+      // Édition d'un brouillon offline - mise à jour localStorage uniquement
       if (activeEventId.startsWith("local-")) {
         updateOfflineDraft(activeEventId, {
           name:        formData.name!,
@@ -1100,18 +1108,20 @@ export function EventCreateModal({
         return
       }
       const patches: Partial<EventCreatePayload> & Record<string, unknown> = {}
-      if (publish)           patches.status      = "PUBLISHED"
-      if (publicDesc.trim()) patches.description = publicDesc.trim()
-      if (imageDataUrl)      patches.imageUrl    = imageDataUrl
+      if (publish)              patches.status        = "PUBLISHED"
+      if (publicDesc.trim())    patches.description   = publicDesc.trim()
+      if (imageDataUrl)         patches.imageUrl      = imageDataUrl
+      if (formData.nameEn?.trim()) patches.nameEn     = formData.nameEn.trim()
+      if (publicDescEn.trim())  patches.descriptionEn = publicDescEn.trim()
       if (Object.keys(patches).length > 0) {
         const res = await updateEvent(activeEventId, patches as Partial<EventCreatePayload>)
         if (!res.success) { toast.error(res.message); return }
       }
-      toast.success(publish ? "Événement publié ✓" : "Enregistré en brouillon",
+      toast.success(publish ? "Événement publié" : "Enregistré en brouillon",
         { description: publish ? "Visible par les festivaliers." : undefined })
       onDone(); onClose()
     } catch {
-      // Erreur inattendue — on sauvegarde quand même les dernières données localement
+      // Erreur inattendue - on sauvegarde quand même les dernières données localement
       if (!backendSynced && activeEventId) {
         const drafts = getOfflineDrafts()
         const draft = drafts.find((d) => d.id === activeEventId)
@@ -1136,11 +1146,11 @@ export function EventCreateModal({
       <DialogContent className={cn(
         // Reset padding/gap par défaut du Dialog
         "p-0 gap-0",
-        // Masque le bouton close natif injecté par shadcn/Radix — on utilise notre X custom
+        // Masque le bouton close natif injecté par shadcn/Radix - on utilise notre X custom
         "[&>button:first-of-type]:hidden",
         // Fond et bordure
         "border border-white/[0.08] bg-[oklch(0.12_0.018_260/0.97)]",
-        // Layout interne en colonne — hauteur contrainte pour que le scroll fonctionne
+        // Layout interne en colonne - hauteur contrainte pour que le scroll fonctionne
         "flex flex-col",
         // overflow hidden sur le conteneur global pour éviter le double scroll
         "overflow-hidden",
@@ -1156,7 +1166,7 @@ export function EventCreateModal({
         "sm:inset-auto sm:left-1/2 sm:top-1/2",
         "sm:-translate-x-1/2 sm:-translate-y-1/2",
         "sm:rounded-2xl",
-        // Hauteur fixe desktop — ScrollArea prend le reste
+        // Hauteur fixe desktop - ScrollArea prend le reste
         "sm:h-[88dvh] sm:max-h-[88dvh]",
         "sm:w-[min(580px,calc(100vw-2rem))]",
         "sm:max-w-none",
@@ -1188,7 +1198,7 @@ export function EventCreateModal({
                 {isEdit
                   ? "Modifiez les créneaux et les médias de l'événement."
                   : step === 1
-                    ? "Renseignez les informations — l'événement sera créé en brouillon."
+                    ? "Renseignez les informations - l'événement sera créé en brouillon."
                     : "Complétez avec créneaux horaires et médias."}
               </DialogDescription>
             </DialogHeader>
@@ -1230,26 +1240,55 @@ export function EventCreateModal({
             {step === 1 && !isEdit && (
               <div className="space-y-5">
 
-                {/* Nom */}
+                {/* Nom avec onglets FR/EN */}
                 <FormField
                   label="Nom de l'événement"
                   required
                   tooltip="Titre affiché dans le programme et sur la carte festivalière"
                   error={errors.name}
                 >
-                  <Input
-                    value={formData.name || ""}
-                    onChange={(e) => set("name", e.target.value)}
-                    placeholder="ex : Cérémonie d'ouverture – Temple des Pythons"
-                    className={cn(
-                      "h-10 text-[13px] bg-white/[0.04] border-white/[0.1] rounded-xl",
-                      "placeholder:text-muted-foreground/30",
-                      "focus:border-[var(--vd-gold)]/40 focus:bg-white/[0.06]",
-                      "transition-all duration-200",
-                      errors.name && "border-destructive/60 focus:border-destructive/60"
-                    )}
-                    autoFocus
-                  />
+                  <div className="flex rounded-lg overflow-hidden border border-white/[0.08] mb-2 w-fit">
+                    {(["fr", "en"] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setNameTab(tab)}
+                        className={cn(
+                          "px-3 py-1 text-[10px] font-bold uppercase transition-colors",
+                          nameTab === tab
+                            ? "bg-[var(--vd-gold)]/20 text-[var(--vd-gold)]"
+                            : "text-muted-foreground/50 hover:text-foreground"
+                        )}
+                      >{tab}</button>
+                    ))}
+                  </div>
+                  {nameTab === "fr" ? (
+                    <Input
+                      value={formData.name || ""}
+                      onChange={(e) => set("name", e.target.value)}
+                      placeholder="ex : Cérémonie d'ouverture"
+                      className={cn(
+                        "h-10 text-[13px] bg-white/[0.04] border-white/[0.1] rounded-xl",
+                        "placeholder:text-muted-foreground/30",
+                        "focus:border-[var(--vd-gold)]/40 focus:bg-white/[0.06]",
+                        "transition-all duration-200",
+                        errors.name && "border-destructive/60 focus:border-destructive/60"
+                      )}
+                      autoFocus
+                    />
+                  ) : (
+                    <Input
+                      value={formData.nameEn || ""}
+                      onChange={(e) => set("nameEn", e.target.value)}
+                      placeholder="ex : Opening Ceremony (optional)"
+                      className={cn(
+                        "h-10 text-[13px] bg-white/[0.04] border-white/[0.1] rounded-xl",
+                        "placeholder:text-muted-foreground/30",
+                        "focus:border-[var(--vd-gold)]/40 focus:bg-white/[0.06]",
+                        "transition-all duration-200"
+                      )}
+                    />
+                  )}
                 </FormField>
 
                 {/* Type d'événement */}
@@ -1295,7 +1334,7 @@ export function EventCreateModal({
                       </button>
                     </div>
 
-                    {/* Panel inline de création — animé */}
+                    {/* Panel inline de création - animé */}
                     {showNewType && (
                       <div className="rounded-xl border border-[var(--vd-gold)]/20 bg-[var(--vd-gold)]/[0.04] p-3.5 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
                         {/* En-tête */}
@@ -1395,7 +1434,7 @@ export function EventCreateModal({
                 {/* Description interne */}
                 <FormField
                   label="Notes internes"
-                  tooltip="Mémo pour l'équipe admin — non visible par les festivaliers"
+                  tooltip="Mémo pour l'équipe admin - non visible par les festivaliers"
                   hint="Ex : contraintes logistiques, contacts, matériel requis…"
                 >
                   <Textarea
@@ -1427,8 +1466,8 @@ export function EventCreateModal({
                       : "bg-amber-500/6 border-amber-500/20 text-amber-400"
                   )}>
                     {backendSynced
-                      ? <><Wifi className="size-3.5 shrink-0" /><span>Synchronisé — <span className="font-mono text-[11px] opacity-70">{activeEventId?.slice(0, 8)}…</span></span></>
-                      : <><WifiOff className="size-3.5 shrink-0" /><span>Mode hors ligne — données envoyées à la publication</span></>
+                      ? <><Wifi className="size-3.5 shrink-0" /><span>Synchronisé - <span className="font-mono text-[11px] opacity-70">{activeEventId?.slice(0, 8)}…</span></span></>
+                      : <><WifiOff className="size-3.5 shrink-0" /><span>Mode hors ligne - données envoyées à la publication</span></>
                     }
                   </div>
                 )}
@@ -1487,7 +1526,7 @@ export function EventCreateModal({
                         )}
                       </div>
                       {/* Badge format */}
-                      <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/60 text-[10px] font-mono text-[var(--vd-gold)] backdrop-blur-sm">16:10 ✓</div>
+                      <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/60 text-[10px] font-mono text-[var(--vd-gold)] backdrop-blur-sm">16:10</div>
                       {/* Supprimer */}
                       <button type="button"
                         onClick={(e) => { e.stopPropagation(); setImagePreview(null); setImageDataUrl(null); setRawImageUrl(null) }}
@@ -1513,7 +1552,7 @@ export function EventCreateModal({
                           <p className="text-[12px] text-muted-foreground/60 group-hover:text-foreground/70 transition-colors font-medium">
                             Cliquez pour téléverser
                           </p>
-                          <p className="text-[10px] text-muted-foreground/35">JPEG · PNG · WebP — max 5 Mo</p>
+                          <p className="text-[10px] text-muted-foreground/35">JPEG · PNG · WebP - max 5 Mo</p>
                         </div>
                       </div>
                     </div>
@@ -1527,24 +1566,54 @@ export function EventCreateModal({
                   )}
                 </div>
 
-                {/* ── Description publique ──────────────────────────── */}
+                {/* ── Description publique avec onglets FR/EN ──────── */}
                 <FormField
                   label="Description festivaliers"
-                  tooltip="Texte affiché sur la fiche de l'événement dans l'app mobile — visible par tous les festivaliers"
-                  hint={`${publicDesc.length} / 500 caractères recommandés`}
+                  tooltip="Texte affiché sur la fiche de l'événement dans l'app mobile - visible par tous les festivaliers"
+                  hint={descTab === "fr" ? `${publicDesc.length} / 500 caractères recommandés` : "Version anglaise optionnelle"}
                 >
-                  <Textarea
-                    value={publicDesc}
-                    onChange={(e) => setPublicDesc(e.target.value)}
-                    placeholder="Ambiance, accès, tenue recommandée…"
-                    rows={3}
-                    className={cn(
-                      "text-[13px] bg-white/[0.04] border-white/[0.1] rounded-xl resize-none",
-                      "placeholder:text-muted-foreground/30",
-                      "focus:border-[var(--vd-gold)]/40 focus:bg-white/[0.06]",
-                      "transition-all duration-200"
-                    )}
-                  />
+                  <div className="flex rounded-lg overflow-hidden border border-white/[0.08] mb-2 w-fit">
+                    {(["fr", "en"] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setDescTab(tab)}
+                        className={cn(
+                          "px-3 py-1 text-[10px] font-bold uppercase transition-colors",
+                          descTab === tab
+                            ? "bg-[var(--vd-gold)]/20 text-[var(--vd-gold)]"
+                            : "text-muted-foreground/50 hover:text-foreground"
+                        )}
+                      >{tab}</button>
+                    ))}
+                  </div>
+                  {descTab === "fr" ? (
+                    <Textarea
+                      value={publicDesc}
+                      onChange={(e) => setPublicDesc(e.target.value)}
+                      placeholder="Ambiance, accès, tenue recommandée…"
+                      rows={3}
+                      className={cn(
+                        "text-[13px] bg-white/[0.04] border-white/[0.1] rounded-xl resize-none",
+                        "placeholder:text-muted-foreground/30",
+                        "focus:border-[var(--vd-gold)]/40 focus:bg-white/[0.06]",
+                        "transition-all duration-200"
+                      )}
+                    />
+                  ) : (
+                    <Textarea
+                      value={publicDescEn}
+                      onChange={(e) => setPublicDescEn(e.target.value)}
+                      placeholder="Atmosphere, access, recommended attire… (optional)"
+                      rows={3}
+                      className={cn(
+                        "text-[13px] bg-white/[0.04] border-white/[0.1] rounded-xl resize-none",
+                        "placeholder:text-muted-foreground/30",
+                        "focus:border-[var(--vd-gold)]/40 focus:bg-white/[0.06]",
+                        "transition-all duration-200"
+                      )}
+                    />
+                  )}
                 </FormField>
 
                 {/* ── Créneaux horaires ─────────────────────────────── */}
@@ -1653,7 +1722,7 @@ export function EventCreateModal({
                   ) : (
                     <div className="flex flex-col items-center gap-1.5 py-4 text-center">
                       <CalendarClock className="size-5 text-muted-foreground/20" />
-                      <p className="text-[11px] text-muted-foreground/35">Aucun créneau — vous pourrez en ajouter plus tard.</p>
+                      <p className="text-[11px] text-muted-foreground/35">Aucun créneau - vous pourrez en ajouter plus tard.</p>
                     </div>
                   )}
                 </div>
@@ -1667,7 +1736,7 @@ export function EventCreateModal({
                       { label: "Type",     value: eventTypes.find(t => t.id === formData.eventTypeId)?.name },
                       { label: "Site",     value: sites.find(s => s.id === formData.siteId)?.name },
                       { label: "Créneaux", value: slots.length > 0 ? `${slots.length} créneau${slots.length > 1 ? "x" : ""}` : undefined },
-                      { label: "Image",    value: imageDataUrl ? "Téléversée ✓" : undefined },
+                      { label: "Image",    value: imageDataUrl ? "Téléversée" : undefined },
                     ].map((row) => (
                       <div key={row.label} className="flex items-center gap-3">
                         <span className="text-[11px] text-muted-foreground/50 w-16 shrink-0">{row.label}</span>
@@ -1680,7 +1749,7 @@ export function EventCreateModal({
                             "text-[12px] font-medium shrink-0 max-w-[140px] truncate",
                             row.value ? "text-foreground/80" : "text-muted-foreground/25 italic"
                           )}>
-                            {row.value || "—"}
+                            {row.value || "-"}
                           </span>
                         </div>
                         {row.value
@@ -1697,7 +1766,7 @@ export function EventCreateModal({
         </ScrollArea>
 
         {/* ═══════════════════════════════════════════════════════════════
-            FOOTER FIXE — collé en bas, jamais scrollé
+            FOOTER FIXE - collé en bas, jamais scrollé
         ═══════════════════════════════════════════════════════════════ */}
         <div className="flex-none shrink-0 bg-[oklch(0.12_0.018_260/0.97)]">
           {/* Séparateur avec dégradé subtil */}

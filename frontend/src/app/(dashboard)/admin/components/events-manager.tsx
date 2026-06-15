@@ -142,7 +142,7 @@ export function EventsManager({ className }: EventsManagerProps) {
       const syncedIds: string[] = []
 
       if (backendEvents.length >= 0 && offlineDrafts.length > 0) {
-        // Backend accessible — on tente de synchroniser chaque draft
+        // Backend accessible - on tente de synchroniser chaque draft
         await Promise.allSettled(
           offlineDrafts.map(async (draft) => {
             try {
@@ -215,7 +215,7 @@ export function EventsManager({ className }: EventsManagerProps) {
   }
 
   const handleDelete = async (id: string) => {
-    // Brouillon offline — suppression directe dans localStorage
+    // Brouillon offline - suppression directe dans localStorage
     if (id.startsWith("local-")) {
       removeOfflineDraft(id)
       setEvents((prev) => prev.filter((e) => e.id !== id))
@@ -275,7 +275,7 @@ export function EventsManager({ className }: EventsManagerProps) {
             </SelectContent>
           </Select>
 
-          {/* ✅ Plus de disabled={loading} — le bouton reste toujours cliquable */}
+          {/* Le bouton reste toujours cliquable */}
           <Button
             onClick={() => handleOpen()}
             size="sm"
@@ -326,10 +326,10 @@ export function EventsManager({ className }: EventsManagerProps) {
                     <TableRow key={event.id} className="group">
                       <TableCell className="font-medium">{event.name}</TableCell>
                       <TableCell className="hidden sm:table-cell">
-                        <Badge variant="outline">{event.eventType?.name || "—"}</Badge>
+                        <Badge variant="outline">{event.eventType?.name || "-"}</Badge>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
-                        <Badge variant="secondary">{event.site?.name || "—"}</Badge>
+                        <Badge variant="secondary">{event.site?.name || "-"}</Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1.5">
@@ -535,7 +535,7 @@ function EventPreviewSheet({ event, onClose, onEdit, onPublish, onDelete }: Even
                   <div key={label} className="flex items-center gap-3 text-[13px]">
                     <dt className="w-20 shrink-0 text-muted-foreground/50">{label}</dt>
                     <dd className={cn("font-medium", value ? "text-foreground/80" : "text-muted-foreground/25 italic")}>
-                      {value ?? "—"}
+                      {value ?? "-"}
                     </dd>
                   </div>
                 ))}

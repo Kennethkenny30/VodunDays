@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { CalendarCheck, ChevronRight, Clock, AlertTriangle, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlanner } from "@/providers/FestivalPlannerProvider";
@@ -38,6 +39,7 @@ function DayDots({ agendaByDay }: { agendaByDay: Record<number, AgendaItem[]> })
 
 export function PlannerCard() {
   const router = useRouter();
+  const t = useTranslations("common");
   const { agenda, agendaByDay, totalCount, conflicts, hydrated } = usePlanner();
 
   const visible      = hydrated && totalCount > 0;
@@ -50,7 +52,7 @@ export function PlannerCard() {
         <motion.div
           key="planner-card"
           /*
-           * sticky top-0 z-20 — colle en haut au scroll, sous WeatherWidget (z-50).
+           * sticky top-0 z-20 - colle en haut au scroll, sous WeatherWidget (z-50).
            * Le wrapper lui-même est transparent, sans blur ni fond.
            * Tout le blur est localisé sur le bouton interne.
            */
@@ -64,7 +66,7 @@ export function PlannerCard() {
           {/*
            * Le bouton est le seul élément avec backdrop-filter.
            * Le blur est donc strictement contenu dans les bords arrondis
-           * du bouton — rien ne déborde sur DayFilter ou les ProgramCards.
+           * du bouton - rien ne déborde sur DayFilter ou les ProgramCards.
            */}
           <motion.button
             whileTap={{ scale: 0.975 }}
@@ -116,7 +118,7 @@ export function PlannerCard() {
             {/* Texte */}
             <div className="flex-1 min-w-0 text-left">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[13px] font-bold text-white/90 leading-none">Mon Festival</span>
+                <span className="text-[13px] font-bold text-white/90 leading-none">{t("planner.title")}</span>
                 {hasConflicts && (
                   <motion.div
                     initial={{ scale: 0 }}
@@ -124,7 +126,7 @@ export function PlannerCard() {
                     className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/25"
                   >
                     <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />
-                    <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wide">Conflit</span>
+                    <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wide">{t("planner.conflict")}</span>
                   </motion.div>
                 )}
               </div>
@@ -141,7 +143,7 @@ export function PlannerCard() {
               ) : (
                 <div className="flex items-center gap-1 text-[11px] text-white/30">
                   <Sparkles className="w-3 h-3" strokeWidth={1.5} />
-                  <span>Planifiez votre expérience</span>
+                  <span>{t("planner.empty")}</span>
                 </div>
               )}
             </div>

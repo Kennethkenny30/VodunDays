@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface DayFilterProps {
   activeDay: number;
@@ -9,6 +10,7 @@ interface DayFilterProps {
 }
 
 export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterProps) {
+  const t = useTranslations("programme");
   const days = Array.from({ length: totalDays }, (_, i) => i + 1);
 
   return (
@@ -18,7 +20,7 @@ export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterPr
       aria-label="Sélection du jour"
     >
       {/*
-        Container transparent — aucun fond, aucun border.
+        Container transparent - aucun fond, aucun border.
         C'est le principe morphic navbar : seuls les boutons ont un style,
         pas le wrapper qui les contient.
       */}
@@ -50,7 +52,7 @@ export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterPr
                 // ── Base : fond glass identique sur tous les boutons ──
                 "relative flex items-center justify-center p-2 px-5 text-sm",
                 "transition-all duration-300 select-none active:scale-[0.96]",
-                // Liquid glass individuel — même rgba/blur que BottomNav
+                // Liquid glass individuel - même rgba/blur que BottomNav
                 "bg-[rgba(30,30,30,0.55)] [backdrop-filter:blur(10px)_saturate(180%)]",
 
                 // ── Actif : se détache du flux avec mx + rounded + orange ──
@@ -86,7 +88,7 @@ export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterPr
                 </>
               )}
 
-              <span className="relative z-10">Jour {day}</span>
+              <span className="relative z-10">{t("dayLabel", { day })}</span>
             </button>
           );
         })}

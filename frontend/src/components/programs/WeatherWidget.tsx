@@ -11,10 +11,13 @@ import {
   HeartPulse, Car, Swords, Baby, Siren,
   PersonStanding, HelpCircle, Lock, EyeOff,
   Radio, Loader2, UserCheck, CircleCheck, ExternalLink,
+  Trash2, ChevronDown, ChevronUp,
 } from "lucide-react";
+import { useNotifPrefs } from "@/hooks/useNotifPrefs";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { WeatherData } from "@/lib/types";
+import { useTranslations } from "next-intl";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -56,7 +59,7 @@ interface EmergencyForm {
 
 interface Notification {
   id:    number;
-  _uid?: string; // uuid BDD — présent sur les notifs chargées depuis l'API
+  _uid?: string; // uuid BDD - présent sur les notifs chargées depuis l'API
   title: string;
   body:  string;
   time:  string;
@@ -219,6 +222,11 @@ const GLASS = {
   border: "border border-white/[0.09]",
 };
 
+// Springs iOS-like : stiffness 300-420, damping 30-36, mass 0.7-0.9 - settle naturel, zéro overshoot
+const S_UI   = { type: "spring", stiffness: 360, damping: 32, mass: 0.8 } as const;
+const S_FAST = { type: "spring", stiffness: 420, damping: 36, mass: 0.7 } as const;
+const S_SOFT = { type: "spring", stiffness: 300, damping: 30, mass: 0.9 } as const;
+
 // ─── WeatherIcon ──────────────────────────────────────────────────────────────
 
 function WeatherIcon({ icon, className }: { icon: string; className?: string }) {
@@ -241,7 +249,9 @@ const notifConfig = {
 // ─── WeatherView ──────────────────────────────────────────────────────────────
 
 function WeatherView({ weather }: { weather: WeatherData }) {
+  const t = useTranslations("weather");
   const hourlyData = weather.hourly?.length ? weather.hourly : HOURLY_FALLBACK;
+  const reduce = useReducedMotion();
   return (
     <div className="px-4 pt-2 pb-5">
       <div className="flex items-start justify-between mb-5">
@@ -260,7 +270,23 @@ function WeatherView({ weather }: { weather: WeatherData }) {
         </div>
         <div className="flex flex-col items-end gap-1 pt-1">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400/20 to-orange-600/10 border border-amber-400/20 flex items-center justify-center">
-            <WeatherIcon icon={weather.icon} className="w-6 h-6 text-amber-400" />
+            {/* Rotation lente (soleil) ou dérive douce (pluie/nuage) - délighters Jhey, panel étendu seulement */}
+            <motion.div
+              animate={
+                reduce ? {}
+                : weather.icon === "sun"   ? { rotate: [0, 360] }
+                : weather.icon === "rain"  ? { y: [0, 3, 0] }
+                : weather.icon === "cloud" ? { x: [0, 3, 0] }
+                : {}
+              }
+              transition={
+                weather.icon === "sun"
+                  ? { duration: 22, repeat: Infinity, ease: "linear" }
+                  : { duration: 4, repeat: Infinity, ease: "easeInOut" }
+              }
+            >
+              <WeatherIcon icon={weather.icon} className="w-6 h-6 text-amber-400" />
+            </motion.div>
           </div>
           <span className="text-[12px] text-white/50 font-mono">↑{weather.high}° ↓{weather.low}°</span>
         </div>
@@ -268,22 +294,28 @@ function WeatherView({ weather }: { weather: WeatherData }) {
       <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
       <div className="grid grid-cols-4 gap-2 mb-5">
         {[
-          { Icon: Wind,     val: `${weather.wind}`,     unit: "km/h", label: "Vent"     },
-          { Icon: Droplets, val: `${weather.humidity}`, unit: "%",    label: "Humidité" },
-          { Icon: Eye,      val: `${weather.uv}`,       unit: "UV",   label: "Index UV" },
-          { Icon: Gauge,    val: "1012",                 unit: "hPa",  label: "Pression" },
-        ].map(({ Icon, val, unit, label }) => (
-          <div key={label} className="flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+          { Icon: Wind,     val: `${weather.wind}`,     unit: "km/h", label: t("metrics.wind")     },
+          { Icon: Droplets, val: `${weather.humidity}`, unit: "%",    label: t("metrics.humidity") },
+          { Icon: Eye,      val: `${weather.uv}`,       unit: "UV",   label: t("metrics.uv")       },
+          { Icon: Gauge,    val: "1012",                 unit: "hPa",  label: t("metrics.pressure") },
+        ].map(({ Icon, val, unit, label }, i) => (
+          <motion.div
+            key={label}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={reduce ? { duration: 0 } : { ...S_SOFT, delay: i * 0.07 }}
+            className="flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl bg-white/[0.04] border border-white/[0.06]"
+          >
             <Icon className="w-3.5 h-3.5 text-white/30" strokeWidth={1.5} />
             <div className="text-center leading-none">
               <span className="text-[13px] font-semibold text-white/80 tabular-nums">{val}</span>
               <span className="text-[9px] text-white/30 ml-0.5">{unit}</span>
             </div>
             <span className="text-[9px] text-white/25 text-center leading-tight">{label}</span>
-          </div>
+          </motion.div>
         ))}
       </div>
-      <p className="text-[10px] uppercase tracking-[0.2em] text-white/20 mb-2.5 font-medium">Prévisions du jour</p>
+      <p className="text-[10px] uppercase tracking-[0.2em] text-white/20 mb-2.5 font-medium">{t("forecast")}</p>
       <div className="flex items-end gap-2">
         {hourlyData.map((h, i) => {
           const maxT = Math.max(...hourlyData.map(x => x.t));
@@ -293,12 +325,13 @@ function WeatherView({ weather }: { weather: WeatherData }) {
             <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
               <span className="text-[10px] text-white/40 font-mono">{h.t}°</span>
               <div className="w-full h-10 rounded-full bg-white/[0.05] relative overflow-hidden">
+                {/* scaleY depuis le bas : GPU, pas de reflow contrairement à height */}
                 <motion.div
-                  initial={{ height: 0 }}
-                  animate={{ height: `${pct}%` }}
-                  transition={{ delay: i * 0.06, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="absolute bottom-0 left-0 right-0 rounded-full"
-                  style={{ background: `linear-gradient(to top, rgba(245,110,15,${0.3 + pct * 0.004}), rgba(245,110,15,0.05))` }}
+                  initial={{ scaleY: 0, opacity: 0 }}
+                  animate={{ scaleY: pct / 100, opacity: 1 }}
+                  transition={reduce ? { duration: 0 } : { ...S_SOFT, delay: i * 0.07 }}
+                  className="absolute bottom-0 left-0 right-0 h-full rounded-full"
+                  style={{ transformOrigin: "bottom", background: `linear-gradient(to top, rgba(245,110,15,${0.3 + pct * 0.004}), rgba(245,110,15,0.05))` }}
                 />
               </div>
               <WeatherIcon icon={h.icon} className="w-3 h-3 text-white/30" />
@@ -313,62 +346,227 @@ function WeatherView({ weather }: { weather: WeatherData }) {
 
 // ─── NotificationsView ────────────────────────────────────────────────────────
 
-function NotificationsView({ notifications, onDelete, loading }: { notifications: Notification[]; onDelete: (id: number) => void; loading?: boolean }) {
+type NotifTab = "unread" | "read";
+
+function NotificationsView({
+  notifications,
+  notifPrefs,
+  onDismiss,
+  onPermanentlyDismiss,
+  onMarkRead,
+  onMarkAllRead,
+  loading,
+}: {
+  notifications:       Notification[];
+  notifPrefs:          ReturnType<typeof useNotifPrefs>;
+  onDismiss:           (uid: string | undefined, id: number) => void;
+  onPermanentlyDismiss:(uid: string, id: number) => void;
+  onMarkRead:          (uid: string) => void;
+  onMarkAllRead:       () => void;
+  loading?:            boolean;
+}) {
+  const t      = useTranslations("weather");
+  const reduce = useReducedMotion();
+  const [activeTab,    setActiveTab]    = useState<NotifTab>("unread");
+  const [expandedUid,  setExpandedUid]  = useState<string | null>(null);
+
+  const unreadNotifs = notifications.filter(
+    n => !n._uid || (!notifPrefs.isRead(n._uid) && !notifPrefs.isDismissed(n._uid)),
+  );
+  const readNotifs = notifications.filter(
+    n => n._uid && (notifPrefs.isRead(n._uid) || notifPrefs.isDismissed(n._uid)),
+  );
+
+  const activeList = activeTab === "unread" ? unreadNotifs : readNotifs;
+
+  function toggleExpand(uid: string | undefined) {
+    if (!uid) return;
+    setExpandedUid(prev => (prev === uid ? null : uid));
+  }
+
+  function handleCardClick(n: Notification) {
+    if (n._uid && !notifPrefs.isRead(n._uid)) onMarkRead(n._uid);
+    toggleExpand(n._uid);
+  }
+
   return (
     <div className="px-4 pt-2 pb-5">
+      {/* Barre de tabs */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="relative flex p-0.5 rounded-full bg-white/[0.06] border border-white/[0.07] flex-1">
+          {(["unread", "read"] as NotifTab[]).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className="relative flex-1 px-3 py-1.5 z-10 transition-colors"
+            >
+              {activeTab === tab && (
+                <motion.div
+                  layoutId="notif-tab-indicator"
+                  className="absolute inset-0 rounded-full bg-white/[0.10]"
+                  transition={reduce ? { duration: 0 } : { ...S_FAST }}
+                />
+              )}
+              <span className={cn(
+                "relative text-[11px] font-semibold uppercase tracking-[0.15em] transition-colors",
+                activeTab === tab ? "text-white/90" : "text-white/30",
+              )}>
+                {tab === "unread"
+                  ? unreadNotifs.length > 0 ? `Non lues · ${unreadNotifs.length}` : "Non lues"
+                  : "Lues"
+                }
+              </span>
+            </button>
+          ))}
+        </div>
+        {/* Bouton tout marquer comme lu */}
+        <AnimatePresence>
+          {activeTab === "unread" && unreadNotifs.length > 0 && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={reduce ? { duration: 0 } : { ...S_FAST }}
+              onClick={onMarkAllRead}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.08] hover:bg-white/[0.09] transition-colors shrink-0"
+              title="Tout marquer comme lu"
+            >
+              <CheckCircle2 className="w-3 h-3 text-white/35" strokeWidth={1.5} />
+              <span className="text-[10px] text-white/35 hidden sm:block">Tout lire</span>
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Contenu */}
       {loading ? (
         <div className="flex flex-col gap-2">
           {[0, 1, 2].map(i => (
             <div key={i} className="h-[62px] rounded-2xl bg-white/[0.04] border border-white/[0.07] animate-pulse" />
           ))}
         </div>
-      ) : notifications.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 gap-2">
-          <Bell className="w-8 h-8 text-white/10" strokeWidth={1} />
-          <p className="text-white/25 text-[13px]">Aucune notification</p>
-        </div>
       ) : (
-        <div className="flex flex-col gap-2">
-          <AnimatePresence initial={false}>
-            {notifications.map((n) => {
-              const cfg = notifConfig[n.type];
-              return (
-                <motion.div key={n.id} layout
-                  initial={{ opacity: 0, y: -6, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: "auto" }}
-                  exit={{ opacity: 0, x: 24, height: 0, marginBottom: 0 }}
-                  transition={{ duration: 0.24, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="overflow-hidden"
-                >
-                  <div className={cn("relative flex items-start gap-3 p-3 rounded-2xl bg-white/[0.04] border border-white/[0.07] border-l-2", cfg.accent)}>
-                    <div className="pt-1 shrink-0"><span className={cn("block w-1.5 h-1.5 rounded-full", cfg.dot)} /></div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className={cn("text-[10px] font-semibold uppercase tracking-wider", cfg.labelColor)}>{cfg.label}</span>
-                        {n.type === "live" && (
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-500/15 border border-red-500/20">
-                            <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
-                            <span className="text-[9px] font-bold uppercase text-red-400 tracking-widest">Live</span>
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[13px] font-medium text-white leading-tight truncate">{n.title}</p>
-                      <p className="text-[11px] text-white/40 truncate mt-0.5">{n.body}</p>
-                    </div>
-                    <div className="flex flex-col items-end gap-2 shrink-0">
-                      <div className="flex items-center gap-1 text-white/20 text-[10px]">
-                        <Clock className="w-2.5 h-2.5" strokeWidth={1.5} /><span>{n.time}</span>
-                      </div>
-                      <button onClick={() => onDelete(n.id)} className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-white/10 active:scale-90 transition-all">
-                        <X className="w-2.5 h-2.5 text-white/20 hover:text-white/50 transition-colors" strokeWidth={2} />
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, x: activeTab === "unread" ? -8 : 8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: activeTab === "unread" ? 8 : -8 }}
+            transition={reduce ? { duration: 0 } : { ...S_FAST }}
+          >
+            {activeList.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 gap-2">
+                {activeTab === "unread" ? (
+                  <>
+                    <Bell className="w-8 h-8 text-white/10" strokeWidth={1} />
+                    <p className="text-white/25 text-[13px]">{t("notifications.empty")}</p>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-8 h-8 text-white/10" strokeWidth={1} />
+                    <p className="text-white/25 text-[13px]">Aucune notification lue pour l'instant</p>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <AnimatePresence initial={false}>
+                  {activeList.map(n => {
+                    const cfg       = notifConfig[n.type];
+                    const isRead    = n._uid ? notifPrefs.isRead(n._uid) : false;
+                    const isExpanded = expandedUid === n._uid;
+                    const canExpand  = n.body.length > 60;
+                    return (
+                      <motion.div key={n.id} layout
+                        initial={{ opacity: 0, y: -6, height: 0 }}
+                        animate={{ opacity: 1, y: 0, height: "auto" }}
+                        exit={{ opacity: 0, x: 24, height: 0, marginBottom: 0 }}
+                        transition={reduce ? { duration: 0 } : { ...S_FAST }}
+                        className="overflow-hidden"
+                      >
+                        <div className={cn(
+                          "relative flex items-start gap-3 p-3 rounded-2xl border border-l-2 transition-opacity",
+                          cfg.accent,
+                          isRead ? "bg-white/[0.025] border-white/[0.05] opacity-60" : "bg-white/[0.04] border-white/[0.07]",
+                        )}>
+                          <div className="pt-1 shrink-0">
+                            <span className={cn(
+                              "block w-1.5 h-1.5 rounded-full",
+                              cfg.dot,
+                              isRead && "opacity-40",
+                            )} />
+                          </div>
+
+                          {/* Zone cliquable pour lire + expandre */}
+                          <div
+                            className="flex-1 min-w-0 cursor-pointer"
+                            onClick={() => handleCardClick(n)}
+                          >
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <span className={cn("text-[10px] font-semibold uppercase tracking-wider", cfg.labelColor)}>{cfg.label}</span>
+                              {n.type === "live" && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-500/15 border border-red-500/20">
+                                  <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
+                                  <span className="text-[9px] font-bold uppercase text-red-400 tracking-widest">Live</span>
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[13px] font-medium text-white leading-tight truncate">{n.title}</p>
+                            <p className={cn(
+                              "text-[11px] text-white/40 mt-0.5",
+                              isExpanded ? "whitespace-pre-wrap break-words leading-relaxed" : "truncate",
+                            )}>
+                              {n.body}
+                            </p>
+                            {canExpand && (
+                              <button
+                                onClick={e => { e.stopPropagation(); toggleExpand(n._uid); }}
+                                className="flex items-center gap-1 mt-1.5"
+                              >
+                                {isExpanded
+                                  ? <ChevronUp   className="w-3 h-3 text-white/30" strokeWidth={1.5} />
+                                  : <ChevronDown className="w-3 h-3 text-white/30" strokeWidth={1.5} />
+                                }
+                                <span className="text-[10px] text-white/30 hover:text-white/50 transition-colors">
+                                  {isExpanded ? "Voir moins" : "Voir plus"}
+                                </span>
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex flex-col items-end gap-2 shrink-0">
+                            <div className="flex items-center gap-1 text-white/20 text-[10px]">
+                              <Clock className="w-2.5 h-2.5" strokeWidth={1.5} />
+                              <span>{n.time}</span>
+                            </div>
+                            {activeTab === "unread" ? (
+                              <button
+                                onClick={() => onDismiss(n._uid, n.id)}
+                                className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-white/10 active:scale-90 transition-all"
+                                aria-label="Archiver"
+                              >
+                                <X className="w-2.5 h-2.5 text-white/20 hover:text-white/50 transition-colors" strokeWidth={2} />
+                              </button>
+                            ) : n._uid ? (
+                              <button
+                                onClick={() => onPermanentlyDismiss(n._uid!, n.id)}
+                                className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-red-500/15 active:scale-90 transition-all"
+                                aria-label="Supprimer definitivement"
+                              >
+                                <Trash2 className="w-2.5 h-2.5 text-white/20 hover:text-red-400/60 transition-colors" strokeWidth={2} />
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       )}
     </div>
   );
@@ -507,6 +705,8 @@ function SearchView({ onClose }: { onClose: () => void }) {
 // ─── EmergencyView ────────────────────────────────────────────────────────────
 
 function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req: AlertRequest) => void }) {
+  const t = useTranslations("weather");
+  const reduce = useReducedMotion();
   const [step, setStep]       = useState<EmergencyStep>(1);
   const [form, setForm]       = useState<EmergencyForm>({ service: null, type: null, name: "", description: "" });
   const [errors, setErrors]   = useState<{ name?: string; description?: string }>({});
@@ -592,7 +792,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
       const json = await res.json();
       if (json.success && json.data?.id) dbId = json.data.id;
     } catch {
-      // Erreur réseau — on continue sans dbId (tracking désactivé)
+      // Erreur réseau - on continue sans dbId (tracking désactivé)
     }
 
     const ref = dbId
@@ -633,11 +833,17 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
       {/* ── Step indicator ── */}
       <div className="flex items-center justify-center gap-2 pt-1 pb-3 px-4">
         {([1, 2, 3] as EmergencyStep[]).map(s => (
-          <div key={s} className={cn(
-            "h-1 rounded-full transition-all duration-300",
-            s === step ? "w-8 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"
-                        : s < step ? "w-4 bg-red-500/40" : "w-4 bg-white/10",
-          )} />
+          <motion.div
+            key={s}
+            layout
+            style={{ width: s === step ? 32 : 16 }}
+            animate={{
+              backgroundColor: s === step ? "rgb(239,68,68)" : s < step ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.1)",
+              boxShadow: s === step ? "0 0 8px rgba(239,68,68,0.6)" : "0 0 0px rgba(239,68,68,0)",
+            }}
+            transition={reduce ? { duration: 0 } : { ...S_FAST }}
+            className="h-1 rounded-full"
+          />
         ))}
       </div>
 
@@ -647,12 +853,12 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
           <motion.div key="step1"
             custom={directionRef.current}
             variants={slideVariants} initial="enter" animate="center" exit="exit"
-            transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={reduce ? { duration: 0 } : { ...S_UI }}
             className="px-4"
           >
             {/* Services */}
             <p className="text-[10px] uppercase tracking-[0.2em] text-white/25 mb-2.5 font-medium">
-              Service à contacter
+              {t("emergency.form.serviceLabel")}
             </p>
             <div className="flex flex-col gap-2 mb-4">
               {SERVICES.map((svc) => {
@@ -691,12 +897,12 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
 
             {/* Categories */}
             <p className="text-[10px] uppercase tracking-[0.2em] text-white/25 mb-2.5 font-medium">
-              Nature de l'urgence
+              {t("emergency.form.typeLabel")}
             </p>
             {!form.service ? (
               <div className="flex items-center gap-2 px-3.5 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] mb-4">
                 <HelpCircle className="w-4 h-4 text-white/15 shrink-0" strokeWidth={1.5} />
-                <span className="text-[12px] text-white/20 italic">Sélectionnez d'abord un service</span>
+                <span className="text-[12px] text-white/20 italic">{t("emergency.form.selectServiceFirst")}</span>
               </div>
             ) : (
               <div className="flex flex-wrap gap-2 mb-4">
@@ -727,9 +933,9 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
             <div className="flex items-center gap-1.5 mb-4 text-[11px]">
               <MapPin className={cn("w-3 h-3 shrink-0", geoStatus === "ok" ? "text-emerald-400" : geoStatus === "error" ? "text-white/25" : "text-white/25")} strokeWidth={1.5} />
               <span className={cn(geoStatus === "ok" ? "text-emerald-400/70" : "text-white/25")}>
-                {geoStatus === "loading" && "Position en cours de récupération..."}
-                {geoStatus === "ok"      && "Position obtenue"}
-                {geoStatus === "error"   && "Position non disponible"}
+                {geoStatus === "loading" && t("emergency.geo.fetching")}
+                {geoStatus === "ok"      && t("emergency.geo.obtained")}
+                {geoStatus === "error"   && t("emergency.geo.unavailable")}
                 {geoStatus === "idle"    && ""}
               </span>
             </div>
@@ -745,7 +951,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
                   : "bg-white/[0.04] border border-white/[0.07] text-white/20 cursor-not-allowed",
               )}
             >
-              Continuer
+              {t("emergency.form.continue")}
               <ChevronRight className="w-4 h-4" strokeWidth={2} />
             </motion.button>
           </motion.div>
@@ -755,11 +961,11 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
           <motion.div key="step2"
             custom={directionRef.current}
             variants={slideVariants} initial="enter" animate="center" exit="exit"
-            transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={reduce ? { duration: 0 } : { ...S_UI }}
             className="px-4"
           >
             <p className="text-[10px] uppercase tracking-[0.2em] text-white/25 mb-3 font-medium">
-              Informations requises
+              {t("emergency.form.infoTitle")}
             </p>
 
             {/* Nom */}
@@ -819,7 +1025,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
           <motion.div key="step3"
             custom={directionRef.current}
             variants={slideVariants} initial="enter" animate="center" exit="exit"
-            transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={reduce ? { duration: 0 } : { ...S_UI }}
             className="px-4"
           >
             <p className="text-[10px] uppercase tracking-[0.2em] text-white/25 mb-3 font-medium">
@@ -887,13 +1093,13 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[12px] text-red-400/70">Envoi dans {countdown}s…</span>
+                  <span className="text-[12px] text-red-400/70">{t("emergency.send.countdown", { countdown })}</span>
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={cancelCountdown}
                     className="px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/[0.10] text-[12px] font-semibold text-white/50 transition-all"
                   >
-                    Annuler
+                    {t("emergency.send.cancel")}
                   </motion.button>
                 </div>
               </div>
@@ -905,7 +1111,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
                   className="px-4 py-3 rounded-2xl bg-white/[0.05] border border-white/[0.08] text-white/40 text-[13px] font-semibold flex items-center gap-1.5 transition-all"
                 >
                   <ChevronLeft className="w-4 h-4" strokeWidth={2} />
-                  Retour
+                  {t("emergency.form.back")}
                 </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.97 }}
@@ -913,7 +1119,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
                   className="flex-1 py-3 rounded-2xl bg-red-500/20 border border-red-500/40 text-red-400 text-[14px] font-bold flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(239,68,68,0.18)] active:bg-red-500/30 transition-all"
                 >
                   <Send className="w-4 h-4" strokeWidth={2} />
-                  Envoyer l'alerte
+                  {t("emergency.send.send")}
                 </motion.button>
               </div>
             )}
@@ -936,6 +1142,8 @@ const TRACKING_STEPS: { status: TrackingStatus; label: string; icon: React.Eleme
 const STATUS_ORDER: TrackingStatus[] = ["EN_ATTENTE", "RECU", "EN_COURS", "RESOLU"];
 
 function TrackingView({ request, onClose, onResolved }: { request: AlertRequest; onClose: () => void; onResolved: () => void }) {
+  const t = useTranslations("weather");
+  const reduce       = useReducedMotion();
   const service      = SERVICES.find(s => s.id === request.service)!;
   const type         = TYPES.find(t => t.id === request.type)!;
   const TypeIcon     = type?.icon ?? HelpCircle;
@@ -981,7 +1189,7 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
       </div>
 
       {/* Timeline */}
-      <p className="text-[10px] uppercase tracking-[0.2em] text-white/25 mb-3 font-medium">Suivi en temps réel</p>
+      <p className="text-[10px] uppercase tracking-[0.2em] text-white/25 mb-3 font-medium">{t("tracking.title")}</p>
       <div className="relative flex flex-col gap-0">
         {TRACKING_STEPS.map((step, i) => {
           const StepIcon  = step.icon;
@@ -1004,7 +1212,7 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
                       : "rgba(255,255,255,0.08)",
                     scale: isCurrent ? 1.15 : 1,
                   }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  transition={reduce ? { duration: 0 } : { ...S_SOFT }}
                   className="w-7 h-7 rounded-xl border flex items-center justify-center shrink-0"
                 >
                   <StepIcon className={cn("w-3.5 h-3.5", isDone ? "text-white" : "text-white/20", isCurrent && "animate-pulse")} strokeWidth={isCurrent ? 2 : 1.5} />
@@ -1028,7 +1236,7 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
                 {isCurrent && !isResolved && (
                   <div className="flex items-center gap-1 mt-1">
                     <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
-                    <span className="text-[10px] text-red-400/60">En attente de mise à jour…</span>
+                    <span className="text-[10px] text-red-400/60">{t("tracking.waiting")}</span>
                   </div>
                 )}
               </div>
@@ -1040,17 +1248,17 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
       {/* Footer */}
       {isResolved ? (
         <motion.button
-          initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+          initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={reduce ? { duration: 0 } : { delay: 0.15, ...S_SOFT }}
           whileTap={{ scale: 0.97 }}
           onClick={onResolved}
           className="mt-4 w-full py-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[13px] font-semibold flex items-center justify-center gap-2 transition-all"
         >
           <CircleCheck className="w-4 h-4" strokeWidth={2} />
-          Fermer
+          {t("tracking.close")}
         </motion.button>
       ) : (
         <p className="mt-4 text-center text-[11px] text-white/20 leading-relaxed">
-          Vous serez notifié à chaque mise à jour.<br />Restez en sécurité.
+          {t("tracking.footer")}
         </p>
       )}
     </div>
@@ -1062,6 +1270,7 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
 function ExpandedHeader({ logoSrc, label, onClose, logoMerged, isEmergency = false }: {
   logoSrc: string; label: string; onClose: () => void; logoMerged: boolean; isEmergency?: boolean;
 }) {
+  const reduce = useReducedMotion();
   return (
     <div className="flex items-center justify-between px-4 pt-4 pb-3">
       <div className="flex items-center gap-2">
@@ -1079,7 +1288,7 @@ function ExpandedHeader({ logoSrc, label, onClose, logoMerged, isEmergency = fal
         <motion.span
           initial={{ opacity: 0, x: -4 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1, duration: 0.2 }}
+          transition={reduce ? { duration: 0 } : { delay: 0.08, ...S_FAST }}
           className={cn("text-[13px] font-semibold tracking-tight", isEmergency ? "text-red-400" : "text-white/70")}
         >
           {label}
@@ -1121,6 +1330,7 @@ export function WeatherWidget({
   onLogoMerge,
   onLogoSeparate,
 }: DynamicIslandProps) {
+  const tw = useTranslations("weather");
   // Guard: parent may pass null/undefined even though prop is optional
   const weather = weatherProp ?? defaultWeather;
   const [view, setView]               = useState<View>("idle");
@@ -1132,22 +1342,21 @@ export function WeatherWidget({
   const notifIdRef                    = useRef(100);
   const progressionTimersRef          = useRef<ReturnType<typeof setTimeout>[]>([]);
   const pollingRef                    = useRef<ReturnType<typeof setInterval> | null>(null);
+  const notifPrefs                    = useNotifPrefs();
 
   // ── Fetch notifications depuis l'API ──────────────────────────────────────
   const fetchNotifications = useCallback(async () => {
     try {
       setNotifsLoading(true);
-      const res  = await fetch(`${API_BASE}/notifications?status=SENT&limit=20`, { credentials: "include" });
-      // Route protégée : si pas connecté en tant qu'admin, on ignore silencieusement
-      if (res.status === 401) return;
+      const res  = await fetch(`${API_BASE}/notifications/public`);
       const json = await res.json();
       if (json.success && Array.isArray(json.data?.notifications)) {
         setNotifs(json.data.notifications.map(mapNotification));
-        // Sync le compteur interne pour éviter les collisions d'ids lors des alertes urgences
+        // Sync le compteur interne pour eviter les collisions d'ids lors des alertes urgences
         notifIdRef.current = Math.max(100, json.data.notifications.length + 10);
       }
     } catch {
-      // Erreur réseau silencieuse — notifs restent vides
+      // Erreur reseau silencieuse - notifs restent vides
     } finally {
       setNotifsLoading(false);
     }
@@ -1159,6 +1368,15 @@ export function WeatherWidget({
     const interval = setInterval(fetchNotifications, 60_000);
     return () => clearInterval(interval);
   }, [fetchNotifications]);
+
+  // Notifs visibles : exclut celles archivees definitivement via localStorage
+  const visibleNotifs = notifs.filter(n => !n._uid || !notifPrefs.dismissed.has(n._uid));
+
+  // Compteur non-lues pour le badge de la pastille
+  // Les notifs sans _uid (urgences locales) sont toujours non-lues
+  const unreadCount = notifPrefs.hydrated
+    ? visibleNotifs.filter(n => !n._uid || !notifPrefs.isRead(n._uid)).length
+    : visibleNotifs.length;
 
   const isExpanded  = view !== "idle";
   const isEmergency = view === "emergency" || view === "tracking";
@@ -1180,7 +1398,28 @@ export function WeatherWidget({
     if (pollingRef.current) clearInterval(pollingRef.current);
   }, []);
 
-  const deleteNotif = useCallback((id: number) => setNotifs(prev => prev.filter(n => n.id !== id)), []);
+  // Archive la notif : la marque lue + dismissed, la retire de la liste locale
+  const onDismiss = useCallback((uid: string | undefined, id: number) => {
+    if (uid) notifPrefs.markDismissed(uid);
+    setNotifs(prev => prev.filter(n => n.id !== id));
+  }, [notifPrefs]);
+
+  // Suppression definitive : ajoute a dismissed (re-fetches futures filtrees automatiquement)
+  const onPermanentlyDismiss = useCallback((uid: string, id: number) => {
+    notifPrefs.permanentlyDismiss(uid);
+    setNotifs(prev => prev.filter(n => n.id !== id));
+  }, [notifPrefs]);
+
+  const onMarkRead = useCallback((uid: string) => {
+    notifPrefs.markRead(uid);
+  }, [notifPrefs]);
+
+  const onMarkAllRead = useCallback(() => {
+    const uids = visibleNotifs
+      .filter(n => n._uid && !notifPrefs.isRead(n._uid!))
+      .map(n => n._uid!);
+    notifPrefs.markAllRead(uids);
+  }, [visibleNotifs, notifPrefs]);
 
   /** Called when EmergencyView sends the alert */
   const handleAlertSent = useCallback((req: AlertRequest) => {
@@ -1221,7 +1460,7 @@ export function WeatherWidget({
     };
 
     // dbAlertId est stocké dans req.ref si c'est un vrai UUID BDD
-    // (sinon le polling est silencieusement ignoré — cas hors-ligne)
+    // (sinon le polling est silencieusement ignoré - cas hors-ligne)
     const isRealAlert = req._dbId != null;
     if (!isRealAlert) return;
 
@@ -1264,8 +1503,8 @@ export function WeatherWidget({
           const label = LABEL_MAP[alert.status];
           if (label) {
             setNotifs(prev => {
-              if (prev.some(n => n.title === `${req.ref} — ${label}`)) return prev;
-              return [{ id: nid, title: `${req.ref} — ${label}`, body: DETAIL_MAP[alert.status] ?? "", time: "Maintenant", type: "alert" }, ...prev];
+              if (prev.some(n => n.title === `${req.ref} - ${label}`)) return prev;
+              return [{ id: nid, title: `${req.ref} - ${label}`, body: DETAIL_MAP[alert.status] ?? "", time: "Maintenant", type: "alert" }, ...prev];
             });
           }
         }
@@ -1292,11 +1531,15 @@ export function WeatherWidget({
 
   const viewLabels: Record<View, string> = {
     idle:          "",
-    weather:       "Météo",
-    notifications: notifsLoading ? "Chargement…" : notifs.length > 0 ? `${notifs.length} notification${notifs.length > 1 ? "s" : ""}` : "Notifications",
-    search:        "Rechercher",
-    emergency:     "Urgence",
-    tracking:      activeAlert ? `Suivi ${activeAlert.ref}` : "Suivi",
+    weather:       tw("views.weather"),
+    notifications: notifsLoading
+      ? tw("views.notificationsLoading")
+      : unreadCount > 0
+        ? tw("views.notificationsCount", { count: unreadCount })
+        : tw("views.notifications"),
+    search:        tw("views.search"),
+    emergency:     tw("views.urgence"),
+    tracking:      activeAlert ? tw("views.tracking", { ref: activeAlert.ref }) : tw("views.tracking", { ref: "" }),
   };
 
   return (
@@ -1307,7 +1550,7 @@ export function WeatherWidget({
         {/* ── IDLE PILL ── */}
         <motion.div
           animate={{ opacity: isExpanded ? 0 : 1, scale: isExpanded ? 0.85 : 1 }}
-          transition={{ duration: 0.18, ease: [0.32, 0, 0.67, 0] }}
+          transition={shouldReduceMotion ? { duration: 0 } : { ...S_FAST }}
           style={{ pointerEvents: isExpanded ? "none" : "auto" }}
           className={cn("p-px", GLASS.outer, GLASS.shadow, "rounded-full")}
         >
@@ -1319,9 +1562,23 @@ export function WeatherWidget({
             </button>
             <div className="w-px h-3.5 bg-white/[0.1] mx-0.5" />
             {/* Notifications */}
-            <button onClick={() => openView("notifications")} className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/[0.08] active:scale-95 transition-all duration-150" aria-label={`${notifs.length} notifications`}>
+            <button
+              onClick={() => openView("notifications")}
+              className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/[0.08] active:scale-95 transition-all duration-150"
+              aria-label={`${unreadCount} notification${unreadCount !== 1 ? "s" : ""} non lue${unreadCount !== 1 ? "s" : ""}`}
+            >
               <Bell className="w-[15px] h-[15px] text-white/55" strokeWidth={1.5} />
-              {notifs.length > 0 && <span className="absolute top-[7px] right-[7px] min-w-[6px] h-[6px] rounded-full bg-red-500 ring-[1.5px] ring-[rgba(18,18,22,0.9)]" />}
+              {unreadCount > 0 && (
+                <motion.span
+                  key={unreadCount}
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ ...S_FAST }}
+                  className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] rounded-full bg-red-500 ring-[1.5px] ring-[rgba(18,18,22,0.9)] flex items-center justify-center text-[9px] font-bold text-white px-0.5 tabular-nums"
+                >
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </motion.span>
+              )}
             </button>
             {/* Recherche */}
             <button onClick={() => openView("search")} className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/[0.08] active:scale-95 transition-all duration-150" aria-label="Recherche">
@@ -1345,11 +1602,8 @@ export function WeatherWidget({
         {/* ── EXPANDED PANEL ── */}
         <motion.div
           initial={false}
-          animate={isExpanded ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.72, y: -8 }}
-          transition={shouldReduceMotion ? { duration: 0 } : isExpanded
-            ? { type: "spring", stiffness: 320, damping: 28, mass: 0.9 }
-            : { duration: 0.22, ease: [0.32, 0, 0.67, 0] }
-          }
+          animate={isExpanded ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.88, y: -6 }}
+          transition={shouldReduceMotion ? { duration: 0 } : isExpanded ? { ...S_UI } : { ...S_FAST }}
           style={{
             transformOrigin: "top right",
             pointerEvents: isExpanded ? "auto" : "none",
@@ -1374,7 +1628,7 @@ export function WeatherWidget({
           )}>
             <AnimatePresence mode="wait" initial={false}>
               {view === "weather" && (
-                <motion.div key="weather" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.14 }}>
+                <motion.div key="weather" initial={{ opacity: 0, y: 8, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -4, filter: "blur(2px)" }} transition={shouldReduceMotion ? { duration: 0 } : { ...S_SOFT }}>
                   <ExpandedHeader logoSrc={logoSrc} label={viewLabels.weather} onClose={close} logoMerged={logoMerged} />
                   <HairlineDivider />
                   <WeatherView weather={weather} />
@@ -1382,15 +1636,23 @@ export function WeatherWidget({
                 </motion.div>
               )}
               {view === "notifications" && (
-                <motion.div key="notifs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.14 }}>
+                <motion.div key="notifs" initial={{ opacity: 0, y: 8, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -4, filter: "blur(2px)" }} transition={shouldReduceMotion ? { duration: 0 } : { ...S_SOFT }}>
                   <ExpandedHeader logoSrc={logoSrc} label={viewLabels.notifications} onClose={close} logoMerged={logoMerged} />
                   <HairlineDivider />
-                  <NotificationsView notifications={notifs} onDelete={deleteNotif} loading={notifsLoading} />
+                  <NotificationsView
+                    notifications={visibleNotifs}
+                    notifPrefs={notifPrefs}
+                    onDismiss={onDismiss}
+                    onPermanentlyDismiss={onPermanentlyDismiss}
+                    onMarkRead={onMarkRead}
+                    onMarkAllRead={onMarkAllRead}
+                    loading={notifsLoading || !notifPrefs.hydrated}
+                  />
                   <CloseHandle onClose={close} />
                 </motion.div>
               )}
               {view === "search" && (
-                <motion.div key="search" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.14 }}>
+                <motion.div key="search" initial={{ opacity: 0, y: 8, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -4, filter: "blur(2px)" }} transition={shouldReduceMotion ? { duration: 0 } : { ...S_SOFT }}>
                   <ExpandedHeader logoSrc={logoSrc} label={viewLabels.search} onClose={close} logoMerged={logoMerged} />
                   <HairlineDivider />
                   <SearchView onClose={close} />
@@ -1398,14 +1660,14 @@ export function WeatherWidget({
                 </motion.div>
               )}
               {view === "emergency" && (
-                <motion.div key="emergency" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.14 }}>
+                <motion.div key="emergency" initial={{ opacity: 0, y: 8, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -4, filter: "blur(2px)" }} transition={shouldReduceMotion ? { duration: 0 } : { ...S_SOFT }}>
                   <ExpandedHeader logoSrc={logoSrc} label={viewLabels.emergency} onClose={close} logoMerged={logoMerged} isEmergency />
                   <HairlineDivider />
                   <EmergencyView onClose={close} onSent={handleAlertSent} />
                 </motion.div>
               )}
               {view === "tracking" && activeAlert && (
-                <motion.div key="tracking" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.14 }}>
+                <motion.div key="tracking" initial={{ opacity: 0, y: 8, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -4, filter: "blur(2px)" }} transition={shouldReduceMotion ? { duration: 0 } : { ...S_SOFT }}>
                   <ExpandedHeader logoSrc={logoSrc} label={viewLabels.tracking} onClose={close} logoMerged={logoMerged} isEmergency />
                   <HairlineDivider />
                   <TrackingView request={activeAlert} onClose={close} onResolved={handleAlertReset} />

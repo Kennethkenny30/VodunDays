@@ -1,5 +1,5 @@
 /**
- * Hook useSession — récupère l'utilisateur connecté.
+ * Hook useSession - récupère l'utilisateur connecté.
  *
  * 1. Lit d'abord sessionStorage (instantané, pas de réseau).
  * 2. Si absent (nouvel onglet, refresh), appelle GET /api/auth/me

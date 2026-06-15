@@ -33,7 +33,7 @@ export function useWeather() {
     }
 
     if (!navigator.geolocation) {
-      // Pas de GPS — fallback Ouidah
+      // Pas de GPS - fallback Ouidah
       fetchWeather(6.3676, 2.0833, "Ouidah, Bénin")
       return
     }
@@ -45,7 +45,7 @@ export function useWeather() {
         fetchWeather(latitude, longitude, name)
       },
       () => {
-        // Permission refusée ou erreur — fallback Ouidah
+        // Permission refusée ou erreur - fallback Ouidah
         fetchWeather(6.3676, 2.0833, "Ouidah, Bénin")
       },
       { enableHighAccuracy: false, timeout: 5000, maximumAge: 300_000 }

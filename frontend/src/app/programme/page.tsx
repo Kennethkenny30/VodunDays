@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { DayFilter }               from "@/components/programs/DayFilter";
 import { WeatherWidget }           from "@/components/programs/WeatherWidget";
 import { BottomNav }               from "@/components/layout/BottomNav";
@@ -55,7 +56,7 @@ type BackendEvent = {
   description: string;
   status:      string;
   imageUrl?:   string | null;
-  // ✅ site complet — le backend fait include: { site: true }
+  // site complet - le backend fait include: { site: true }
   site?:       BackendSite;
   eventType?:  { name: string };
   programs?:   BackendProgram[];
@@ -107,7 +108,7 @@ function mapEventToPrograms(event: BackendEvent): Program[] {
       image,
       isLive:      false,
       day:         1,
-      // ✅ Deep-link carte
+      // Deep-link carte
       siteId,
       siteLat,
       siteLng,
@@ -144,7 +145,7 @@ function mapEventToPrograms(event: BackendEvent): Program[] {
       image,
       isLive:      false,
       day,
-      // ✅ Deep-link carte
+      // Deep-link carte
       siteId,
       siteLat,
       siteLng,
@@ -159,15 +160,15 @@ const pageVariants = {
   visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden:  { opacity: 0, y: -14, filter: "blur(3px)" },
   visible: {
     opacity: 1, y: 0, filter: "blur(0px)",
-    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
+    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
   },
 };
 
-const glowVariants = {
+const glowVariants: Variants = {
   hidden:  { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 1.2, ease: "easeOut" } },
 };
@@ -175,8 +176,8 @@ const glowVariants = {
 // ─── Contenu ──────────────────────────────────────────────────────────────────
 
 function ProgrammeContent() {
+  const t = useTranslations("programme");
   const [activeDay, setActiveDay]   = useState(1);
-  const [logoMerged, setLogoMerged] = useState(false);
   const [programs, setPrograms]     = useState<Program[]>([]);
   const [loading, setLoading]       = useState(true);
   const { weather } = useWeather();
@@ -217,37 +218,18 @@ function ProgrammeContent() {
         }}
       />
 
-      <WeatherWidget weather={weather} compact />
+      <WeatherWidget weather={weather ?? undefined} />
 
       <div className="relative z-10 max-w-md mx-auto px-4 pt-6 pb-32">
 
-        <motion.div variants={itemVariants} className="flex items-center justify-between mb-6">
-          <motion.div
-            className="flex items-center gap-3 cursor-pointer"
-            onClick={() => setLogoMerged((v) => !v)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Image
-              src="/images/logo.png"
-              alt="Vodun Days"
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-            <AnimatePresence>
-              {!logoMerged && (
-                <motion.h1
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  className="text-white font-semibold text-lg"
-                >
-                  Programme
-                </motion.h1>
-              )}
-            </AnimatePresence>
-          </motion.div>
+        <motion.div variants={itemVariants} className="mb-6">
+          <Image
+            src="/images/logo.png"
+            alt="Vodun Days"
+            width={40}
+            height={40}
+            className="rounded-full"
+          />
         </motion.div>
 
         <motion.div variants={itemVariants}>
@@ -267,7 +249,7 @@ function ProgrammeContent() {
             </div>
           ) : filteredPrograms.length === 0 ? (
             <p className="text-center text-muted-foreground text-sm py-12">
-              Aucun événement pour ce jour.
+              {t("empty")}
             </p>
           ) : (
             <ProgramList programs={filteredPrograms} />

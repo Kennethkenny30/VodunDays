@@ -33,7 +33,7 @@ import { getSites } from "@/lib/api/sites"
 import { api } from "@/lib/api/client"
 import type { Notification, NotificationStatus, Site } from "@/lib/types/api"
 
-// FIX 2 & 5 — Badges texte colorés sémantiquement, icône en soutien seulement
+// FIX 2 & 5 - Badges texte colorés sémantiquement, icône en soutien seulement
 const statusConfig: Record<
   NotificationStatus,
   {
@@ -163,7 +163,7 @@ export function NotificationsCenter({ className }: NotificationsCenterProps) {
         <h2 className="text-lg font-semibold tracking-tight">Notifications</h2>
       </div>
 
-      {/* FIX 1 — Grille 5fr / 4fr en desktop, stack en mobile */}
+      {/* FIX 1 - Grille 5fr / 4fr en desktop, stack en mobile */}
       <div className="grid grid-cols-1 lg:grid-cols-[5fr_4fr] gap-8 lg:items-start">
 
         {/* Colonne gauche : Formulaire de composition */}
@@ -255,7 +255,7 @@ export function NotificationsCenter({ className }: NotificationsCenterProps) {
             </div>
           </div>
 
-          {/* FIX 3 — Aperçu mis en valeur avec fond distinctif */}
+          {/* FIX 3 - Aperçu mis en valeur avec fond distinctif */}
           {(title || message) && (
             <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -279,7 +279,7 @@ export function NotificationsCenter({ className }: NotificationsCenterProps) {
             </div>
           )}
 
-          {/* FIX 4 — Hiérarchie boutons renforcée : action principale vs secondaire */}
+          {/* FIX 4 - Hiérarchie boutons renforcée : action principale vs secondaire */}
           <div className="flex gap-2 pt-1">
             <Button
               onClick={() => handleSend(false)}
@@ -322,7 +322,7 @@ export function NotificationsCenter({ className }: NotificationsCenterProps) {
           </div>
         </div>
 
-        {/* FIX 1 & 2 — Colonne droite : séparateur visuel + historique lisible */}
+        {/* FIX 1 & 2 - Colonne droite : séparateur visuel + historique lisible */}
         <div className="space-y-4 lg:border-l lg:border-border/40 lg:pl-8 min-h-0 overflow-hidden">
           <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
             Historique récent
@@ -352,7 +352,7 @@ export function NotificationsCenter({ className }: NotificationsCenterProps) {
                     className="p-3 bg-transparent border border-border/50 rounded-lg"
                   >
                     <div className="flex items-start gap-3">
-                      {/* FIX 5 — Icône + badge texte sémantique côte à côte */}
+                      {/* FIX 5 - Icône + badge texte sémantique côte à côte */}
                       <StatusIcon
                         className={cn(
                           "size-3.5 mt-1 shrink-0",

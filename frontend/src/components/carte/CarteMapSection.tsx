@@ -15,9 +15,14 @@ import {
   useMap,
   type MapRef,
 } from "@/components/ui/map";
-import { X, Layers, Mountain, LocateFixed, Clock, Route as RouteIcon, MapPin } from "lucide-react";
-// ✅ POI_DATA supprimé — toutes les données viennent de la BDD via loadPOIs()
-import { loadPOIs, MARKER_CATEGORIES, type POI } from "@/lib/markers";
+import {
+  X, Layers, Mountain, LocateFixed, Clock, Route as RouteIcon, MapPin,
+  Utensils, Coffee, Wine, Sandwich, ShoppingBag, ShoppingCart,
+  Hospital, Pill, Stethoscope, BedDouble, GraduationCap, Banknote,
+  Fuel, Camera, Church,
+} from "lucide-react";
+// POI_DATA supprimé - toutes les données viennent de la BDD via loadPOIs()
+import { loadPOIs, type POI } from "@/lib/markers";
 import { SiteMarker } from "./SiteMarker";
 import { BottomSheet, type RoutePoint } from "./BottomSheet";
 import { useGeolocation } from "@/hooks/useGeolocation";
@@ -53,23 +58,42 @@ type OsmKind =
   | "attraction" | "place_of_worship"
   | "other";
 
-const OSM_KIND_META: Record<OsmKind, { emoji: string; color: string; label: string }> = {
-  restaurant:      { emoji: "🍽️",  color: "#FF8C42", label: "Restaurant"    },
-  cafe:            { emoji: "☕",   color: "#C8A97E", label: "Café"          },
-  bar:             { emoji: "🍺",   color: "#E8B86D", label: "Bar"           },
-  fast_food:       { emoji: "🍟",   color: "#FFB347", label: "Fast-food"     },
-  shop:            { emoji: "🛍️",  color: "#9B8FFF", label: "Commerce"      },
-  supermarket:     { emoji: "🏪",   color: "#7EC8A0", label: "Supermarché"   },
-  hospital:        { emoji: "🏥",   color: "#FF6B6B", label: "Hôpital"       },
-  pharmacy:        { emoji: "💊",   color: "#4EC9B0", label: "Pharmacie"     },
-  clinic:          { emoji: "🩺",   color: "#FF9999", label: "Clinique"      },
-  hotel:           { emoji: "🏨",   color: "#A8D8EA", label: "Hôtel"         },
-  school:          { emoji: "🏫",   color: "#87CEEB", label: "École"         },
-  bank:            { emoji: "🏦",   color: "#98FB98", label: "Banque"        },
-  fuel:            { emoji: "⛽",   color: "#FFD700", label: "Carburant"     },
-  attraction:      { emoji: "🏛️",  color: "#DDA0DD", label: "Attraction"    },
-  place_of_worship:{ emoji: "⛪",   color: "#F0E68C", label: "Lieu de culte" },
-  other:           { emoji: "📍",   color: "#888896", label: "Lieu"          },
+const OSM_KIND_META: Record<OsmKind, { color: string; label: string }> = {
+  restaurant:      { color: "#FF8C42", label: "Restaurant"    },
+  cafe:            { color: "#C8A97E", label: "Café"          },
+  bar:             { color: "#E8B86D", label: "Bar"           },
+  fast_food:       { color: "#FFB347", label: "Fast-food"     },
+  shop:            { color: "#9B8FFF", label: "Commerce"      },
+  supermarket:     { color: "#7EC8A0", label: "Supermarché"   },
+  hospital:        { color: "#FF6B6B", label: "Hôpital"       },
+  pharmacy:        { color: "#4EC9B0", label: "Pharmacie"     },
+  clinic:          { color: "#FF9999", label: "Clinique"      },
+  hotel:           { color: "#A8D8EA", label: "Hôtel"         },
+  school:          { color: "#87CEEB", label: "École"         },
+  bank:            { color: "#98FB98", label: "Banque"        },
+  fuel:            { color: "#FFD700", label: "Carburant"     },
+  attraction:      { color: "#DDA0DD", label: "Attraction"    },
+  place_of_worship:{ color: "#F0E68C", label: "Lieu de culte" },
+  other:           { color: "#888896", label: "Lieu"          },
+};
+
+const OSM_KIND_ICONS: Record<OsmKind, React.ComponentType<{ size?: number; style?: React.CSSProperties }>> = {
+  restaurant:       Utensils,
+  cafe:             Coffee,
+  bar:              Wine,
+  fast_food:        Sandwich,
+  shop:             ShoppingBag,
+  supermarket:      ShoppingCart,
+  hospital:         Hospital,
+  pharmacy:         Pill,
+  clinic:           Stethoscope,
+  hotel:            BedDouble,
+  school:           GraduationCap,
+  bank:             Banknote,
+  fuel:             Fuel,
+  attraction:       Camera,
+  place_of_worship: Church,
+  other:            MapPin,
 };
 
 function classifyOsmTags(tags: Record<string, string>): OsmKind {
@@ -219,11 +243,12 @@ function LabelOverlayHandler({ enabled }: { enabled: boolean }) {
   const { map, isLoaded } = useMap();
   useEffect(() => {
     if (!map || !isLoaded) return;
+    const m = map;
     const injectedSources: string[] = [];
     const injectedLayers:  string[] = [];
     let cancelled = false;
     const onImageMissing = () => {};
-    map.on("styleimagemissing", onImageMissing);
+    m.on("styleimagemissing", onImageMissing);
     async function inject() {
       try {
         const style = await getLabelStyle();
@@ -233,9 +258,9 @@ function LabelOverlayHandler({ enabled }: { enabled: boolean }) {
           const def = srcDef as Record<string, unknown>;
           if (def.type !== "vector") continue;
           const mappedId = `${LABEL_SOURCE_ID}-${srcId}`;
-          if (!map.getSource(mappedId)) {
+          if (!m.getSource(mappedId)) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            map.addSource(mappedId, def as any);
+            m.addSource(mappedId, def as any);
             injectedSources.push(mappedId);
           }
         }
@@ -248,11 +273,11 @@ function LabelOverlayHandler({ enabled }: { enabled: boolean }) {
           if (hasIcon) continue;
           if (!layout["text-field"]) continue;
           const newId = `vd-lbl-${layer.id as string}`;
-          if (map.getLayer(newId)) continue;
+          if (m.getLayer(newId)) continue;
           const remapped: Record<string, unknown> = { ...layer, id: newId };
           if (layer.source) {
             remapped.source = `${LABEL_SOURCE_ID}-${layer.source as string}`;
-            if (!map.getSource(remapped.source as string)) continue;
+            if (!m.getSource(remapped.source as string)) continue;
           }
           const cleanLayout = { ...layout };
           delete cleanLayout["icon-image"];
@@ -264,16 +289,16 @@ function LabelOverlayHandler({ enabled }: { enabled: boolean }) {
           remapped.paint = paint;
           try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            map.addLayer(remapped as any);
+            m.addLayer(remapped as any);
             injectedLayers.push(newId);
           } catch {}
         }
       } catch {}
     }
     function cleanup() {
-      map.off("styleimagemissing", onImageMissing);
-      for (const id of injectedLayers)  { try { map.removeLayer(id);  } catch {} }
-      for (const id of injectedSources) { try { map.removeSource(id); } catch {} }
+      m.off("styleimagemissing", onImageMissing);
+      for (const id of injectedLayers)  { try { m.removeLayer(id);  } catch {} }
+      for (const id of injectedSources) { try { m.removeSource(id); } catch {} }
       injectedLayers.length  = 0;
       injectedSources.length = 0;
     }
@@ -322,21 +347,65 @@ function hexToRgbTriple(hex: string): string {
 
 function OsmPoiMarker({ poi }: { poi: OsmPoi }) {
   const meta  = OSM_KIND_META[poi.kind];
+  const Icon  = OSM_KIND_ICONS[poi.kind];
   const name  = poi.tags.name || poi.tags["name:fr"] || poi.tags["name:en"] || meta.label;
   const [hovered, setHovered] = useState(false);
+
+  // Tooltip mobile : affiché 1 500 ms après un tap
+  const [showMobileTooltip, setShowMobileTooltip] = useState(false);
+  const mobileTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const markerRef   = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = markerRef.current;
+    if (!el) return;
+    const handleTouch = (e: TouchEvent) => {
+      e.stopPropagation();
+      setShowMobileTooltip(true);
+      if (mobileTimer.current) clearTimeout(mobileTimer.current);
+      mobileTimer.current = setTimeout(() => setShowMobileTooltip(false), 1500);
+    };
+    el.addEventListener("touchend", handleTouch, { passive: true });
+    return () => {
+      el.removeEventListener("touchend", handleTouch);
+      if (mobileTimer.current) clearTimeout(mobileTimer.current);
+    };
+  }, []);
+
+  // Contenu du tooltip (desktop + mobile)
+  const tooltipContent = (
+    <div style={{ background: "rgba(15,15,19,0.98)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", color: "#F0F0F2", padding: "10px 14px", borderRadius: 14, border: `1px solid rgba(${hexToRgbTriple(meta.color)}, 0.28)`, maxWidth: 200, minWidth: 120, boxShadow: "0 8px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 6, background: `rgba(${hexToRgbTriple(meta.color)}, 0.14)`, border: `1px solid rgba(${hexToRgbTriple(meta.color)}, 0.28)`, borderRadius: 99, padding: "2px 8px 2px 6px" }}>
+        <Icon size={10} style={{ color: meta.color, flexShrink: 0 }} />
+        <span style={{ color: meta.color, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.10em", textTransform: "uppercase" }}>{meta.label}</span>
+      </div>
+      <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.3, color: "#F0F0F2", letterSpacing: "-0.01em" }}>{name}</div>
+      {poi.tags.opening_hours && <div style={{ color: "#55556a", fontSize: 10, marginTop: 4 }}>{poi.tags.opening_hours}</div>}
+    </div>
+  );
+
   return (
     <MapMarker longitude={poi.lon} latitude={poi.lat}>
       <MarkerContent>
-        <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} style={{ width: 24, height: 24, borderRadius: "50%", background: `rgba(${hexToRgbTriple(meta.color)}, 0.15)`, border: `1.5px solid rgba(${hexToRgbTriple(meta.color)}, 0.55)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, cursor: "pointer", transition: "transform 150ms ease, background 150ms ease", transform: hovered ? "scale(1.25)" : "scale(1)", boxShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-          {meta.emoji}
+        <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          {/* Tooltip mobile au-dessus du marqueur */}
+          {showMobileTooltip && (
+            <div style={{ position: "absolute", bottom: "calc(100% + 10px)", left: "50%", transform: "translateX(-50%)", zIndex: 9999, pointerEvents: "none" }}>
+              {tooltipContent}
+            </div>
+          )}
+          <div
+            ref={markerRef}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{ width: 24, height: 24, borderRadius: "50%", background: `rgba(${hexToRgbTriple(meta.color)}, 0.15)`, border: `1.5px solid rgba(${hexToRgbTriple(meta.color)}, 0.55)`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "transform 150ms ease, background 150ms ease", transform: hovered ? "scale(1.25)" : "scale(1)", boxShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
+          >
+            <Icon size={11} style={{ color: meta.color }} />
+          </div>
         </div>
       </MarkerContent>
-      <MarkerTooltip>
-        <div style={{ background: "rgba(18,18,22,0.97)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", color: "#F0F0F2", padding: "6px 11px", borderRadius: 10, fontSize: 11, fontWeight: 600, border: `1px solid rgba(${hexToRgbTriple(meta.color)}, 0.30)`, maxWidth: 180, boxShadow: "0 4px 16px rgba(0,0,0,0.5)" }}>
-          <div style={{ color: meta.color, fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 2 }}>{meta.emoji} {meta.label}</div>
-          {name}
-          {poi.tags.opening_hours && <div style={{ color: "#55556a", fontSize: 9, marginTop: 2 }}>🕐 {poi.tags.opening_hours}</div>}
-        </div>
+      <MarkerTooltip className="p-0 bg-transparent shadow-none border-0 rounded-none">
+        {tooltipContent}
       </MarkerTooltip>
     </MapMarker>
   );
@@ -360,8 +429,21 @@ function UserLocationMarker({ longitude, latitude, accuracy }: { longitude: numb
           <div style={{ position: "absolute", width: 8, height: 8, borderRadius: "50%", background: "#4488FF", border: "1.5px solid #ffffff", boxShadow: "0 2px 8px rgba(68,136,255,0.7)", zIndex: 1 }} />
         </div>
       </MarkerContent>
-      <MarkerLabel><span style={{ display: "block", fontSize: 10, fontWeight: 700, color: "#4488FF", background: "rgba(27,27,30,0.90)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", padding: "2px 8px", borderRadius: 99, border: "1px solid rgba(68,136,255,0.30)", whiteSpace: "nowrap", marginTop: 10, boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>📍 Ma position</span></MarkerLabel>
-      <MarkerTooltip><div style={{ background: "rgba(27,27,30,0.97)", backdropFilter: "blur(16px)", color: "#FBFBFB", padding: "5px 10px", borderRadius: 8, fontSize: 11, fontWeight: 600, border: "1px solid rgba(68,136,255,0.25)" }}>Votre position actuelle{accuracy !== undefined && <span style={{ color: "#878787", marginLeft: 6, fontSize: 10 }}>±{Math.round(accuracy)} m</span>}</div></MarkerTooltip>
+      <MarkerLabel><span style={{ display: "block", fontSize: 10, fontWeight: 700, color: "#4488FF", background: "rgba(27,27,30,0.90)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", padding: "2px 8px", borderRadius: 99, border: "1px solid rgba(68,136,255,0.30)", whiteSpace: "nowrap", marginTop: 10, boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>Ma position</span></MarkerLabel>
+      <MarkerTooltip className="p-0 bg-transparent shadow-none border-0 rounded-none">
+        <div style={{ background: "rgba(15,15,19,0.98)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", color: "#F0F0F2", padding: "10px 14px", borderRadius: 14, border: "1px solid rgba(68,136,255,0.28)", minWidth: 140, boxShadow: "0 8px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 6, background: "rgba(68,136,255,0.14)", border: "1px solid rgba(68,136,255,0.28)", borderRadius: 99, padding: "2px 8px 2px 6px" }}>
+            <LocateFixed size={10} style={{ color: "#4488FF", flexShrink: 0 }} />
+            <span style={{ color: "#4488FF", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.10em", textTransform: "uppercase" }}>Position GPS</span>
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#F0F0F2" }}>
+            Votre position
+            {accuracy !== undefined && (
+              <span style={{ color: "#55556a", marginLeft: 6, fontSize: 11, fontWeight: 500 }}>±{Math.round(accuracy)} m</span>
+            )}
+          </div>
+        </div>
+      </MarkerTooltip>
     </MapMarker>
   );
 }
@@ -396,11 +478,17 @@ function GpsStatusBadge({ loading, permissionDenied, onRequestAgain }: { loading
   );
 }
 
-function RouteAlternativesPanel({ routes, selectedIndex, onSelect, onClose }: { routes: RouteAlternative[]; selectedIndex: number; onSelect: (i: number) => void; onClose: () => void }) {
+function RouteAlternativesPanel({ routes, selectedIndex, onSelect, onClose, routeError }: { routes: RouteAlternative[]; selectedIndex: number; onSelect: (i: number) => void; onClose: () => void; routeError: string | null }) {
   if (routes.length === 0) return null;
   const routeColor = (i: number, active: boolean) => active ? ROUTE_COLOR_ACTIVE : ROUTE_COLOR_ALT;
   return (
-    <div style={{ position: "absolute", top: 12, left: 12, zIndex: 250, display: "flex", flexDirection: "column", gap: 6 }}>
+    <div style={{ position: "absolute", top: 148, left: 12, zIndex: 250, display: "flex", flexDirection: "column", gap: 6 }}>
+      {routeError && (
+        <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 12, background: "rgba(255,80,80,0.10)", border: "1px solid rgba(255,80,80,0.30)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", fontSize: 11, fontWeight: 600, color: "#ff8080", boxShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
+          <X size={12} style={{ flexShrink: 0 }} />
+          {routeError}
+        </div>
+      )}
       {routes.map((route, i) => {
         const isActive  = i === selectedIndex;
         const isFastest = i === 0;
@@ -460,16 +548,20 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
   const [routeAlts,        setRouteAlts]        = useState<RouteAlternative[]>([]);
   const [selectedRouteIdx, setSelectedRouteIdx] = useState(0);
   const [routeActive,      setRouteActive]      = useState(false);
+  const [routeError,       setRouteError]       = useState<string | null>(null);
   const [infoPopup,        setInfoPopup]        = useState<{ lng: number; lat: number; text: string } | null>(null);
   const [mapMode,          setMapMode]          = useState<MapMode>("plan");
   const [terrain3D,        setTerrain3D]        = useState(false);
   const [osmEnabled,       setOsmEnabled]       = useState(true);
 
+  // Annule la requête OSRM en cours quand une nouvelle navigation démarre
+  const osrmAbortRef = useRef<AbortController | null>(null);
+
   const { location: userLocation, loading: gpsLoading, permissionDenied, requestLocation } = useGeolocation();
   const focalTarget = useMapFocalTarget();
 
   // ── Chargement des POI depuis la BDD (toutes catégories) ─────────────────
-  // ✅ Fallback sur [] — plus de POI_DATA statique
+  // Fallback sur [] - plus de POI_DATA statique
 
   useEffect(() => {
     loadPOIs().then(setPois).catch(() => setPois([]));
@@ -513,7 +605,7 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
       }
 
       if (focalTarget.mode === "coords") {
-        // Focal sur coordonnées brutes — crée un POI éphémère pour la sélection visuelle
+        // Focal sur coordonnées brutes - crée un POI éphémère pour la sélection visuelle
         const ephemeral: POI = {
           id:          `focal-${Date.now()}`,
           name:        focalTarget.name,
@@ -557,16 +649,23 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
     const toCoords   = resolveCoords(to);
     if (!fromCoords || !toCoords) return;
 
+    // Annule toute requête OSRM précédente encore en vol (évite les race conditions)
+    osrmAbortRef.current?.abort();
+    const controller = new AbortController();
+    osrmAbortRef.current = controller;
+
     setSelectedSite(null);
     setRouteActive(true);
     setSelectedRouteIdx(0);
+    setRouteError(null);
 
     const fallback: RouteAlternative = { coordinates: [fromCoords, toCoords], duration: 0, distance: 0 };
     setRouteAlts([fallback, generateSyntheticAlt(fallback, fromCoords, toCoords)]);
 
     try {
       const url = `https://router.project-osrm.org/route/v1/foot/${fromCoords[0]},${fromCoords[1]};${toCoords[0]},${toCoords[1]}?overview=full&geometries=geojson&alternatives=true`;
-      const res  = await fetch(url);
+      const res  = await fetch(url, { signal: controller.signal });
+      if (!res.ok) throw new Error(`OSRM HTTP ${res.status}`);
       const data = await res.json();
       if (data.routes?.length > 0) {
         const osrmAlts: RouteAlternative[] = data.routes.map((r: { geometry: { coordinates: [number, number][] }; duration: number; distance: number }) => ({
@@ -576,8 +675,15 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
         }));
         if (osrmAlts.length === 1) osrmAlts.push(generateSyntheticAlt(osrmAlts[0], fromCoords, toCoords));
         setRouteAlts(osrmAlts);
+      } else {
+        console.warn("[OSRM] Aucun itinéraire retourné:", data);
+        setRouteError("Aucun itinéraire trouvé");
       }
-    } catch {}
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      console.error("[OSRM] Erreur de routage:", err);
+      setRouteError("Itinéraire non disponible - vérifiez votre connexion");
+    }
 
     const map = mapRef.current;
     if (!map) return;
@@ -591,15 +697,17 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
     } else {
       map.fitBounds(
         [[Math.min(lng1, lng2), Math.min(lat1, lat2)], [Math.max(lng1, lng2), Math.max(lat1, lat2)]],
-        { padding: { top: 80, bottom: 160, left: 230, right: 60 }, duration: 900, maxZoom: 17 },
+        { padding: { top: 140, bottom: 160, left: 230, right: 60 }, duration: 900, maxZoom: 17 },
       );
     }
   }, [resolveCoords]);
 
   const handleEndNavigation = useCallback(() => {
+    osrmAbortRef.current?.abort();
     setRouteAlts([]);
     setRouteActive(false);
     setSelectedRouteIdx(0);
+    setRouteError(null);
     mapRef.current?.flyTo({ center: OUIDAH_CENTER, zoom: DEFAULT_ZOOM, duration: 800 });
   }, []);
 
@@ -611,7 +719,7 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
     }
   }, [userLocation, requestLocation]);
 
-  // ✅ POI filtrés depuis la BDD (toutes catégories)
+  // POI filtrés depuis la BDD (toutes catégories)
   const filteredPOIs = pois.filter(
     poi => activeFilters.has(poi.category) || activeFilters.has("all")
   );
@@ -619,7 +727,7 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="relative" style={{ height: "calc(100vh - 180px)" }}>
+    <div className="relative h-full">
       <Map
         ref={mapRef}
         center={OUIDAH_CENTER}
@@ -643,7 +751,7 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
           />
         )}
 
-        {/* ✅ POI 100% depuis la BDD — toutes catégories */}
+        {/* POI 100% depuis la BDD - toutes catégories */}
         {filteredPOIs.map(poi => (
           <SiteMarker
             key={poi.id}
@@ -698,10 +806,12 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
           selectedIndex={selectedRouteIdx}
           onSelect={setSelectedRouteIdx}
           onClose={handleEndNavigation}
+          routeError={routeError}
         />
       )}
 
-      <div className="absolute top-3 right-3 flex gap-2" style={{ zIndex: 200 }}>
+      {/* Boutons mode carte - positionnés sous l'overlay header (~140px) */}
+      <div className="absolute right-3 flex gap-2" style={{ top: 148, zIndex: 200 }}>
         <button onClick={toggleMapMode} className="flex items-center gap-1.5 px-3 py-2 rounded-xl cursor-pointer" style={{ background: mapMode === "satellite" ? "rgba(245,110,15,0.15)" : "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: mapMode === "satellite" ? "1px solid rgba(245,110,15,0.5)" : "1px solid rgba(255,255,255,0.12)", color: mapMode === "satellite" ? "#F56E0F" : "#FBFBFB", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 12px rgba(0,0,0,0.4)", transition: "all 200ms ease" }}>
           <Layers className="w-3.5 h-3.5" />{mapMode === "plan" ? "Satellite" : "Plan"}
         </button>
@@ -713,7 +823,7 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
         </button>
       </div>
 
-      {/* ✅ allPois passé au BottomSheet pour alimenter le sélecteur de destination */}
+      {/* allPois passé au BottomSheet pour alimenter le sélecteur de destination */}
       <BottomSheet
         site={selectedSite}
         userLocation={userLocation}

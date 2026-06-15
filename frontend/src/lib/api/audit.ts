@@ -6,7 +6,7 @@ type AuditResult = {
   pagination: { total: number; page: number; limit: number; totalPages: number }
 }
 
-type AuditStats = {
+export type AuditStats = {
   total: number
   last24h: number
   byAction: { action: string; count: number }[]

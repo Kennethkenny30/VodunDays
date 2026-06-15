@@ -1,5 +1,5 @@
 /**
- * Middleware Next.js — Protection des routes dashboard
+ * Middleware Next.js - Protection des routes dashboard
  *
  * Logique :
  *  - /admin/*   → accessible uniquement aux rôles ADMIN et SUPER_ADMIN
@@ -9,7 +9,7 @@
  * Stratégie :
  *  Le cookie HttpOnly "vd_token" n'est pas lisible côté JS,
  *  mais il EST accessible dans le middleware Next.js (côté serveur Edge).
- *  On vérifie juste sa présence ici — la validation réelle du JWT
+ *  On vérifie juste sa présence ici - la validation réelle du JWT
  *  est faite par le backend à chaque appel API.
  *
  *  Pour une vérification plus stricte en prod, on peut décoder
@@ -45,7 +45,7 @@ export function middleware(request: NextRequest) {
 
   // ── Déjà connecté → tente d'accéder à /connexion ─────────────────────────
   // On le redirige vers son dashboard (on ne connaît pas le rôle ici
-  // sans décoder le JWT, donc on envoie vers /admin par défaut —
+  // sans décoder le JWT, donc on envoie vers /admin par défaut -
   // la sidebar gère ensuite la navigation selon le rôle réel)
   if (isPublic && token) {
     return NextResponse.redirect(new URL("/admin", request.url))

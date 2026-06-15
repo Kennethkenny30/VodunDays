@@ -134,7 +134,7 @@ export default function UrgencesPage() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Gestion des urgences</h1>
             <p className="text-sm text-muted-foreground">
-              Vodun Days — supervision et traitement des alertes en temps réel
+              Vodun Days - supervision et traitement des alertes en temps réel
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">

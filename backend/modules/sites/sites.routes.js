@@ -17,7 +17,7 @@ const createSchema = Joi.object({
   type:        Joi.string().required(),
   category:    Joi.string().valid(...CATEGORIES).default("SITE"),
   capacity:    Joi.number().integer().min(0).default(0),
-  // Champs PRA — optionnels, pertinents uniquement si category === "PRA"
+  // Champs PRA - optionnels, pertinents uniquement si category === "PRA"
   arLabel:     Joi.string().optional().allow(""),
   arContent:   Joi.string().optional().allow(""),
   arRadius:    Joi.number().positive().optional(),

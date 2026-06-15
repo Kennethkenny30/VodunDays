@@ -2,7 +2,7 @@ import prisma from "../../prisma/prisma.client.js";
 
 export const findAll = async () => {
   return prisma.questionsTypes.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: "asc" },
   });
 };
 
@@ -19,7 +19,10 @@ export const findById = async (id) => {
 
 export const create = async (data) => {
   return prisma.questionsTypes.create({
-    data: { types: data.types },
+    data: {
+      types: data.types,
+      kind: data.kind ?? "TEXT",
+    },
   });
 };
 
@@ -27,7 +30,10 @@ export const update = async (id, data) => {
   await findById(id);
   return prisma.questionsTypes.update({
     where: { id },
-    data: { ...(data.types !== undefined && { types: data.types }) },
+    data: {
+      ...(data.types !== undefined && { types: data.types }),
+      ...(data.kind  !== undefined && { kind: data.kind }),
+    },
   });
 };
 

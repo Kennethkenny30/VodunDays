@@ -57,7 +57,7 @@ export interface Site {
 export interface Program {
   id: string;
   eventId?: string;
-  siteId?: string;
+  siteId?: string | null;
   title: string;
   description?: string;
   type: ProgramType;
@@ -77,6 +77,8 @@ export interface Program {
   isLive?: boolean;
   day: number;
   isFavorite?: boolean;
+  siteLat?: number | null;
+  siteLng?: number | null;
 }
 
 export interface EventSite {

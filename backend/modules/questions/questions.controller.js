@@ -1,4 +1,4 @@
-import { successResponse } from "../../utils/response.js";
+import { successResponse, errorResponse } from "../../utils/response.js";
 import * as questionsService from "./questions.service.js";
 
 export const getAll = async (req, res, next) => {
@@ -41,6 +41,19 @@ export const remove = async (req, res, next) => {
   try {
     await questionsService.remove(req.params.id);
     return successResponse(res, null, "Question supprimée avec succès");
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const reorder = async (req, res, next) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return errorResponse(res, "ids doit être un tableau non vide", 400);
+    }
+    await questionsService.reorder(ids);
+    return successResponse(res, null, "Ordre mis à jour");
   } catch (error) {
     next(error);
   }

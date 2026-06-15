@@ -18,21 +18,26 @@ const accounts = [
   },
 ];
 
+// Types de questions canoniques - upsert idempotent sur le libellé
+const questionTypes = [
+  { types: "Note étoilée",   kind: "RATING"   },
+  { types: "Choix unique",   kind: "SINGLE"   },
+  { types: "Choix multiple", kind: "MULTIPLE" },
+  { types: "Texte libre",    kind: "TEXT"     },
+];
+
 async function main() {
-  console.log("🌱 Démarrage du seed...\n");
+  console.log("Démarrage du seed...\n");
 
   for (const account of accounts) {
-    const existing = await prisma.users.findUnique({
-      where: { email: account.email },
-    });
+    const existing = await prisma.users.findUnique({ where: { email: account.email } });
 
     if (existing) {
-      console.log(`⏭  Compte existant ignoré : ${account.email}`);
+      console.log(`Compte existant ignoré : ${account.email}`);
       continue;
     }
 
     const hashed = await bcrypt.hash(account.password, 12);
-
     await prisma.users.create({
       data: {
         email:     account.email,
@@ -43,16 +48,25 @@ async function main() {
         active:    true,
       },
     });
-
-    console.log(`✅ Compte créé : ${account.email} (${account.role})`);
+    console.log(`Compte créé : ${account.email} (${account.role})`);
   }
 
-  console.log("\n🎉 Seed terminé.");
+  console.log("\nSeed des types de questions...");
+  for (const qt of questionTypes) {
+    await prisma.questionsTypes.upsert({
+      where:  { types: qt.types },
+      update: { kind: qt.kind },
+      create: { types: qt.types, kind: qt.kind },
+    });
+    console.log(`Type upserted : ${qt.types} (${qt.kind})`);
+  }
+
+  console.log("\nSeed terminé.");
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Erreur seed :", e);
+    console.error("Erreur seed :", e);
     process.exit(1);
   })
   .finally(() => prisma.$disconnect());

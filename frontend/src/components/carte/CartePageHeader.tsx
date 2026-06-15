@@ -2,12 +2,11 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 
-/**
- * En-tête de la page Carte Interactive
- * Affiche le logo Vodun Days et le titre de la section
- */
+// En-tête de la page Carte Interactive
 export function CartePageHeader() {
+  const t = useTranslations("carte");
   return (
     <header className="relative z-10 px-4 pt-6 pb-0">
       <motion.div
@@ -27,26 +26,15 @@ export function CartePageHeader() {
           />
         </div>
         <div>
-          {/* Sous-titre */}
           <p
-            className="text-[11px] uppercase mb-1"
+            className="text-[11px] uppercase"
             style={{
               color: "#878787",
               letterSpacing: "0.1em",
             }}
           >
-            Navigation
+            {t("header")}
           </p>
-          {/* Titre principal */}
-          <h1
-            className="text-[22px] font-black"
-            style={{
-              color: "#FBFBFB",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Carte Interactive
-          </h1>
         </div>
       </motion.div>
     </header>

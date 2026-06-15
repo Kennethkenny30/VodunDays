@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
@@ -23,7 +23,7 @@ const defaultModules = [
     icon: Map,
     enabled: true,
     danger: false,
-    tooltip: "Carte MapLibre des sites du festival — désactiver masque la carte pour tous les utilisateurs",
+    tooltip: "Carte MapLibre des sites du festival - désactiver masque la carte pour tous les utilisateurs",
   },
   {
     id: "push",
@@ -31,7 +31,7 @@ const defaultModules = [
     icon: Bell,
     enabled: true,
     danger: false,
-    tooltip: "Envoi de notifications push via FCM — désactiver stoppe toutes les notifications sortantes",
+    tooltip: "Envoi de notifications push via FCM - désactiver stoppe toutes les notifications sortantes",
   },
   {
     id: "gps",
@@ -39,7 +39,7 @@ const defaultModules = [
     icon: Navigation,
     enabled: true,
     danger: false,
-    tooltip: "Géolocalisation des festivaliers en temps réel — désactiver coupe la localisation",
+    tooltip: "Géolocalisation des festivaliers en temps réel - désactiver coupe la localisation",
   },
   {
     id: "video",
@@ -47,7 +47,7 @@ const defaultModules = [
     icon: Video,
     enabled: false,
     danger: false,
-    tooltip: "Section vidéos et replays dans l'application — module en développement",
+    tooltip: "Section vidéos et replays dans l'application - module en développement",
   },
   {
     id: "maintenance",
@@ -55,7 +55,7 @@ const defaultModules = [
     icon: Wrench,
     enabled: false,
     danger: true,
-    tooltip: "⚠️ Passe toute l'application en maintenance — les utilisateurs verront une page d'indisponibilité",
+    tooltip: "Attention : passe toute l'application en maintenance - les utilisateurs verront une page d'indisponibilité",
   },
 ]
 
@@ -77,18 +77,39 @@ const impactMap: Record<string, { enable: string; disable: string }> = {
     disable: "La section vidéo sera masquée.",
   },
   maintenance: {
-    enable: "L'application passera en mode maintenance — impact immédiat sur tous les utilisateurs.",
+    enable: "L'application passera en mode maintenance - impact immédiat sur tous les utilisateurs.",
     disable: "L'application redeviendra accessible à tous les utilisateurs.",
   },
 }
 
+const LS_KEY = "superadmin_modules"
+
 export function ModulesCard({ className }: ModulesCardProps) {
   const [modules, setModules] = useState(defaultModules)
 
+  // Hydratation post-mount depuis localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(LS_KEY)
+      if (!saved) return
+      const parsed: { id: string; enabled: boolean }[] = JSON.parse(saved)
+      setModules(defaultModules.map((m) => ({
+        ...m,
+        enabled: parsed.find((p) => p.id === m.id)?.enabled ?? m.enabled,
+      })))
+    } catch {
+      // données corrompues - on repart des défauts
+    }
+  }, [])
+
   const handleToggle = (id: string, newValue: boolean) => {
-    setModules((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, enabled: newValue } : m))
-    )
+    setModules((prev) => {
+      const next = prev.map((m) => (m.id === id ? { ...m, enabled: newValue } : m))
+      try {
+        localStorage.setItem(LS_KEY, JSON.stringify(next.map((m) => ({ id: m.id, enabled: m.enabled }))))
+      } catch { /* quota dépassé - non critique */ }
+      return next
+    })
   }
 
   const enabledCount = modules.filter((m) => m.enabled).length

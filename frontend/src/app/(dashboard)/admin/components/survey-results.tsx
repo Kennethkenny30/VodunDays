@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -12,71 +12,52 @@ import { IconChart, IconStar, IconDownload, IconComment } from "@/components/ico
 import { formatDistanceToNow } from "date-fns"
 import { fr } from "date-fns/locale"
 import { toast } from "sonner"
-import { api } from "@/lib/api/client"
-import type { SurveyStats, SurveyComment } from "@/lib/types/api"
+import { getSurveyStats, getSurveyComments, exportSurveyCsv } from "@/lib/api/survey"
+import type { SurveyStats, SurveyCommentsResult } from "@/lib/api/survey"
+
+type Comment = SurveyCommentsResult["comments"][number]
 
 interface SurveyResultsProps {
   className?: string
 }
 
-// Résultats de l'enquête de satisfaction - avec API réelle
+// Résultats de l'enquête de satisfaction - widget embarqué dans le dashboard admin
 export function SurveyResults({ className }: SurveyResultsProps) {
-  const [mounted, setMounted] = useState(false)
-  const [stats, setStats] = useState<SurveyStats | null>(null)
-  const [comments, setComments] = useState<SurveyComment[]>([])
-  const [loading, setLoading] = useState(true)
+  const [stats, setStats]       = useState<SurveyStats | null>(null)
+  const [comments, setComments] = useState<Comment[]>([])
+  const [loading, setLoading]   = useState(true)
 
-  // Chargement des données
-  const loadData = useCallback(async () => {
-    setLoading(true)
-    const [statsRes, commentsRes] = await Promise.all([
-      api.get<SurveyStats>("/survey/stats"),
-      api.get<SurveyComment[]>("/survey/comments"),
-    ])
-
-    if (statsRes.success) setStats(statsRes.data)
-    else toast.error(statsRes.message)
-
-    if (commentsRes.success) setComments(Array.isArray(commentsRes.data) ? commentsRes.data : [])
-    else toast.error(commentsRes.message)
-
-    setLoading(false)
+  // Chargement initial - setState uniquement après await pour éviter le lint set-state-in-effect
+  useEffect(() => {
+    let active = true
+    const run = async () => {
+      const [statsRes, commentsRes] = await Promise.all([
+        getSurveyStats(),
+        getSurveyComments({ limit: 20 }),
+      ])
+      if (!active) return
+      if (statsRes.success)    setStats(statsRes.data)
+      else toast.error(statsRes.message)
+      if (commentsRes.success) setComments(commentsRes.data.comments)
+      else toast.error(commentsRes.message)
+      setLoading(false)
+    }
+    run()
+    return () => { active = false }
   }, [])
 
-  useEffect(() => {
-    setMounted(true)
-    loadData()
-  }, [loadData])
-
-  // Export CSV
   const handleExport = async () => {
     try {
-      const response = await fetch("/api/survey/export")
-      if (!response.ok) throw new Error("Erreur lors de l'export")
-      
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement("a")
-      link.href = url
-      link.download = "survey-export.csv"
-      link.click()
-      URL.revokeObjectURL(url)
+      await exportSurveyCsv()
       toast.success("Export téléchargé")
     } catch {
       toast.error("Erreur lors de l'export")
     }
   }
 
-  // Calcul du total des notes
   const totalRatings = stats
-    ? Object.values(stats.ratingDistribution).reduce((a, b) => a + b, 0)
+    ? (Object.values(stats.ratingDistribution) as number[]).reduce((a, b) => a + b, 0)
     : 0
-
-  // Temps relatif côté client uniquement
-  const getRelativeTime = (dateStr: string) => {
-    if (!mounted) return "..."
-    return formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: fr })
-  }
 
   return (
     <div className={cn("glass-card p-6", className)} id="survey">
@@ -96,7 +77,7 @@ export function SurveyResults({ className }: SurveyResultsProps) {
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 text-2xl font-semibold">
             {loading ? (
-              <span className="text-muted-foreground/40">—</span>
+              <span className="text-muted-foreground/40">-</span>
             ) : (
               <>
                 <NumberTicker value={stats?.averageRating ?? 0} decimals={1} />
@@ -111,7 +92,7 @@ export function SurveyResults({ className }: SurveyResultsProps) {
         <div className="text-center">
           <div className="text-2xl font-semibold">
             {loading ? (
-              <span className="text-muted-foreground/40">—</span>
+              <span className="text-muted-foreground/40">-</span>
             ) : (
               <NumberTicker value={stats?.totalResponses ?? 0} />
             )}
@@ -123,7 +104,7 @@ export function SurveyResults({ className }: SurveyResultsProps) {
         <div className="text-center">
           <div className="flex items-center justify-center text-2xl font-semibold">
             {loading ? (
-              <span className="text-muted-foreground/40">—</span>
+              <span className="text-muted-foreground/40">-</span>
             ) : (
               <>
                 <NumberTicker value={stats?.satisfactionRate ?? 0} />
@@ -143,14 +124,13 @@ export function SurveyResults({ className }: SurveyResultsProps) {
         {loading ? (
           <EmptyState
             icon={IconChart}
-            title="Chargement des notes…"
+            title="Chargement des notes..."
             description="Récupération de la répartition en cours."
           />
         ) : stats ? (
           [5, 4, 3, 2, 1].map((rating) => {
-            const count = stats.ratingDistribution[rating as 1 | 2 | 3 | 4 | 5] ?? 0
+            const count = (stats.ratingDistribution as Record<number, number>)[rating] ?? 0
             const percentage = totalRatings > 0 ? Math.round((count / totalRatings) * 100) : 0
-
             return (
               <div key={rating} className="flex items-center gap-3">
                 <div className="flex items-center gap-1 w-12">
@@ -172,12 +152,15 @@ export function SurveyResults({ className }: SurveyResultsProps) {
         <div className="flex items-center gap-2">
           <IconComment className="size-4 text-muted-foreground" />
           <h3 className="text-sm font-medium">Commentaires récents</h3>
+          {!loading && comments.length > 0 && (
+            <Badge variant="secondary">{comments.length}</Badge>
+          )}
         </div>
 
         {loading ? (
           <EmptyState
             icon={IconComment}
-            title="Chargement des commentaires…"
+            title="Chargement des commentaires..."
             description="Récupération des avis en cours."
           />
         ) : comments.length === 0 ? (
@@ -189,32 +172,29 @@ export function SurveyResults({ className }: SurveyResultsProps) {
         ) : (
           <ScrollArea className="h-[400px]">
             <div className="space-y-3 pr-4">
-              {comments.map((comment) => (
+              {comments.map((comment: Comment) => (
                 <div
                   key={comment.id}
                   className="rounded-lg border bg-card/50 p-3 space-y-2"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <IconStar
-                          key={i}
-                          className={cn(
-                            "size-3",
-                            i < comment.rating
-                              ? "fill-[var(--vd-gold)] text-[var(--vd-gold)]"
-                              : "text-muted-foreground/30"
-                          )}
-                        />
-                      ))}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-0.5">
+                      <p className="text-xs text-muted-foreground font-medium">
+                        {comment.event} - {comment.quiz}
+                      </p>
+                      <p className="text-xs text-muted-foreground/70 italic">
+                        {comment.question}
+                      </p>
                     </div>
-                    <Badge variant="outline" className="text-[10px]">
-                      {getRelativeTime(comment.createdAt)}
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] shrink-0"
+                      suppressHydrationWarning
+                    >
+                      {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: fr })}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {comment.text}
-                  </p>
+                  <p className="text-sm text-foreground line-clamp-2">{comment.text}</p>
                 </div>
               ))}
             </div>

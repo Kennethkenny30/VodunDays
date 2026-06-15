@@ -34,7 +34,7 @@ const typeLabels: Record<ProgramType, string> = {
   EXHIBITION: "Exposition", CONFERENCE: "Conférence",
 };
 
-const DAY_NAMES: Record<number, string> = { 1: "Jour 1 — Vendredi", 2: "Jour 2 — Samedi", 3: "Jour 3 — Dimanche" };
+const DAY_NAMES: Record<number, string> = { 1: "Jour 1 - Vendredi", 2: "Jour 2 - Samedi", 3: "Jour 3 - Dimanche" };
 const DAY_DATES: Record<number, string> = { 1: "10 Janv.", 2: "11 Janv.", 3: "12 Janv." };
 
 function getDurationMin(start: string, end: string) {
@@ -127,7 +127,7 @@ function TimelineItem({
   const duration = getDurationMin(item.startTime, item.endTime);
 
   /**
-   * Bouton "Itinéraire" — deep-link vers /carte avec focal sur le site.
+   * Bouton "Itinéraire" - deep-link vers /carte avec focal sur le site.
    *
    * Priorité :
    *   1. item.siteId  → site BDD, CarteMapSection le retrouve via loadPOIs()
@@ -152,7 +152,7 @@ function TimelineItem({
       return;
     }
 
-    // Dernier recours — ouvre la carte sans focal
+    // Dernier recours - ouvre la carte sans focal
     router.push("/carte");
   }
 
@@ -237,7 +237,7 @@ function TimelineItem({
               <div className="px-3 pb-3 pt-0 border-t border-white/[0.05]">
                 <p className="text-[12px] text-white/40 leading-relaxed mt-2 mb-3">{item.description}</p>
                 <div className="flex gap-2">
-                  {/* ✅ Bouton Itinéraire branché — deep-link /carte?siteId= */}
+                  {/* Bouton itinéraire - deep-link /carte?siteId= */}
                   <button
                     onClick={handleItineraire}
                     className={cn(

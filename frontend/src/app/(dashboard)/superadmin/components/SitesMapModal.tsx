@@ -303,7 +303,7 @@ export function SitesMapModal({
                 latitude={displayLat}
                 label={
                   isPick
-                    ? (picked ? "Position sélectionnée — cliquez pour déplacer" : undefined)
+                    ? (picked ? "Position sélectionnée - cliquez pour déplacer" : undefined)
                     : site?.name
                 }
                 color={markerColor}

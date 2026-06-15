@@ -88,7 +88,7 @@ export function FestivalPlannerProvider({ children }: { children: ReactNode }) {
 
   const conflicts = computeConflicts(sorted);
 
-  // Mutations — always sync to localStorage immediately
+  // Mutations - always sync to localStorage immediately
   const addToAgenda = useCallback((program: Program) => {
     setItems((prev) => {
       if (prev.some((p) => p.id === program.id)) return prev;

@@ -41,7 +41,7 @@ import { getSites, createSite, updateSite, deleteSite } from "@/lib/api/sites"
 
 /**
  * Payload étendu pour inclure la catégorie de marqueur et les champs PRA.
- * SiteCreatePayload de base reste inchangé côté API — on cast à la soumission.
+ * SiteCreatePayload de base reste inchangé côté API - on cast à la soumission.
  */
 type ExtendedSitePayload = Partial<SiteCreatePayload> & {
   category?: MarkerCategory
@@ -60,7 +60,7 @@ const MARKER_CATEGORIES: Record<MarkerCategory, {
   border:      string
   bg:          string
   textClass:   string
-  icon:        React.ComponentType<{ className?: string }>
+  icon:        React.ComponentType<{ className?: string; style?: React.CSSProperties }>
   description: string
 }> = {
   SITE: {
@@ -91,7 +91,7 @@ const MARKER_CATEGORIES: Record<MarkerCategory, {
   PRA: {
     label: "Réalité Augm.",     color: "#00E5CC", border: "border-teal-500/30", bg: "bg-teal-500/10", textClass: "text-teal-400",
     icon: Scan,
-    description: "Point de Réalité Augmentée — expérience immersive AR",
+    description: "Point de Réalité Augmentée - expérience immersive AR",
   },
 }
 
@@ -336,7 +336,7 @@ function SiteModal({ open, onClose, editingSite, onSave }: SiteModalProps) {
                 {editingSite
                   ? `Mise à jour de « ${editingSite.name} »`
                   : activeCat
-                    ? `Catégorie : ${activeCat.label} — ${activeCat.description}`
+                    ? `Catégorie : ${activeCat.label} - ${activeCat.description}`
                     : "Ajoutez un nouveau site au festival Vodun Days"
                 }
               </DialogDescription>
@@ -398,7 +398,7 @@ function SiteModal({ open, onClose, editingSite, onSave }: SiteModalProps) {
             <div className="px-6 py-5 space-y-5">
 
               {/* ═══════════════════════════════════════════════════════════════
-                   ÉTAPE 1 — Catégorie de marqueur
+                   ÉTAPE 1 - Catégorie de marqueur
                   ═══════════════════════════════════════════════════════════════ */}
               {step === 1 && (
                 <div className="space-y-4">
@@ -462,7 +462,7 @@ function SiteModal({ open, onClose, editingSite, onSave }: SiteModalProps) {
               )}
 
               {/* ═══════════════════════════════════════════════════════════════
-                   ÉTAPE 2 — Identité
+                   ÉTAPE 2 - Identité
                   ═══════════════════════════════════════════════════════════════ */}
               {step === 2 && (
                 <div className="space-y-5">
@@ -509,7 +509,7 @@ function SiteModal({ open, onClose, editingSite, onSave }: SiteModalProps) {
                         : formData.category === "URGENCES"  ? "ex : Poste Médical Central"
                         : formData.category === "TRANSPORT" ? "ex : Station Zémidjan Centre"
                         : formData.category === "ASSISTANCE"? "ex : Point Info Festival"
-                        : formData.category === "PRA"       ? "ex : Scène AR — Forêt Kpassè"
+                        : formData.category === "PRA"       ? "ex : Scène AR - Forêt Kpassè"
                         : "Nom du site"
                       }
                       className={cn(errors.name && "border-destructive")}
@@ -553,7 +553,7 @@ function SiteModal({ open, onClose, editingSite, onSave }: SiteModalProps) {
 
                   <FormField
                     label="Description"
-                    tooltip="Courte présentation — visible dans la fiche détail de l'application festivalier"
+                    tooltip="Courte présentation - visible dans la fiche détail de l'application festivalier"
                   >
                     <Textarea
                       value={formData.description || ""}
@@ -634,7 +634,7 @@ function SiteModal({ open, onClose, editingSite, onSave }: SiteModalProps) {
               )}
 
               {/* ═══════════════════════════════════════════════════════════════
-                   ÉTAPE 3 — Localisation
+                   ÉTAPE 3 - Localisation
                   ═══════════════════════════════════════════════════════════════ */}
               {step === 3 && (
                 <div className="space-y-5">
@@ -780,7 +780,7 @@ function SiteModal({ open, onClose, editingSite, onSave }: SiteModalProps) {
               )}
 
               {/* ═══════════════════════════════════════════════════════════════
-                   ÉTAPE 4 — Capacité & récapitulatif
+                   ÉTAPE 4 - Capacité & récapitulatif
                   ═══════════════════════════════════════════════════════════════ */}
               {step === 4 && (
                 <div className="space-y-5">
@@ -1117,7 +1117,7 @@ export function SitesManager({ className }: SitesManagerProps) {
                       <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
                         {site.type
                           ? (SUBTYPES[site.category ?? "SITE"]?.find(t => t.value === site.type)?.label ?? site.type)
-                          : <span className="opacity-30 italic">—</span>
+                          : <span className="opacity-30 italic">-</span>
                         }
                       </TableCell>
 
@@ -1125,7 +1125,7 @@ export function SitesManager({ className }: SitesManagerProps) {
                       <TableCell className="hidden md:table-cell text-sm tabular-nums">
                         {site.capacity > 0
                           ? site.capacity.toLocaleString("fr-FR")
-                          : <span className="text-muted-foreground/30 text-xs italic">—</span>
+                          : <span className="text-muted-foreground/30 text-xs italic">-</span>
                         }
                       </TableCell>
 

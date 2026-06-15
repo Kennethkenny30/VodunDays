@@ -98,10 +98,16 @@ export function HeroSection() {
 
         <p
           ref={subtitleRef}
-          className="mx-auto mb-6 md:mb-10 max-w-2xl text-sm md:text-lg lg:text-xl"
+          className="mx-auto mb-6 md:mb-10 max-w-2xl text-pretty text-base md:text-lg lg:text-xl font-light leading-relaxed text-white/75"
         >
-          Plongez au cœur des Vodun Days, l{"'"}événement culturel et spirituel majeur 
-          du Bénin. Découvrez rituels, danses et traditions ancestrales.
+          Trois jours où{" "}
+          <span className="font-medium text-white">Ouidah</span>{" "}
+          s{"'"}éveille au rythme des tambours. Rituels, danses sacrées et
+          traditions ancestrales,{" "}
+          <span className="font-normal text-primary">
+            l{"'"}âme vivante du Bénin
+          </span>
+          .
         </p>
 
         <div ref={ctaRef} className="flex flex-col items-center justify-center gap-3 md:gap-4 sm:flex-row">

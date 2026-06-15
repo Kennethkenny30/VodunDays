@@ -73,10 +73,15 @@ export const getStats = async () => {
   };
 };
 
-// ─── Activité récente (flux temps réel simulé) ────────────────────────────────
+// ─── Activité récente ────────────────────────────────────────────────────────
 
-export const getActivity = async ({ limit = 20 } = {}) => {
+export const getActivity = async ({ limit = 20, module, action } = {}) => {
+  const where = {};
+  if (module) where.module = module;
+  if (action) where.action = action;
+
   const logs = await prisma.auditLogs.findMany({
+    where,
     orderBy: { createdAt: "desc" },
     take: Number(limit),
     select: {
@@ -84,6 +89,7 @@ export const getActivity = async ({ limit = 20 } = {}) => {
       action:      true,
       module:      true,
       description: true,
+      metadata:    true,
       userName:    true,
       ipAddress:   true,
       createdAt:   true,

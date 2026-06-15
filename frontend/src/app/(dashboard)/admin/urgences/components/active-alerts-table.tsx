@@ -96,7 +96,7 @@ function AlertRow({ alert, onClick }: AlertRowProps) {
 interface ActiveAlertsTableProps {
   alerts:          AlertRequest[]
   loading:         boolean
-  /** Appelé par le modal — délégue vers l'API via la page parente */
+  /** Appelé par le modal - délégue vers l'API via la page parente */
   onStatusUpdate:  (id: string, nextStatus: AlertRequest["status"], note?: string) => Promise<void>
   onRefresh:       () => void
   className?:      string

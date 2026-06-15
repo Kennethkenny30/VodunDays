@@ -1,7 +1,5 @@
 "use client"
 
-// TODO: Connecter au backend — remplacer toutes les mutations locales par des appels API
-
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -10,8 +8,18 @@ import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog"
 import { IconPlus, IconDelete } from "@/components/icons"
+import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import type { Question, QuestionType, Impression, Answer } from "@/lib/types/api"
+import {
+  updateQuestion,
+  getChoices,
+  createChoice,
+  deleteChoice,
+  getQuestionsImpressions,
+  linkImpression,
+  unlinkImpression,
+} from "@/lib/api/questions"
+import type { Question, QuestionType, QuestionKind, Impression, Choice } from "@/lib/types/api"
 
 interface QuestionConfigPanelProps {
   question: Question
@@ -21,11 +29,12 @@ interface QuestionConfigPanelProps {
   onDeleted: (id: string) => void
 }
 
-// Types qui affichent la section "options de réponse"
-const TYPES_WITH_CHOICES = ["type-2", "type-3"]
+function kindShowsChoices(kind: QuestionKind): boolean {
+  return kind === "SINGLE" || kind === "MULTIPLE"
+}
 
-const TYPE_ICONS: Record<string, string> = {
-  "type-1": "⭐", "type-2": "◉", "type-3": "☑", "type-4": "✎",
+function kindIsRating(kind: QuestionKind): boolean {
+  return kind === "RATING"
 }
 
 export function QuestionConfigPanel({
@@ -38,89 +47,136 @@ export function QuestionConfigPanel({
   const [wording, setWording] = useState(question.wording)
   const [questionTypeId, setQuestionTypeId] = useState(question.questionTypeId)
   const [isDirty, setIsDirty] = useState(false)
+  const [saving, setSaving] = useState(false)
 
-  // TODO: api.get<Answer[]>(`/answers?questionId=${question.id}`)
-  const [answers, setAnswers] = useState<Answer[]>([])
-  const [newAnswerText, setNewAnswerText] = useState("")
+  const [choices, setChoices] = useState<Choice[]>([])
+  const [loadingRelated, setLoadingRelated] = useState(true)
+  const [newChoiceText, setNewChoiceText] = useState("")
+  const [addingChoice, setAddingChoice] = useState(false)
 
-  // TODO: api.get(`/questions-impressions?questionId=${question.id}`)
-  const [impressionsLiees, setImpressionsLiees] = useState<string[]>([])
+  const [linkedImpressionIds, setLinkedImpressionIds] = useState<string[]>([])
+  const [togglingImpression, setTogglingImpression] = useState<string | null>(null)
+
+  // Recharge choices et impressions a chaque changement de question.
+  // Le composant remonte via key={question.id} donc wording/typeId/isDirty sont deja reinitialises.
+  useEffect(() => {
+    const loadRelated = async () => {
+      setLoadingRelated(true)
+      try {
+        const [choicesRes, impRes] = await Promise.all([
+          getChoices(question.id),
+          getQuestionsImpressions(question.id),
+        ])
+        if (choicesRes.success) setChoices(choicesRes.data)
+        if (impRes.success) setLinkedImpressionIds(impRes.data.map((qi: { impressionId: string }) => qi.impressionId))
+      } catch {
+        toast.error("Impossible de charger les donnees de la question")
+      } finally {
+        setLoadingRelated(false)
+      }
+    }
+    loadRelated()
+  }, [question.id])
 
   useEffect(() => {
-    setWording(question.wording)
-    setQuestionTypeId(question.questionTypeId)
-    setAnswers([])
-    setImpressionsLiees([])
-    setIsDirty(false)
-  }, [question.id, question.wording, question.questionTypeId])
-
-  useEffect(() => {
-    setIsDirty(wording !== question.wording || questionTypeId !== question.questionTypeId)
+    setIsDirty(
+      wording !== question.wording ||
+      questionTypeId !== question.questionTypeId
+    )
   }, [wording, questionTypeId, question.wording, question.questionTypeId])
 
-  // TODO: api.patch<Question>(`/questions/${question.id}`, { wording, questionTypeId })
-  const handleSave = () => {
-    if (!wording.trim()) { toast.error("Le libellé ne peut pas être vide"); return }
-    onUpdated({ ...question, wording, questionTypeId })
-    setIsDirty(false)
-    toast.success("Question mise à jour")
+  const handleSave = async () => {
+    if (!wording.trim()) { toast.error("Le libelle ne peut pas etre vide"); return }
+    setSaving(true)
+    try {
+      const res = await updateQuestion(question.id, { wording, questionTypeId })
+      if (!res.success) { toast.error(res.message || "Erreur lors de la sauvegarde"); return }
+      onUpdated(res.data)
+      setIsDirty(false)
+      toast.success("Question mise a jour")
+    } catch {
+      toast.error("Erreur reseau")
+    } finally {
+      setSaving(false)
+    }
   }
 
-  // TODO: api.delete(`/questions/${question.id}`)
   const handleDelete = () => {
     onDeleted(question.id)
-    toast.success("Question supprimée")
   }
 
-  // TODO: api.post<Answer>("/answers", { response: newAnswerText, questionId: question.id })
-  const handleAddAnswer = () => {
-    if (!newAnswerText.trim()) return
-    const a: Answer = {
-      id: `answer-mock-${Date.now()}`,
-      response: newAnswerText.trim(),
-      questionId: question.id,
+  const handleAddChoice = async () => {
+    if (!newChoiceText.trim()) return
+    setAddingChoice(true)
+    try {
+      const res = await createChoice({ wording: newChoiceText.trim(), questionId: question.id })
+      if (!res.success) { toast.error(res.message || "Erreur lors de l'ajout"); return }
+      setChoices((prev) => [...prev, res.data])
+      setNewChoiceText("")
+    } catch {
+      toast.error("Erreur reseau")
+    } finally {
+      setAddingChoice(false)
     }
-    setAnswers((prev) => [...prev, a])
-    setNewAnswerText("")
   }
 
-  // TODO: api.delete(`/answers/${answerId}`)
-  const handleDeleteAnswer = (answerId: string) => {
-    setAnswers((prev) => prev.filter((a) => a.id !== answerId))
+  const handleDeleteChoice = async (choiceId: string) => {
+    try {
+      const res = await deleteChoice(choiceId)
+      if (!res.success) { toast.error(res.message || "Erreur lors de la suppression"); return }
+      setChoices((prev) => prev.filter((c) => c.id !== choiceId))
+    } catch {
+      toast.error("Erreur reseau")
+    }
   }
 
-  // TODO: api.post/delete("/questions-impressions")
-  const handleToggleImpression = (impressionId: string) => {
-    setImpressionsLiees((prev) =>
-      prev.includes(impressionId)
-        ? prev.filter((id) => id !== impressionId)
-        : [...prev, impressionId]
-    )
+  const handleToggleImpression = async (impressionId: string) => {
+    if (togglingImpression) return
+    setTogglingImpression(impressionId)
+    const isLinked = linkedImpressionIds.includes(impressionId)
+    try {
+      if (isLinked) {
+        const res = await unlinkImpression(question.id, impressionId)
+        if (!res.success) { toast.error(res.message || "Erreur"); return }
+        setLinkedImpressionIds((prev) => prev.filter((id) => id !== impressionId))
+      } else {
+        const res = await linkImpression(question.id, impressionId)
+        if (!res.success) { toast.error(res.message || "Erreur"); return }
+        setLinkedImpressionIds((prev) => [...prev, impressionId])
+      }
+    } catch {
+      toast.error("Erreur reseau")
+    } finally {
+      setTogglingImpression(null)
+    }
   }
 
-  const showChoices = TYPES_WITH_CHOICES.includes(questionTypeId)
+  const selectedKind: QuestionKind =
+    questionTypes.find((t) => t.id === questionTypeId)?.kind ?? "TEXT"
+  const showChoices = kindShowsChoices(selectedKind)
+  const isRating = kindIsRating(selectedKind)
 
   return (
     <ScrollArea className="h-full">
       <div className="px-6 py-5 space-y-6 max-w-xl">
 
-        {/* ── En-tête panneau ──────────────────────────────────────────── */}
+        {/* En-tete panneau */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <h3 className="text-[14px] font-semibold text-foreground">Configurer la question</h3>
             <p className="text-[12px] text-muted-foreground/60 mt-0.5">
-              Libellé, type, réponses et réactions
+              Libelle, type, options et reactions
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {isDirty && (
               <span className="text-[10px] font-medium text-[var(--vd-gold)] bg-[var(--vd-gold)]/10 border border-[var(--vd-gold)]/20 rounded-full px-2 py-0.5">
-                Non sauvegardé
+                Non sauvegarde
               </span>
             )}
             <ConfirmDialog
               title="Supprimer la question"
-              description="Êtes-vous sûr de vouloir supprimer cette question ? Cette action est irréversible."
+              description="Etes-vous sur de vouloir supprimer cette question ? Cette action est irreversible."
               confirmLabel="Supprimer"
               variant="destructive"
               onConfirm={handleDelete}
@@ -137,15 +193,15 @@ export function QuestionConfigPanel({
           </div>
         </div>
 
-        {/* ── Libellé ──────────────────────────────────────────────────── */}
+        {/* Libelle */}
         <div className="space-y-2">
           <Label className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
-            Libellé
+            Libelle
           </Label>
           <Input
             value={wording}
-            onChange={(e) => setWording(e.target.value)}
-            placeholder="Votre question…"
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setWording(e.target.value)}
+            placeholder="Votre question..."
             className={cn(
               "h-10 text-[13px] bg-white/[0.04] border-white/[0.08] rounded-xl",
               "placeholder:text-muted-foreground/30",
@@ -155,10 +211,10 @@ export function QuestionConfigPanel({
           />
         </div>
 
-        {/* ── Type de question ─────────────────────────────────────────── */}
+        {/* Type de question */}
         <div className="space-y-2">
           <Label className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
-            Type de réponse
+            Type de reponse
           </Label>
           <div className="flex flex-wrap gap-2">
             {questionTypes.map((type) => (
@@ -173,37 +229,41 @@ export function QuestionConfigPanel({
                     : "bg-white/[0.03] border-white/[0.08] text-muted-foreground hover:border-white/20 hover:text-foreground hover:bg-white/[0.06]"
                 )}
               >
-                <span className="text-[13px]">{TYPE_ICONS[type.id] ?? "◆"}</span>
                 {type.types}
               </button>
             ))}
           </div>
         </div>
 
-        {/* ── Options de réponse (choix unique/multiple uniquement) ────── */}
-        {showChoices ? (
+        {/* Options de reponse (QCM uniquement) */}
+        {loadingRelated ? (
+          <div className="flex items-center gap-2 text-muted-foreground/40 py-2">
+            <Loader2 className="size-3.5 animate-spin" />
+            <span className="text-[12px]">Chargement...</span>
+          </div>
+        ) : showChoices ? (
           <div className="space-y-3">
             <Label className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
-              Options de réponse
+              Options de reponse
             </Label>
 
-            {answers.length === 0 ? (
+            {choices.length === 0 ? (
               <p className="text-[12px] text-muted-foreground/40 italic">
-                Aucune option — ajoutez-en ci-dessous.
+                Aucune option - ajoutez-en ci-dessous.
               </p>
             ) : (
               <div className="space-y-2">
-                {answers.map((answer, i) => (
+                {choices.map((choice, i) => (
                   <div
-                    key={answer.id}
+                    key={choice.id}
                     className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.07] group hover:border-white/[0.1] transition-all"
                   >
                     <span className="size-5 rounded-md bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-muted-foreground/50 shrink-0">
                       {i + 1}
                     </span>
-                    <span className="flex-1 text-[13px] text-foreground/80">{answer.response}</span>
+                    <span className="flex-1 text-[13px] text-foreground/80">{choice.wording}</span>
                     <button
-                      onClick={() => handleDeleteAnswer(answer.id)}
+                      onClick={() => handleDeleteChoice(choice.id)}
                       className="text-muted-foreground/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
                       title="Supprimer"
                     >
@@ -214,25 +274,24 @@ export function QuestionConfigPanel({
               </div>
             )}
 
-            {/* Ajout d'option */}
             <div className="flex gap-2">
               <Input
-                value={newAnswerText}
-                onChange={(e) => setNewAnswerText(e.target.value)}
-                placeholder="Nouvelle option…"
+                value={newChoiceText}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewChoiceText(e.target.value)}
+                placeholder="Nouvelle option..."
                 className={cn(
                   "flex-1 h-9 text-[13px] bg-white/[0.04] border-white/[0.08] rounded-xl",
                   "placeholder:text-muted-foreground/30",
                   "focus-visible:border-[var(--vd-gold)]/40 focus-visible:bg-white/[0.06]",
                   "transition-all"
                 )}
-                onKeyDown={(e) => { if (e.key === "Enter") handleAddAnswer() }}
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === "Enter") handleAddChoice() }}
               />
               <Button
                 size="sm"
                 variant="outline"
-                onClick={handleAddAnswer}
-                disabled={!newAnswerText.trim()}
+                onClick={handleAddChoice}
+                disabled={!newChoiceText.trim() || addingChoice}
                 className="h-9 w-9 p-0 border-white/[0.1] hover:border-[var(--vd-gold)]/30 hover:bg-[var(--vd-gold)]/8 rounded-xl transition-all"
               >
                 <IconPlus className="size-3.5" />
@@ -240,38 +299,40 @@ export function QuestionConfigPanel({
             </div>
           </div>
         ) : (
-          /* Informatif pour les types sans choix */
+          // Informatif pour les types sans choix
           <div className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-white/[0.025] border border-white/[0.06]">
-            <span className="text-[16px]">{TYPE_ICONS[questionTypeId] ?? "◆"}</span>
             <p className="text-[12px] text-muted-foreground/50 leading-relaxed">
-              {questionTypeId === "type-1"
-                ? "Ce type utilise une notation 1–5 étoiles — pas d'options à configurer."
-                : "Ce type attend une réponse libre — pas d'options à configurer."}
+              {isRating
+                ? "Ce type utilise une notation 1-5 etoiles - pas d'options a configurer."
+                : "Ce type attend une reponse libre - pas d'options a configurer."}
             </p>
           </div>
         )}
 
-        {/* ── Impressions / réactions ──────────────────────────────────── */}
-        {impressions.length > 0 && (
+        {/* Impressions / reactions */}
+        {!loadingRelated && impressions.length > 0 && (
           <div className="space-y-2">
             <Label className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
-              Réactions associées
+              Reactions associees
             </Label>
             <div className="flex flex-wrap gap-2">
               {impressions.map((imp) => {
-                const active = impressionsLiees.includes(imp.id)
+                const active = linkedImpressionIds.includes(imp.id)
                 return (
                   <button
                     key={imp.id}
                     onClick={() => handleToggleImpression(imp.id)}
+                    disabled={togglingImpression === imp.id}
                     className={cn(
                       "flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-[12px] font-medium",
                       "transition-all duration-200 focus-visible:outline-none",
                       active
                         ? "bg-[var(--vd-gold)]/12 border-[var(--vd-gold)]/50 text-[var(--vd-gold)]"
-                        : "bg-white/[0.03] border-white/[0.08] text-muted-foreground hover:border-white/20 hover:bg-white/[0.06]"
+                        : "bg-white/[0.03] border-white/[0.08] text-muted-foreground hover:border-white/20 hover:bg-white/[0.06]",
+                      togglingImpression === imp.id && "opacity-50"
                     )}
                   >
+                    {/* imp.emoji est un champ BDD, pas un emoji code en dur */}
                     <span className="text-[14px]">{imp.emoji}</span>
                     <span className={active ? "text-[var(--vd-gold)]" : ""}>{imp.name}</span>
                   </button>
@@ -281,10 +342,8 @@ export function QuestionConfigPanel({
           </div>
         )}
 
-        {/* ── Séparateur ───────────────────────────────────────────────── */}
         <div className="h-px bg-white/[0.07]" />
 
-        {/* ── Bouton sauvegarder ───────────────────────────────────────── */}
         <Button
           className={cn(
             "w-full h-10 text-[13px] font-semibold rounded-xl transition-all",
@@ -292,8 +351,9 @@ export function QuestionConfigPanel({
             "shadow-[0_0_16px_var(--vd-gold)/15]"
           )}
           onClick={handleSave}
+          disabled={!isDirty || saving}
         >
-          Enregistrer la question
+          {saving ? "Sauvegarde..." : "Enregistrer la question"}
         </Button>
       </div>
     </ScrollArea>

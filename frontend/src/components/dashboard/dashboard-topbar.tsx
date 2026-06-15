@@ -1,9 +1,8 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
-import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
 import { useSidebarStore } from "@/lib/stores/sidebar-store"
 import { useSession } from "@/hooks/useSession"
@@ -31,12 +30,9 @@ import {
   IconMenu,
   IconSearch,
   IconBell,
-  IconMoon,
-  IconSun,
   IconLogout,
   IconUser,
   IconChevronRight,
-  IconSwitch,
   IconCalendar,
   IconMapPin,
   IconUsers,
@@ -65,6 +61,7 @@ function Breadcrumbs() {
     quiz:          "Questionnaires",
     performance:   "Performance",
     artists:       "Artistes",
+    profil:        "Mon profil",
   }
 
   return (
@@ -90,8 +87,8 @@ function Breadcrumbs() {
 // Barre supérieure du dashboard
 export function DashboardTopBar() {
   const { toggle } = useSidebarStore()
-  const { theme, setTheme } = useTheme()
   const pathname = usePathname()
+  const router = useRouter()
   const [commandOpen, setCommandOpen] = useState(false)
   const { user, logout } = useSession()
 
@@ -107,8 +104,6 @@ export function DashboardTopBar() {
     document.addEventListener("keydown", handleKeyDown)
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [handleKeyDown])
-
-  const isSuperAdmin = pathname.startsWith("/superadmin")
 
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6">
@@ -175,34 +170,10 @@ export function DashboardTopBar() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push(pathname.startsWith("/superadmin") ? "/superadmin/profil" : "/admin/profil")}>
               <IconUser className="mr-2 size-4" />
               Profil
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-              {theme === "dark" ? (
-                <IconSun className="mr-2 size-4" />
-              ) : (
-                <IconMoon className="mr-2 size-4" />
-              )}
-              Changer de thème
-            </DropdownMenuItem>
-            {isSuperAdmin && (
-              <DropdownMenuItem asChild>
-                <Link href="/admin">
-                  <IconSwitch className="mr-2 size-4" />
-                  Basculer vers Admin Culture
-                </Link>
-              </DropdownMenuItem>
-            )}
-            {!isSuperAdmin && user?.role === "SUPER_ADMIN" && (
-              <DropdownMenuItem asChild>
-                <Link href="/superadmin">
-                  <IconSwitch className="mr-2 size-4" />
-                  Basculer vers Super Admin
-                </Link>
-              </DropdownMenuItem>
-            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={logout}>
               <IconLogout className="mr-2 size-4" />

@@ -1,9 +1,10 @@
 /**
- * Client API — Vodun Days Dashboard
+ * Client API - Vodun Days Dashboard
  *
  * Toutes les requêtes incluent credentials: "include" pour que le navigateur
  * envoie automatiquement le cookie HttpOnly vd_token au backend.
- * Plus besoin d'injecter manuellement le header Authorization.
+ * La locale active est transmise via X-Locale pour que le backend puisse
+ * l'utiliser si nécessaire.
  */
 import type { ApiResponse } from "@/lib/types/api"
 
@@ -16,18 +17,30 @@ type RequestOptions = {
   headers?: Record<string, string>
 }
 
+function getClientLocale(): string {
+  if (typeof document === "undefined") return "fr";
+  const match = document.cookie.match(/(?:^|;\s*)locale=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : "fr";
+}
+
 export async function apiClient<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<ApiResponse<T>> {
   const { method = "GET", body, headers = {} } = options
 
+  // Timeout de 15 s : evite le spinner infini si le backend/DB ne repond pas
+  const controller = new AbortController()
+  const timeoutId  = setTimeout(() => controller.abort(), 15_000)
+
   const config: RequestInit = {
     method,
     credentials: "include", // envoie le cookie HttpOnly vd_token
     cache: "no-store",
+    signal: controller.signal,
     headers: {
       "Content-Type": "application/json",
+      "X-Locale": getClientLocale(),
       ...headers,
     },
   }
@@ -36,7 +49,20 @@ export async function apiClient<T>(
     config.body = JSON.stringify(body)
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config)
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, config)
+  } catch (err) {
+    // Inclut les erreurs reseau et les timeouts (AbortError)
+    const isTimeout = err instanceof DOMException && err.name === "AbortError"
+    return {
+      success: false,
+      message: isTimeout ? "Le serveur ne repond pas (timeout)" : "Erreur reseau",
+      data: null as T,
+    } as ApiResponse<T>
+  } finally {
+    clearTimeout(timeoutId)
+  }
 
   // 401 → session expirée, rediriger vers /connexion
   if (response.status === 401) {

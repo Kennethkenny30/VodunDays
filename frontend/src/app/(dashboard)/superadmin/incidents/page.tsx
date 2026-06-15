@@ -21,7 +21,7 @@ import { IncidentCenter } from "../components/incident-center"
 import { PageTransition } from "@/components/dashboard/page-transition"
 import { IconBug, IconWarning } from "@/components/icons"
 import { toast } from "sonner"
-import { api } from "@/lib/api/client"
+import { getAuditLogs } from "@/lib/api/audit"
 import type { AuditLog } from "@/lib/types/api"
 
 export default function IncidentsPage() {
@@ -43,14 +43,13 @@ export default function IncidentsPage() {
     setMounted(true)
     const fetchIncidents = async () => {
       try {
-        const res = await api.get<{ data: AuditLog[]; total: number }>("/audit/logs?type=INCIDENT&perPage=10")
-        
+        const res = await getAuditLogs({ action: "INCIDENT", limit: 10 })
         if (res.success) {
-          setIncidents(res.data.data)
+          setIncidents(res.data.logs)
         } else {
           toast.error(res.message)
         }
-      } catch (error) {
+      } catch {
         toast.error("Erreur lors du chargement des incidents")
       } finally {
         setLoading(false)

@@ -29,7 +29,7 @@ export const getStats = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-// POST public — festivalier anonyme
+// POST public - festivalier anonyme
 export const create = async (req, res, next) => {
   try {
     const result = await service.create(req.body);
@@ -37,7 +37,7 @@ export const create = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-// PATCH admin — changement de statut
+// PATCH admin - changement de statut
 export const updateStatus = async (req, res, next) => {
   try {
     const result = await service.updateStatus(req.params.id, req.body, req.user);

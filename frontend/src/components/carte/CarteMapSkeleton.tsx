@@ -7,11 +7,8 @@
 export function CarteMapSkeleton() {
   return (
     <div
-      className="relative w-full flex items-center justify-center"
-      style={{
-        height: "calc(100vh - 180px)",
-        background: "#1B1B1E",
-      }}
+      className="relative w-full h-full flex items-center justify-center"
+      style={{ background: "#1B1B1E" }}
     >
       {/* Animation shimmer */}
       <div

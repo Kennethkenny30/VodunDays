@@ -34,16 +34,18 @@ export const findById = async (id) => {
   return notification;
 };
 
-export const create = async ({ title, message, target = "ALL", targetId, scheduledAt }) => {
+export const create = async ({ title, message, target = "ALL", targetId, scheduledAt, titleEn, messageEn }) => {
   return prisma.notifications.create({
     data: {
       title,
       message,
       target,
-      targetId: targetId || null,
-      status: scheduledAt ? "PENDING" : "SENT",
+      targetId:    targetId    || null,
+      status:      scheduledAt ? "PENDING" : "SENT",
       scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
-      sentAt: scheduledAt ? null : new Date(),
+      sentAt:      scheduledAt ? null : new Date(),
+      titleEn:     titleEn   ?? null,
+      messageEn:   messageEn ?? null,
     },
   });
 };

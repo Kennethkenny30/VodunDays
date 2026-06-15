@@ -7,7 +7,10 @@ export const findAll = async ({ category } = {}) => {
     where: category && VALID_CATEGORIES.includes(category)
       ? { category }
       : undefined,
-    include: { amenities: true },
+    include: {
+      amenities: true,
+      _count: { select: { events: true } },
+    },
     orderBy: { createdAt: "desc" },
   });
 };
@@ -33,10 +36,15 @@ export const create = async (data) => {
       type:        data.type,
       category:    data.category ?? "SITE",
       capacity:    data.capacity ?? 0,
-      // Champs PRA — ignorés si category !== PRA mais stockés si fournis
       arLabel:     data.arLabel   ?? null,
       arContent:   data.arContent ?? null,
       arRadius:    data.arRadius  ?? null,
+      // Champs i18n EN optionnels
+      nameEn:        data.nameEn        ?? null,
+      descriptionEn: data.descriptionEn ?? null,
+      typeEn:        data.typeEn        ?? null,
+      arLabelEn:     data.arLabelEn     ?? null,
+      arContentEn:   data.arContentEn   ?? null,
     },
   });
 };
@@ -52,9 +60,14 @@ export const update = async (id, data) => {
   if (data.type        !== undefined) patch.type        = data.type;
   if (data.category    !== undefined) patch.category    = data.category;
   if (data.capacity    !== undefined) patch.capacity    = data.capacity;
-  if (data.arLabel     !== undefined) patch.arLabel     = data.arLabel;
-  if (data.arContent   !== undefined) patch.arContent   = data.arContent;
-  if (data.arRadius    !== undefined) patch.arRadius    = data.arRadius;
+  if (data.arLabel       !== undefined) patch.arLabel       = data.arLabel;
+  if (data.arContent     !== undefined) patch.arContent     = data.arContent;
+  if (data.arRadius      !== undefined) patch.arRadius      = data.arRadius;
+  if (data.nameEn        !== undefined) patch.nameEn        = data.nameEn;
+  if (data.descriptionEn !== undefined) patch.descriptionEn = data.descriptionEn;
+  if (data.typeEn        !== undefined) patch.typeEn        = data.typeEn;
+  if (data.arLabelEn     !== undefined) patch.arLabelEn     = data.arLabelEn;
+  if (data.arContentEn   !== undefined) patch.arContentEn   = data.arContentEn;
 
   return prisma.sites.update({ where: { id }, data: patch });
 };

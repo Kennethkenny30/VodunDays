@@ -81,7 +81,7 @@ export default function SurveyPage() {
           <div className="glass-card p-6 text-center">
             <div className="flex items-center justify-center gap-1 text-3xl font-semibold">
               {loading ? (
-                <span className="text-muted-foreground/40">—</span>
+                <span className="text-muted-foreground/40">-</span>
               ) : (
                 <>
                   <NumberTicker value={stats?.averageRating ?? 0} decimals={1} />
@@ -96,7 +96,7 @@ export default function SurveyPage() {
           <div className="glass-card p-6 text-center">
             <div className="text-3xl font-semibold">
               {loading ? (
-                <span className="text-muted-foreground/40">—</span>
+                <span className="text-muted-foreground/40">-</span>
               ) : (
                 <NumberTicker value={stats?.totalResponses ?? 0} />
               )}
@@ -108,7 +108,7 @@ export default function SurveyPage() {
           <div className="glass-card p-6 text-center">
             <div className="flex items-center justify-center text-3xl font-semibold">
               {loading ? (
-                <span className="text-muted-foreground/40">—</span>
+                <span className="text-muted-foreground/40">-</span>
               ) : (
                 <>
                   <NumberTicker value={stats?.satisfactionRate ?? 0} />
@@ -174,7 +174,7 @@ export default function SurveyPage() {
                   <div key={comment.id} className="rounded-lg border bg-card/50 p-4 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="space-y-0.5">
-                        <p className="text-xs text-muted-foreground font-medium">{comment.event} — {comment.quiz}</p>
+                        <p className="text-xs text-muted-foreground font-medium">{comment.event} - {comment.quiz}</p>
                         <p className="text-xs text-muted-foreground/70 italic">{comment.question}</p>
                       </div>
                       <span className="text-xs text-muted-foreground shrink-0">

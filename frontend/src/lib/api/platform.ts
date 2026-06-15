@@ -12,6 +12,13 @@ export type PlatformActivity = {
   id: string; action: string; module: string
   description: string; userName: string | null
   ipAddress: string | null; createdAt: string
+  metadata: Record<string, unknown> | null
+}
+
+export type ActivityFilters = {
+  limit?: number
+  module?: string
+  action?: string
 }
 
 type HealthCheck = {
@@ -25,8 +32,12 @@ export async function getPlatformStats() {
   return api.get<PlatformStats>("/platform/stats")
 }
 
-export async function getPlatformActivity(limit?: number) {
-  const q = limit ? `?limit=${limit}` : ""
+export async function getPlatformActivity(filters?: ActivityFilters) {
+  const params = new URLSearchParams()
+  if (filters?.limit)  params.set("limit",  String(filters.limit))
+  if (filters?.module) params.set("module", filters.module)
+  if (filters?.action) params.set("action", filters.action)
+  const q = params.size ? `?${params.toString()}` : ""
   return api.get<PlatformActivity[]>(`/platform/activity${q}`)
 }
 

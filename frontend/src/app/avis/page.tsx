@@ -1,61 +1,82 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { BottomNav } from "@/components/layout/BottomNav";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check, Loader2, RefreshCw } from "lucide-react";
 import { SatisfactionStep } from "@/components/SatisfactionStep";
 import { ConfirmationScreen } from "@/components/ConfirmationScreen";
+import { WaitingScreen } from "@/components/WaitingScreen";
+import { getPublicQuizzes } from "@/lib/api/quiz";
+import { getQuestions, submitAnswer } from "@/lib/api/questions";
+import type { Quiz, Question } from "@/lib/types/api";
+import { useTranslations } from "next-intl";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-interface Ratings {
-  global: number;
-  organization: number;
-  accessibility: number;
-  security: number;
+// Clés localStorage
+const LS_UUID_KEY = "vd_survey_uuid";
+const submittedKey = (quizId: string) => `vd_submitted_${quizId}`;
+
+// Fallback uuid v4 pour les contextes non-https
+function generateUuid(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
 }
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-const RATING_STEPS: Array<{ key: keyof Ratings; question: string }> = [
-  { key: "global", question: "Satisfaction globale" },
-  { key: "organization", question: "Organisation" },
-  { key: "accessibility", question: "Accessibilité" },
-  { key: "security", question: "Sécurité" },
-];
-
-const TOTAL_STEPS = RATING_STEPS.length + 1; // 4 ratings + 1 comment
-
-// ─── Segmented Progress Bar ───────────────────────────────────────────────────
-interface ProgressBarProps {
-  currentStep: number; // 0-indexed
-  totalSteps: number;
+function getOrCreateUuid(): string {
+  if (typeof window === "undefined") return "";
+  const stored = localStorage.getItem(LS_UUID_KEY);
+  if (stored) return stored;
+  const id = generateUuid();
+  localStorage.setItem(LS_UUID_KEY, id);
+  return id;
 }
 
-function SegmentedProgressBar({ currentStep, totalSteps }: ProgressBarProps) {
+// Lecture des params URL sans useSearchParams (évite l'instabilité de référence)
+function getUrlParam(name: string): string | null {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+// Détection du type de question
+function isRatingType(label: string) {
+  const l = label.toLowerCase();
+  return l.includes("note") || l.includes("étoile");
+}
+function isTextType(label: string) {
+  const l = label.toLowerCase();
+  return l.includes("texte") || l.includes("libre");
+}
+
+// Multi-choix stocké en JSON pour tolérer les virgules dans les libellés
+function parseMultiple(val: string): string[] {
+  try { return JSON.parse(val) as string[]; }
+  catch { return val.split(",").filter(Boolean); }
+}
+
+// Segmented Progress Bar
+function SegmentedProgressBar({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
   return (
-    <div className="flex items-center gap-[4px] w-full">
+    <div className="flex items-center gap-1 w-full">
       {Array.from({ length: totalSteps }).map((_, i) => (
         <div
           key={i}
-          className="flex-1 h-[3px] rounded-full transition-colors duration-300 ease-in-out"
-          style={{
-            background: i <= currentStep ? "#F56E0F" : "rgba(255,255,255,0.10)",
-          }}
+          className="flex-1 h-[3px] rounded-full transition-colors duration-300"
+          style={{ background: i <= currentStep ? "#F56E0F" : "rgba(255,255,255,0.10)" }}
         />
       ))}
     </div>
   );
 }
 
-// ─── Toast ───────────────────────────────────────────────────────────────────
-interface ToastProps {
-  message: string;
-  type: "success" | "error";
-}
-
-function Toast({ message, type }: ToastProps) {
+// Toast inline
+function Toast({ message, type }: { message: string; type: "success" | "error" }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -76,71 +97,275 @@ function Toast({ message, type }: ToastProps) {
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
-export default function AvisPage() {
-  const [currentStep, setCurrentStep] = useState(0); // 0–4 (0–3: ratings, 4: comment)
-  const [ratings, setRatings] = useState<Ratings>({
-    global: 0,
-    organization: 0,
-    accessibility: 0,
-    security: 0,
-  });
-  const [comment, setComment] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [toast, setToast] = useState<ToastProps | null>(null);
+// Rendu d'une question QCM ou texte libre
+function QuestionStep({
+  question,
+  value,
+  onChange,
+  onNext,
+  stepIndex,
+  totalSteps,
+}: {
+  question: Question;
+  value: string;
+  onChange: (v: string) => void;
+  onNext: () => void;
+  stepIndex: number;
+  totalSteps: number;
+}) {
+  const t = useTranslations("avis");
+  const label = question.questionType?.types ?? "";
+  const isText = isTextType(label);
+  const isMultiple = label.toLowerCase().includes("multiple");
+  const choices = question.choices ?? [];
 
-  // Show a toast and auto-dismiss after 4s
-  const showToast = useCallback((message: string, type: "success" | "error") => {
+  const noChoicesAvailable = !isText && !isRatingType(label) && choices.length === 0;
+  const canProceed = isText || noChoicesAvailable || value.trim().length > 0;
+  const selectedValues = isMultiple ? parseMultiple(value) : [];
+
+  return (
+    <motion.div
+      key={question.id}
+      initial={{ opacity: 0, x: 40 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -40 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="w-full"
+    >
+      <div
+        className="rounded-2xl p-5"
+        style={{
+          background: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          backdropFilter: "blur(12px)",
+        }}
+      >
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#878787] text-center mb-2">
+          {t("step", { current: stepIndex + 1, total: totalSteps })}
+        </p>
+        <h3 className="text-[18px] font-black text-white text-center mb-6 leading-snug">
+          {question.wording}
+        </h3>
+
+        {isText ? (
+          <textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={t("placeholder")}
+            rows={4}
+            className={cn(
+              "w-full px-3 py-2.5 rounded-xl resize-none",
+              "bg-black/30 border border-white/10",
+              "text-white text-[13px] placeholder:text-[#878787]",
+              "focus:outline-none focus:border-[#F56E0F]/40",
+              "transition-colors duration-200 box-border"
+            )}
+          />
+        ) : noChoicesAvailable ? (
+          <p className="text-center text-[13px] text-[#878787] py-4">
+            {t("noOptions")}
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {choices.map((choice) => {
+              const selected = isMultiple
+                ? selectedValues.includes(choice.wording)
+                : value === choice.wording;
+              return (
+                <button
+                  key={choice.id}
+                  type="button"
+                  onClick={() => {
+                    if (isMultiple) {
+                      const current = parseMultiple(value);
+                      const next = selected
+                        ? current.filter((v) => v !== choice.wording)
+                        : [...current, choice.wording];
+                      onChange(JSON.stringify(next));
+                    } else {
+                      onChange(choice.wording);
+                    }
+                  }}
+                  className={cn(
+                    "w-full text-left px-4 py-3 rounded-xl border text-[13px] transition-all",
+                    selected
+                      ? "bg-[#F56E0F]/15 border-[#F56E0F]/60 text-white"
+                      : "bg-white/4 border-white/10 text-[#878787] hover:border-white/20"
+                  )}
+                >
+                  {choice.wording}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={!canProceed}
+          className={cn(
+            "w-full mt-6 py-3.5 rounded-xl",
+            "text-[14px] font-black tracking-wide",
+            "transition-all duration-200 active:scale-[0.98]",
+            canProceed
+              ? "bg-[#F56E0F] text-white shadow-[0_4px_24px_rgba(245,110,15,0.4)]"
+              : "bg-white/10 text-[#878787] cursor-not-allowed"
+          )}
+        >
+          {t("next")}
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// Machine d'états pour le chargement - évite toute ambiguïté entre phases
+// "already-submitted" = soumis lors d'une session précédente (pas la confirmation)
+type LoadPhase = "loading" | "no-quiz" | "load-error" | "ready" | "already-submitted";
+
+// Page principale
+export default function AvisPage() {
+  const t  = useTranslations("avis");
+  const tc = useTranslations("common");
+  const [quiz, setQuiz]               = useState<Quiz | null>(null);
+  const [quizzes, setQuizzes]         = useState<Quiz[]>([]);
+  const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
+  const [questions, setQuestions]     = useState<Question[]>([]);
+  const [phase, setPhase]             = useState<LoadPhase>("loading");
+  const [currentStep, setCurrentStep] = useState(0);
+  const [answers, setAnswers]         = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted]   = useState(false);
+  const [toast, setToast]             = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // Ref pour éviter les double-exécutions (React Strict Mode) et les stale closures
+  const loadedRef = useRef(false);
+
+  const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
+  };
+
+  // Charge les questions d'un quiz donne et bascule l'état local
+  const loadQuizById = async (target: Quiz) => {
+    const uuid = getOrCreateUuid();
+    if (uuid && localStorage.getItem(submittedKey(target.id))) {
+      setQuiz(target);
+      setPhase("already-submitted");
+      return;
+    }
+
+    const questionsRes = await getQuestions(target.id);
+    if (loadedRef.current) return;
+    loadedRef.current = true;
+
+    if (!questionsRes.success) {
+      setPhase("load-error");
+      return;
+    }
+
+    setQuiz(target);
+    setQuestions(questionsRes.data);
+    setCurrentStep(0);
+    setAnswers({});
+    setPhase(questionsRes.data.length > 0 ? "ready" : "no-quiz");
+  };
+
+  const loadQuiz = async () => {
+    setPhase("loading");
+    loadedRef.current = false;
+
+    try {
+      // URL params lus ici, une seule fois par appel, sans dépendance externe
+      const eventIdParam = getUrlParam("eventId");
+
+      const quizRes = await getPublicQuizzes(eventIdParam ?? undefined);
+      if (!quizRes.success || quizRes.data.length === 0) {
+        setPhase("no-quiz");
+        return;
+      }
+
+      const all = quizRes.data;
+      setQuizzes(all);
+
+      // Priorité : EVENT (si eventId) → FESTIVAL → ALL_EVENTS → ALL_SITES → premier
+      const initial =
+        (eventIdParam ? all.find((q) => q.scope === "EVENT" && q.eventId === eventIdParam) : undefined) ||
+        all.find((q) => q.scope === "FESTIVAL") ||
+        all.find((q) => q.scope === "ALL_EVENTS") ||
+        all.find((q) => q.scope === "ALL_SITES") ||
+        all[0] ||
+        null;
+
+      if (!initial) {
+        setPhase("no-quiz");
+        return;
+      }
+
+      setSelectedQuizId(initial.id);
+      await loadQuizById(initial);
+    } catch {
+      if (!loadedRef.current) setPhase("load-error");
+    }
+  };
+
+  // Basculement vers un autre quiz depuis le sélecteur
+  const selectQuiz = async (id: string) => {
+    const found = quizzes.find((q) => q.id === id);
+    if (!found || id === selectedQuizId) return;
+
+    setSelectedQuizId(id);
+    setIsSubmitted(false);
+    setPhase("loading");
+    loadedRef.current = false;
+    await loadQuizById(found);
+  };
+
+  // Un seul déclenchement au montage - pas de dépendance sur searchParams
+  useEffect(() => {
+    loadQuiz();
+    return () => {
+      // Annule toute mise à jour d'état si le composant est démonté
+      loadedRef.current = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleRatingChange = useCallback(
-    (key: keyof Ratings, value: number) => {
-      setRatings((prev) => ({ ...prev, [key]: value }));
-    },
-    []
-  );
-
-  const handleNext = useCallback(() => {
-    setCurrentStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
-  }, []);
-
-  const handleBack = useCallback(() => {
-    setCurrentStep((s) => Math.max(s - 1, 0));
-  }, []);
+  const handleNext = () => setCurrentStep((s) => s + 1);
+  const handleBack = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
   const handleSubmit = async () => {
+    if (!quiz) return;
     setIsSubmitting(true);
+
+    const submissions = questions
+      .map((q) => ({ questionId: q.id, response: answers[q.id] ?? "" }))
+      .filter((a) => a.response.trim().length > 0);
+
+    if (submissions.length === 0) {
+      showToast(t("validationError"), "error");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const uuid = getOrCreateUuid();
     try {
-      // Simulate API call — replace with your actual submitSatisfaction() call
-      await new Promise<void>((resolve) => setTimeout(resolve, 1500));
-
-      // In production:
-      // await submitSatisfaction({
-      //   globalRating: ratings.global,
-      //   organizationRating: ratings.organization,
-      //   accessibilityRating: ratings.accessibility,
-      //   securityRating: ratings.security,
-      //   comment,
-      //   submittedAt: new Date(),
-      //   locale: currentLocale,
-      // });
-
-      showToast("Merci pour votre retour !", "success");
+      await Promise.all(
+        submissions.map((a) =>
+          submitAnswer({ response: a.response, questionId: a.questionId, uuid })
+        )
+      );
+      localStorage.setItem(submittedKey(quiz.id), "1");
+      showToast(t("success"), "success");
       setIsSubmitted(true);
     } catch {
-      showToast("Erreur lors de l'envoi. Réessayez.", "error");
+      showToast(t("sendError"), "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const isCommentStep = currentStep === RATING_STEPS.length;
-  const currentRatingStep = RATING_STEPS[currentStep];
-
-  // ── Submitted state ──
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-[#0E0D12]">
@@ -150,6 +375,10 @@ export default function AvisPage() {
     );
   }
 
+  const isLastStep = currentStep === questions.length - 1;
+  const currentQuestion = questions[currentStep];
+  const currentType = currentQuestion?.questionType?.types ?? "";
+
   return (
     <div
       className="min-h-screen"
@@ -158,7 +387,7 @@ export default function AvisPage() {
           "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(245,110,15,0.08) 0%, transparent 60%), #0E0D12",
       }}
     >
-      {/* ── Header ── */}
+      {/* Header */}
       <header className="sticky top-0 z-20 px-4 pt-4 pb-3 bg-[#0E0D12]/90 backdrop-blur-md">
         <div className="flex items-center justify-between mb-4">
           {currentStep > 0 ? (
@@ -177,112 +406,134 @@ export default function AvisPage() {
               <ArrowLeft className="w-5 h-5 text-white" />
             </Link>
           )}
-
-          {/* Page title */}
           <div />
-
-          {/* Spacer */}
           <div className="w-10" />
         </div>
-
-        {/* Segmented progress bar */}
-        <SegmentedProgressBar currentStep={currentStep} totalSteps={TOTAL_STEPS} />
+        {phase === "ready" && questions.length > 0 && (
+          <SegmentedProgressBar currentStep={currentStep} totalSteps={questions.length} />
+        )}
       </header>
 
-      {/* ── Page heading ── */}
+      {/* Sélecteur multi-quiz */}
+      {quizzes.length > 1 && (
+        <div className="px-4 pt-3 pb-0 overflow-x-auto flex gap-2 scrollbar-hide">
+          {quizzes.map((q) => {
+            const submitted = !!localStorage.getItem(submittedKey(q.id));
+            const isActive  = selectedQuizId === q.id;
+            return (
+              <button
+                key={q.id}
+                type="button"
+                onClick={() => selectQuiz(q.id)}
+                className={cn(
+                  "shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full",
+                  "text-[12px] font-semibold border transition-all whitespace-nowrap",
+                  isActive
+                    ? "bg-[#F56E0F] text-white border-[#F56E0F]"
+                    : submitted
+                    ? "bg-white/4 text-[#878787] border-white/10"
+                    : "bg-white/8 text-white/70 border-white/15 hover:border-white/30"
+                )}
+              >
+                {submitted && <Check className="size-3" />}
+                {q.title}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* En-tête page */}
       <div className="px-4 pt-6 pb-2">
         <p className="text-[11px] font-semibold uppercase tracking-widest text-[#878787] mb-1">
-          Satisfaction
+          {t("category")}
         </p>
         <h1 className="text-[22px] font-black text-white leading-tight mb-1">
-          Votre Avis
+          {quiz?.title ?? t("title")}
         </h1>
         <p className="text-[13px] text-[#878787]">
-          Votre avis améliore les prochaines éditions.
+          {t("subtitle")}
         </p>
       </div>
 
-      {/* ── Step content ── */}
+      {/* Contenu selon la phase */}
       <main className="px-4 pt-6 pb-36">
-        <AnimatePresence mode="wait">
-          {/* Rating steps (0–3) */}
-          {!isCommentStep && currentRatingStep && (
-            <SatisfactionStep
-              key={currentStep}
-              stepIndex={currentStep}
-              totalSteps={RATING_STEPS.length}
-              question={currentRatingStep.question}
-              ratingKey={currentRatingStep.key}
-              value={ratings[currentRatingStep.key]}
-              onChange={(val) => handleRatingChange(currentRatingStep.key, val)}
-              onNext={handleNext}
-            />
-          )}
+        {phase === "loading" && (
+          <div className="flex flex-col items-center justify-center gap-3 pt-20 text-white/40">
+            <Loader2 className="size-6 animate-spin" />
+            <p className="text-[13px]">{t("loading")}</p>
+          </div>
+        )}
 
-          {/* Comment step (step 4) */}
-          {isCommentStep && (
-            <motion.div
-              key="comment"
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -40 }}
-              transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="w-full"
+        {phase === "no-quiz" && (
+          <div className="flex flex-col items-center justify-center gap-3 pt-20 text-white/40">
+            <p className="text-[14px]">{t("empty")}</p>
+          </div>
+        )}
+
+        {phase === "already-submitted" && (
+          <WaitingScreen quizTitle={quiz?.title} onCheck={() => { loadedRef.current = false; setIsSubmitted(false); loadQuiz(); }} />
+        )}
+
+        {phase === "load-error" && (
+          <div className="flex flex-col items-center justify-center gap-4 pt-20">
+            <p className="text-[14px] text-[#878787] text-center">
+              {t("error")}
+            </p>
+            <button
+              type="button"
+              onClick={() => { loadedRef.current = false; setIsSubmitted(false); loadQuiz(); }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-[13px] text-white/70 hover:bg-white/[0.1] transition-all"
             >
-              <div
-                className="rounded-2xl p-5"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  backdropFilter: "blur(12px)",
-                }}
+              <RefreshCw className="size-4" />
+              {tc("retry")}
+            </button>
+          </div>
+        )}
+
+        {phase === "ready" && (
+          <AnimatePresence mode="wait">
+            {currentQuestion && isRatingType(currentType) ? (
+              <SatisfactionStep
+                key={currentQuestion.id}
+                stepIndex={currentStep}
+                totalSteps={questions.length}
+                question={currentQuestion.wording}
+                ratingKey={currentQuestion.id}
+                value={Number(answers[currentQuestion.id] ?? 0)}
+                onChange={(val) =>
+                  setAnswers((prev) => ({ ...prev, [currentQuestion.id]: String(val) }))
+                }
+                onNext={isLastStep ? handleSubmit : handleNext}
+              />
+            ) : currentQuestion ? (
+              <QuestionStep
+                key={currentQuestion.id}
+                question={currentQuestion}
+                value={answers[currentQuestion.id] ?? ""}
+                onChange={(val) =>
+                  setAnswers((prev) => ({ ...prev, [currentQuestion.id]: val }))
+                }
+                onNext={isLastStep ? handleSubmit : handleNext}
+                stepIndex={currentStep}
+                totalSteps={questions.length}
+              />
+            ) : null}
+
+            {isLastStep && isRatingType(currentType) && isSubmitting && (
+              <motion.div
+                key="submitting"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="fixed inset-0 flex items-center justify-center bg-black/50 z-50"
               >
-                {/* Question */}
-                <h3 className="text-[16px] font-black text-white mb-1">
-                  Commentaire libre
-                </h3>
-                <p className="text-[12px] text-[#878787] mb-4">(optionnel)</p>
-
-                {/* Textarea */}
-                <textarea
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="Votre message..."
-                  rows={4}
-                  className={cn(
-                    "w-full px-3 py-[10px] rounded-xl resize-none",
-                    "bg-black/30 border border-white/10",
-                    "text-white text-[13px] placeholder:text-[#878787]",
-                    "focus:outline-none focus:border-[#F56E0F]/40",
-                    "transition-colors duration-200 box-border"
-                  )}
-                />
-
-                {/* Submit button */}
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className={cn(
-                    "w-full mt-5 py-[14px] rounded-xl",
-                    "bg-[#F56E0F] text-white",
-                    "text-[15px] font-black tracking-wide",
-                    "transition-all duration-200 active:scale-[0.98]",
-                    "shadow-[0_4px_24px_rgba(245,110,15,0.4)]",
-                    "hover:bg-[#D4600C]",
-                    isSubmitting && "opacity-70 cursor-not-allowed"
-                  )}
-                >
-                  {isSubmitting ? "Envoi en cours..." : "Envoyer"}
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <Loader2 className="size-8 animate-spin text-[#F56E0F]" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
       </main>
 
-      {/* ── Toast ── */}
       <AnimatePresence>
         {toast && <Toast key="toast" message={toast.message} type={toast.type} />}
       </AnimatePresence>

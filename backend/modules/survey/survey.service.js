@@ -8,20 +8,31 @@
  * à une question dont QuestionType.types contient RATING_TYPE_KEYWORD.
  * Les commentaires sont les réponses texte libres dont le type contient TEXT_TYPE_KEYWORD.
  * Si les libellés changent en base, mettre à jour ces deux constantes.
+ *
+ * Filtrage : eventId cible un événement précis ; scope cible tous les quiz
+ * d'une portée donnée (FESTIVAL, ALL_EVENTS, ALL_SITES, EVENT).
+ * Si ni l'un ni l'autre n'est fourni, toutes les réponses sont agrégées.
  */
 
 import prisma from "../../prisma/prisma.client.js";
 
-// Mots-clés attendus dans QuestionType.types pour identifier les types de question
-const RATING_TYPE_KEYWORD = "Note";   // ex : "Note étoilée"
-const TEXT_TYPE_KEYWORD   = "Texte";  // ex : "Texte libre"
+const RATING_TYPE_KEYWORD = "Note";
+const TEXT_TYPE_KEYWORD   = "Texte";
 
-export const getStats = async ({ eventId } = {}) => {
-  // Récupère les réponses numériques (réponses parsables en 1-5)
+// Construit le filtre Prisma sur le quiz selon eventId et/ou scope
+function buildQuizFilter(eventId, scope) {
+  if (eventId) return { quiz: { eventId } };
+  if (scope)   return { quiz: { scope } };
+  return {};
+}
+
+export const getStats = async ({ eventId, scope } = {}) => {
+  const quizFilter = buildQuizFilter(eventId, scope);
+
   const ratingAnswers = await prisma.answers.findMany({
     where: {
       question: {
-        ...(eventId && { quiz: { eventId } }),
+        ...quizFilter,
         questionType: { types: { contains: RATING_TYPE_KEYWORD, mode: "insensitive" } },
       },
     },
@@ -44,39 +55,27 @@ export const getStats = async ({ eventId } = {}) => {
     };
   }
 
-  const averageRating =
-    validRatings.reduce((sum, n) => sum + n, 0) / totalResponses;
+  const averageRating = validRatings.reduce((sum, n) => sum + n, 0) / totalResponses;
 
   const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
   validRatings.forEach((n) => { ratingDistribution[n]++; });
 
-  // Taux de satisfaction = % de notes >= 4
   const satisfied = validRatings.filter((n) => n >= 4).length;
   const satisfactionRate = Math.round((satisfied / totalResponses) * 100);
 
-  // Tendance par jour (7 derniers jours)
   const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const recentAnswers = ratingAnswers.filter(
-    (a) => new Date(a.createdAt) >= since7d
-  );
+  const recentAnswers = ratingAnswers.filter((a) => new Date(a.createdAt) >= since7d);
 
   const trendMap = {};
   recentAnswers.forEach((a) => {
     const day = a.createdAt.toISOString().slice(0, 10);
     if (!trendMap[day]) trendMap[day] = { date: day, count: 0, sum: 0 };
     const n = parseInt(a.response, 10);
-    if (n >= 1 && n <= 5) {
-      trendMap[day].count++;
-      trendMap[day].sum += n;
-    }
+    if (n >= 1 && n <= 5) { trendMap[day].count++; trendMap[day].sum += n; }
   });
 
   const trend = Object.values(trendMap)
-    .map((d) => ({
-      date:   d.date,
-      count:  d.count,
-      avg:    d.count > 0 ? Math.round((d.sum / d.count) * 10) / 10 : 0,
-    }))
+    .map((d) => ({ date: d.date, count: d.count, avg: d.count > 0 ? Math.round((d.sum / d.count) * 10) / 10 : 0 }))
     .sort((a, b) => a.date.localeCompare(b.date));
 
   return {
@@ -90,17 +89,16 @@ export const getStats = async ({ eventId } = {}) => {
 
 export const getComments = async ({
   eventId,
+  scope,
   page = 1,
   limit = 20,
-  minRating,
-  maxRating,
 } = {}) => {
   const skip = (Number(page) - 1) * Number(limit);
+  const quizFilter = buildQuizFilter(eventId, scope);
 
-  // Cherche les réponses texte libres
   const where = {
     question: {
-      ...(eventId && { quiz: { eventId } }),
+      ...quizFilter,
       questionType: { types: { contains: TEXT_TYPE_KEYWORD, mode: "insensitive" } },
     },
     NOT: { response: "" },
@@ -145,11 +143,11 @@ export const getComments = async ({
   };
 };
 
-export const exportCsv = async ({ eventId } = {}) => {
+export const exportCsv = async ({ eventId, scope } = {}) => {
+  const quizFilter = buildQuizFilter(eventId, scope);
+
   const answers = await prisma.answers.findMany({
-    where: {
-      ...(eventId && { question: { quiz: { eventId } } }),
-    },
+    where: quizFilter.quiz ? { question: quizFilter } : {},
     orderBy: { createdAt: "desc" },
     include: {
       question: {
@@ -162,7 +160,6 @@ export const exportCsv = async ({ eventId } = {}) => {
     },
   });
 
-  // Génération CSV simple
   const header = "uuid,quiz,question,type,réponse,date\n";
   const rows = answers
     .map((a) =>

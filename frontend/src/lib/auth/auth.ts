@@ -4,7 +4,7 @@
  * automatiquement le cookie HttpOnly vd_token à chaque requête.
  */
 
-import type { User } from "@/lib/types/api"
+import type { User, UpdateMePayload } from "@/lib/types/api"
 import type { SessionUser } from "./session"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"
@@ -61,6 +61,16 @@ export async function getMe(): Promise<AuthResponse<SessionUser>> {
     method: "GET",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
+  })
+  return res.json()
+}
+
+export async function updateMe(payload: UpdateMePayload): Promise<AuthResponse<{ user: SessionUser }>> {
+  const res = await fetch(`${API_BASE}/auth/me`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
   })
   return res.json()
 }

@@ -1,19 +1,25 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { StatusPulse } from "@/components/dashboard/status-pulse"
-import { NumberTicker } from "@/components/magicui/number-ticker"
 import { Badge } from "@/components/ui/badge"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Wifi, Timer, Radio, Bell } from "lucide-react"
+import { Wifi, Timer, Users, Bell, Loader2 } from "lucide-react"
+import { getPlatformStats, getPlatformHealth } from "@/lib/api/platform"
+import { getNotificationStats } from "@/lib/api/notifications"
+import type { PlatformStats } from "@/lib/api/platform"
 
 interface StatusCardProps {
   className?: string
 }
+
+type PlatformStatus = "online" | "degraded" | "incident"
+type NotifStats = { total: number; sent: number; pending: number; failed: number }
 
 function MetricItem({
   label,
@@ -21,32 +27,37 @@ function MetricItem({
   suffix,
   tooltip,
   icon: Icon,
+  loading,
 }: {
   label: string
   value: React.ReactNode
   suffix?: string
   tooltip: string
   icon: React.ComponentType<{ className?: string }>
+  loading?: boolean
 }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        {/* min-w-0 + overflow-hidden empêchent le débordement dans la grille */}
         <div className="group cursor-default rounded-xl border border-white/6 bg-white/4 p-3 transition-all hover:border-white/12 hover:bg-white/8 min-w-0 overflow-hidden">
-          {/* Label avec icône — truncate si trop long */}
           <div className="flex items-center gap-1.5 mb-2 min-w-0">
             <Icon className="size-3 text-muted-foreground/60 shrink-0" />
             <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60 truncate">
               {label}
             </p>
           </div>
-          {/* Valeur — flex avec min-w-0 pour éviter tout débordement */}
           <div className="flex items-baseline gap-1 min-w-0">
-            <span className="text-base font-semibold tabular-nums truncate leading-tight">
-              {value}
-            </span>
-            {suffix && (
-              <span className="text-[11px] text-muted-foreground shrink-0">{suffix}</span>
+            {loading ? (
+              <Loader2 className="size-3.5 animate-spin text-muted-foreground/40" />
+            ) : (
+              <>
+                <span className="text-base font-semibold tabular-nums truncate leading-tight">
+                  {value}
+                </span>
+                {suffix && (
+                  <span className="text-[11px] text-muted-foreground shrink-0">{suffix}</span>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -59,10 +70,34 @@ function MetricItem({
 }
 
 export function StatusCard({ className }: StatusCardProps) {
-  const status = "online" as const
-  const uptime = 99.8
-  const wsConnections = 1247
-  const fcmSubscribers = 8934
+  const [loading,   setLoading]   = useState(true)
+  const [status,    setStatus]    = useState<PlatformStatus>("online")
+  const [dbStatus,  setDbStatus]  = useState<"ok" | "error">("ok")
+  const [stats,     setStats]     = useState<PlatformStats | null>(null)
+  const [notifStats, setNotifStats] = useState<NotifStats | null>(null)
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const [healthRes, statsRes, notifRes] = await Promise.all([
+          getPlatformHealth(),
+          getPlatformStats(),
+          getNotificationStats(),
+        ])
+        if (healthRes.success) {
+          setStatus(healthRes.data.status === "healthy" ? "online" : "degraded")
+          setDbStatus(healthRes.data.checks.database === "ok" ? "ok" : "error")
+        }
+        if (statsRes.success)  setStats(statsRes.data)
+        if (notifRes.success)  setNotifStats(notifRes.data)
+      } catch {
+        // non critique
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetch()
+  }, [])
 
   const statusConfig = {
     online: {
@@ -87,14 +122,20 @@ export function StatusCard({ className }: StatusCardProps) {
 
   const config = statusConfig[status]
 
+  const uptimeLabel = stats
+    ? `${stats.uptime.days}j ${stats.uptime.hours}h`
+    : "-"
+
+  const dbLabel = dbStatus === "ok"
+    ? <span className="text-green-400 text-sm font-semibold">OK</span>
+    : <span className="text-red-400 text-sm font-semibold">Erreur</span>
+
   return (
     <div className={cn("glass-card relative overflow-hidden p-6", className)}>
       {/* Ligne accent en haut */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[2px] rounded-t-2xl"
-        style={{
-          background: `linear-gradient(90deg, transparent, ${config.accent}, transparent)`,
-        }}
+        style={{ background: `linear-gradient(90deg, transparent, ${config.accent}, transparent)` }}
       />
       {/* Glow ambiant */}
       <div
@@ -127,36 +168,35 @@ export function StatusCard({ className }: StatusCardProps) {
           </TooltipContent>
         </Tooltip>
 
-        {/* Grille métriques — 2 cols sur mobile, 4 sur sm+ */}
+        {/* Grille métriques */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <MetricItem
             label="Uptime"
             icon={Timer}
-            value={<NumberTicker value={uptime} decimals={1} />}
-            suffix="%"
-            tooltip="Disponibilité de la plateforme sur les 30 derniers jours"
+            value={uptimeLabel}
+            tooltip="Durée depuis le dernier démarrage du serveur"
+            loading={loading}
           />
           <MetricItem
-            label="Redis"
+            label="Base"
             icon={Wifi}
-            value={
-              <span className="text-green-400 text-sm font-semibold">OK</span>
-            }
-            tooltip="Connexion au cache Redis — utilisé pour les sessions et les données temps réel"
+            value={dbLabel}
+            tooltip="Connexion à la base de données PostgreSQL"
+            loading={loading}
           />
           <MetricItem
-            label="WebSocket"
-            icon={Radio}
-            value={<NumberTicker value={wsConnections} />}
-            suffix=" cx"
-            tooltip="Connexions WebSocket actives — utilisateurs connectés en temps réel"
+            label="Connexions 24h"
+            icon={Users}
+            value={stats?.users.recentLogins ?? 0}
+            tooltip="Utilisateurs connectés dans les dernières 24 heures"
+            loading={loading}
           />
           <MetricItem
-            label="Push FCM"
+            label="Notifs envoyées"
             icon={Bell}
-            value={<NumberTicker value={fcmSubscribers} />}
-            suffix=" ab."
-            tooltip="Abonnés aux notifications push via Firebase Cloud Messaging"
+            value={notifStats?.sent ?? 0}
+            tooltip="Notifications push envoyées depuis le début"
+            loading={loading}
           />
         </div>
       </div>

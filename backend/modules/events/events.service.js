@@ -38,12 +38,15 @@ export const findById = async (id) => {
 export const create = async (data) => {
   return prisma.events.create({
     data: {
-      name: data.name,
-      description: data.description,
-      status: data.status,
-      siteId: data.siteId,
-      eventTypeId: data.eventTypeId,
-      createdBy: data.createdBy,
+      name:          data.name,
+      description:   data.description,
+      status:        data.status,
+      siteId:        data.siteId,
+      eventTypeId:   data.eventTypeId,
+      createdBy:     data.createdBy,
+      imageUrl:      data.imageUrl      ?? null,
+      nameEn:        data.nameEn        ?? null,
+      descriptionEn: data.descriptionEn ?? null,
     },
     include: { site: true, eventType: true },
   });
@@ -54,12 +57,14 @@ export const update = async (id, data) => {
   return prisma.events.update({
     where: { id },
     data: {
-      ...(data.name !== undefined && { name: data.name }),
-      ...(data.description !== undefined && { description: data.description }),
-      ...(data.status !== undefined && { status: data.status }),
-      ...(data.siteId !== undefined && { siteId: data.siteId }),
-      ...(data.eventTypeId !== undefined && { eventTypeId: data.eventTypeId }),
-      ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
+      ...(data.name          !== undefined && { name: data.name }),
+      ...(data.description   !== undefined && { description: data.description }),
+      ...(data.status        !== undefined && { status: data.status }),
+      ...(data.siteId        !== undefined && { siteId: data.siteId }),
+      ...(data.eventTypeId   !== undefined && { eventTypeId: data.eventTypeId }),
+      ...(data.imageUrl      !== undefined && { imageUrl: data.imageUrl }),
+      ...(data.nameEn        !== undefined && { nameEn: data.nameEn }),
+      ...(data.descriptionEn !== undefined && { descriptionEn: data.descriptionEn }),
     },
     include: { site: true, eventType: true },
   });

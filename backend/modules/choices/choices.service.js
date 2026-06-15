@@ -23,8 +23,9 @@ export const findById = async (id) => {
 export const create = async (data) => {
   return prisma.choices.create({
     data: {
-      wording: data.wording,
+      wording:    data.wording,
       questionId: data.questionId,
+      wordingEn:  data.wordingEn ?? null,
     },
     include: { question: true },
   });
@@ -35,8 +36,9 @@ export const update = async (id, data) => {
   return prisma.choices.update({
     where: { id },
     data: {
-      ...(data.wording !== undefined && { wording: data.wording }),
+      ...(data.wording    !== undefined && { wording: data.wording }),
       ...(data.questionId !== undefined && { questionId: data.questionId }),
+      ...(data.wordingEn  !== undefined && { wordingEn: data.wordingEn }),
     },
     include: { question: true },
   });

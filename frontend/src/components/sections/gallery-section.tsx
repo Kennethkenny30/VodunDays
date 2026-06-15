@@ -101,7 +101,7 @@ export function GallerySection() {
         // Tween avec valeur fonctionnelle : x recalcule a chaque ScrollTrigger.refresh()
         const tween = gsap.to(track, { x: () => -getScrollDist(), ease: "none" });
 
-        // Scroll horizontal pilote par scrub — pas de pin GSAP, pas de pin-spacer
+        // Scroll horizontal pilote par scrub - pas de pin GSAP, pas de pin-spacer
         // Le layout est gere entierement par CSS (outer height + sticky)
         const st = ScrollTrigger.create({
           trigger: outer,
@@ -149,7 +149,7 @@ export function GallerySection() {
   }, []);
 
   return (
-    // Outer : hauteur explicite dans le DOM React — cree l'espace de scroll
+    // Outer : hauteur explicite dans le DOM React - cree l'espace de scroll
     // GSAP ne touche plus au layout, donc plus de pin-spacer et plus de gaps
     <div ref={outerRef} style={{ height: SCROLL_HEIGHT }}>
       {/* Sticky CSS : reste visible pendant tout le scroll de l'outer */}

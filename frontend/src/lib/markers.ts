@@ -1,6 +1,3 @@
-// lib/markers.ts
-// Config UI des catégories de marqueurs.
-// Les données POI viennent entièrement de la BDD — aucune donnée hardcodée.
 
 export const MARKER_CATEGORIES = {
   sites: {
@@ -43,7 +40,7 @@ export const MARKER_CATEGORIES = {
 
 export type MarkerCategory = keyof typeof MARKER_CATEGORIES;
 
-// Point d'intérêt sur la carte — aligné avec le modèle Sites de la BDD
+// Point d'intérêt sur la carte - aligné avec le modèle Sites de la BDD
 export interface POI {
   id:           string;
   name:         string;
@@ -52,7 +49,7 @@ export interface POI {
   category:     MarkerCategory;
   amenities?:   string[];
   description?: string;
-  // Champs PRA — présents uniquement si category === "pra"
+  // Champs PRA - présents uniquement si category === "pra"
   arLabel?:     string;
   arContent?:   string;
   arRadius?:    number;
@@ -84,7 +81,7 @@ type BackendSite = {
 /**
  * Charge tous les POI depuis la BDD via l'API.
  * Toutes les catégories (sites, toilettes, urgences, transport, assistance, pra)
- * sont stockées en BDD — il n'y a plus de données statiques de fallback.
+ * sont stockées en BDD - il n'y a plus de données statiques de fallback.
  */
 export async function loadPOIs(): Promise<POI[]> {
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";

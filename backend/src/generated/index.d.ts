@@ -105,6 +105,41 @@ export type AlertTimeline = $Result.DefaultSelection<Prisma.$AlertTimelinePayloa
 export type AuditLogs = $Result.DefaultSelection<Prisma.$AuditLogsPayload>
 
 /**
+ * Enums
+ */
+export namespace $Enums {
+  export const MarkerCategory: {
+  SITE: 'SITE',
+  TOILETTES: 'TOILETTES',
+  URGENCES: 'URGENCES',
+  TRANSPORT: 'TRANSPORT',
+  ASSISTANCE: 'ASSISTANCE',
+  PRA: 'PRA'
+};
+
+export type MarkerCategory = (typeof MarkerCategory)[keyof typeof MarkerCategory]
+
+
+export const QuestionKind: {
+  RATING: 'RATING',
+  SINGLE: 'SINGLE',
+  MULTIPLE: 'MULTIPLE',
+  TEXT: 'TEXT'
+};
+
+export type QuestionKind = (typeof QuestionKind)[keyof typeof QuestionKind]
+
+}
+
+export type MarkerCategory = $Enums.MarkerCategory
+
+export const MarkerCategory: typeof $Enums.MarkerCategory
+
+export type QuestionKind = $Enums.QuestionKind
+
+export const QuestionKind: typeof $Enums.QuestionKind
+
+/**
  * ##  Prisma Client ʲˢ
  *
  * Type-safe database client for TypeScript & Node.js
@@ -2756,12 +2791,14 @@ export namespace Prisma {
     latitude: number | null
     longitude: number | null
     capacity: number | null
+    arRadius: number | null
   }
 
   export type SitesSumAggregateOutputType = {
     latitude: number | null
     longitude: number | null
     capacity: number | null
+    arRadius: number | null
   }
 
   export type SitesMinAggregateOutputType = {
@@ -2771,9 +2808,18 @@ export namespace Prisma {
     latitude: number | null
     longitude: number | null
     type: string | null
+    category: $Enums.MarkerCategory | null
     capacity: number | null
+    arLabel: string | null
+    arContent: string | null
+    arRadius: number | null
     createdAt: Date | null
     updatedAt: Date | null
+    nameEn: string | null
+    descriptionEn: string | null
+    typeEn: string | null
+    arLabelEn: string | null
+    arContentEn: string | null
   }
 
   export type SitesMaxAggregateOutputType = {
@@ -2783,9 +2829,18 @@ export namespace Prisma {
     latitude: number | null
     longitude: number | null
     type: string | null
+    category: $Enums.MarkerCategory | null
     capacity: number | null
+    arLabel: string | null
+    arContent: string | null
+    arRadius: number | null
     createdAt: Date | null
     updatedAt: Date | null
+    nameEn: string | null
+    descriptionEn: string | null
+    typeEn: string | null
+    arLabelEn: string | null
+    arContentEn: string | null
   }
 
   export type SitesCountAggregateOutputType = {
@@ -2795,9 +2850,18 @@ export namespace Prisma {
     latitude: number
     longitude: number
     type: number
+    category: number
     capacity: number
+    arLabel: number
+    arContent: number
+    arRadius: number
     createdAt: number
     updatedAt: number
+    nameEn: number
+    descriptionEn: number
+    typeEn: number
+    arLabelEn: number
+    arContentEn: number
     _all: number
   }
 
@@ -2806,12 +2870,14 @@ export namespace Prisma {
     latitude?: true
     longitude?: true
     capacity?: true
+    arRadius?: true
   }
 
   export type SitesSumAggregateInputType = {
     latitude?: true
     longitude?: true
     capacity?: true
+    arRadius?: true
   }
 
   export type SitesMinAggregateInputType = {
@@ -2821,9 +2887,18 @@ export namespace Prisma {
     latitude?: true
     longitude?: true
     type?: true
+    category?: true
     capacity?: true
+    arLabel?: true
+    arContent?: true
+    arRadius?: true
     createdAt?: true
     updatedAt?: true
+    nameEn?: true
+    descriptionEn?: true
+    typeEn?: true
+    arLabelEn?: true
+    arContentEn?: true
   }
 
   export type SitesMaxAggregateInputType = {
@@ -2833,9 +2908,18 @@ export namespace Prisma {
     latitude?: true
     longitude?: true
     type?: true
+    category?: true
     capacity?: true
+    arLabel?: true
+    arContent?: true
+    arRadius?: true
     createdAt?: true
     updatedAt?: true
+    nameEn?: true
+    descriptionEn?: true
+    typeEn?: true
+    arLabelEn?: true
+    arContentEn?: true
   }
 
   export type SitesCountAggregateInputType = {
@@ -2845,9 +2929,18 @@ export namespace Prisma {
     latitude?: true
     longitude?: true
     type?: true
+    category?: true
     capacity?: true
+    arLabel?: true
+    arContent?: true
+    arRadius?: true
     createdAt?: true
     updatedAt?: true
+    nameEn?: true
+    descriptionEn?: true
+    typeEn?: true
+    arLabelEn?: true
+    arContentEn?: true
     _all?: true
   }
 
@@ -2944,9 +3037,18 @@ export namespace Prisma {
     latitude: number
     longitude: number
     type: string
+    category: $Enums.MarkerCategory
     capacity: number
+    arLabel: string | null
+    arContent: string | null
+    arRadius: number | null
     createdAt: Date
     updatedAt: Date
+    nameEn: string | null
+    descriptionEn: string | null
+    typeEn: string | null
+    arLabelEn: string | null
+    arContentEn: string | null
     _count: SitesCountAggregateOutputType | null
     _avg: SitesAvgAggregateOutputType | null
     _sum: SitesSumAggregateOutputType | null
@@ -2975,9 +3077,18 @@ export namespace Prisma {
     latitude?: boolean
     longitude?: boolean
     type?: boolean
+    category?: boolean
     capacity?: boolean
+    arLabel?: boolean
+    arContent?: boolean
+    arRadius?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    nameEn?: boolean
+    descriptionEn?: boolean
+    typeEn?: boolean
+    arLabelEn?: boolean
+    arContentEn?: boolean
     alerts?: boolean | Sites$alertsArgs<ExtArgs>
     amenities?: boolean | Sites$amenitiesArgs<ExtArgs>
     events?: boolean | Sites$eventsArgs<ExtArgs>
@@ -2991,9 +3102,18 @@ export namespace Prisma {
     latitude?: boolean
     longitude?: boolean
     type?: boolean
+    category?: boolean
     capacity?: boolean
+    arLabel?: boolean
+    arContent?: boolean
+    arRadius?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    nameEn?: boolean
+    descriptionEn?: boolean
+    typeEn?: boolean
+    arLabelEn?: boolean
+    arContentEn?: boolean
   }, ExtArgs["result"]["sites"]>
 
   export type SitesSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -3003,9 +3123,18 @@ export namespace Prisma {
     latitude?: boolean
     longitude?: boolean
     type?: boolean
+    category?: boolean
     capacity?: boolean
+    arLabel?: boolean
+    arContent?: boolean
+    arRadius?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    nameEn?: boolean
+    descriptionEn?: boolean
+    typeEn?: boolean
+    arLabelEn?: boolean
+    arContentEn?: boolean
   }, ExtArgs["result"]["sites"]>
 
   export type SitesSelectScalar = {
@@ -3015,12 +3144,21 @@ export namespace Prisma {
     latitude?: boolean
     longitude?: boolean
     type?: boolean
+    category?: boolean
     capacity?: boolean
+    arLabel?: boolean
+    arContent?: boolean
+    arRadius?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    nameEn?: boolean
+    descriptionEn?: boolean
+    typeEn?: boolean
+    arLabelEn?: boolean
+    arContentEn?: boolean
   }
 
-  export type SitesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "latitude" | "longitude" | "type" | "capacity" | "createdAt" | "updatedAt", ExtArgs["result"]["sites"]>
+  export type SitesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "latitude" | "longitude" | "type" | "category" | "capacity" | "arLabel" | "arContent" | "arRadius" | "createdAt" | "updatedAt" | "nameEn" | "descriptionEn" | "typeEn" | "arLabelEn" | "arContentEn", ExtArgs["result"]["sites"]>
   export type SitesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     alerts?: boolean | Sites$alertsArgs<ExtArgs>
     amenities?: boolean | Sites$amenitiesArgs<ExtArgs>
@@ -3044,9 +3182,18 @@ export namespace Prisma {
       latitude: number
       longitude: number
       type: string
+      category: $Enums.MarkerCategory
       capacity: number
+      arLabel: string | null
+      arContent: string | null
+      arRadius: number | null
       createdAt: Date
       updatedAt: Date
+      nameEn: string | null
+      descriptionEn: string | null
+      typeEn: string | null
+      arLabelEn: string | null
+      arContentEn: string | null
     }, ExtArgs["result"]["sites"]>
     composites: {}
   }
@@ -3479,9 +3626,18 @@ export namespace Prisma {
     readonly latitude: FieldRef<"Sites", 'Float'>
     readonly longitude: FieldRef<"Sites", 'Float'>
     readonly type: FieldRef<"Sites", 'String'>
+    readonly category: FieldRef<"Sites", 'MarkerCategory'>
     readonly capacity: FieldRef<"Sites", 'Int'>
+    readonly arLabel: FieldRef<"Sites", 'String'>
+    readonly arContent: FieldRef<"Sites", 'String'>
+    readonly arRadius: FieldRef<"Sites", 'Float'>
     readonly createdAt: FieldRef<"Sites", 'DateTime'>
     readonly updatedAt: FieldRef<"Sites", 'DateTime'>
+    readonly nameEn: FieldRef<"Sites", 'String'>
+    readonly descriptionEn: FieldRef<"Sites", 'String'>
+    readonly typeEn: FieldRef<"Sites", 'String'>
+    readonly arLabelEn: FieldRef<"Sites", 'String'>
+    readonly arContentEn: FieldRef<"Sites", 'String'>
   }
     
 
@@ -3973,6 +4129,7 @@ export namespace Prisma {
   export type AmenitiesMinAggregateOutputType = {
     id: string | null
     name: string | null
+    nameEn: string | null
     siteId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -3981,6 +4138,7 @@ export namespace Prisma {
   export type AmenitiesMaxAggregateOutputType = {
     id: string | null
     name: string | null
+    nameEn: string | null
     siteId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -3989,6 +4147,7 @@ export namespace Prisma {
   export type AmenitiesCountAggregateOutputType = {
     id: number
     name: number
+    nameEn: number
     siteId: number
     createdAt: number
     updatedAt: number
@@ -3999,6 +4158,7 @@ export namespace Prisma {
   export type AmenitiesMinAggregateInputType = {
     id?: true
     name?: true
+    nameEn?: true
     siteId?: true
     createdAt?: true
     updatedAt?: true
@@ -4007,6 +4167,7 @@ export namespace Prisma {
   export type AmenitiesMaxAggregateInputType = {
     id?: true
     name?: true
+    nameEn?: true
     siteId?: true
     createdAt?: true
     updatedAt?: true
@@ -4015,6 +4176,7 @@ export namespace Prisma {
   export type AmenitiesCountAggregateInputType = {
     id?: true
     name?: true
+    nameEn?: true
     siteId?: true
     createdAt?: true
     updatedAt?: true
@@ -4096,6 +4258,7 @@ export namespace Prisma {
   export type AmenitiesGroupByOutputType = {
     id: string
     name: string
+    nameEn: string | null
     siteId: string
     createdAt: Date
     updatedAt: Date
@@ -4121,6 +4284,7 @@ export namespace Prisma {
   export type AmenitiesSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    nameEn?: boolean
     siteId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -4130,6 +4294,7 @@ export namespace Prisma {
   export type AmenitiesSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    nameEn?: boolean
     siteId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -4139,6 +4304,7 @@ export namespace Prisma {
   export type AmenitiesSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    nameEn?: boolean
     siteId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -4148,12 +4314,13 @@ export namespace Prisma {
   export type AmenitiesSelectScalar = {
     id?: boolean
     name?: boolean
+    nameEn?: boolean
     siteId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type AmenitiesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "siteId" | "createdAt" | "updatedAt", ExtArgs["result"]["amenities"]>
+  export type AmenitiesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "nameEn" | "siteId" | "createdAt" | "updatedAt", ExtArgs["result"]["amenities"]>
   export type AmenitiesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     site?: boolean | SitesDefaultArgs<ExtArgs>
   }
@@ -4172,6 +4339,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
+      nameEn: string | null
       siteId: string
       createdAt: Date
       updatedAt: Date
@@ -4601,6 +4769,7 @@ export namespace Prisma {
   interface AmenitiesFieldRefs {
     readonly id: FieldRef<"Amenities", 'String'>
     readonly name: FieldRef<"Amenities", 'String'>
+    readonly nameEn: FieldRef<"Amenities", 'String'>
     readonly siteId: FieldRef<"Amenities", 'String'>
     readonly createdAt: FieldRef<"Amenities", 'DateTime'>
     readonly updatedAt: FieldRef<"Amenities", 'DateTime'>
@@ -5031,6 +5200,7 @@ export namespace Prisma {
   export type EventsTypesMinAggregateOutputType = {
     id: string | null
     name: string | null
+    nameEn: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5038,6 +5208,7 @@ export namespace Prisma {
   export type EventsTypesMaxAggregateOutputType = {
     id: string | null
     name: string | null
+    nameEn: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5045,6 +5216,7 @@ export namespace Prisma {
   export type EventsTypesCountAggregateOutputType = {
     id: number
     name: number
+    nameEn: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -5054,6 +5226,7 @@ export namespace Prisma {
   export type EventsTypesMinAggregateInputType = {
     id?: true
     name?: true
+    nameEn?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5061,6 +5234,7 @@ export namespace Prisma {
   export type EventsTypesMaxAggregateInputType = {
     id?: true
     name?: true
+    nameEn?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5068,6 +5242,7 @@ export namespace Prisma {
   export type EventsTypesCountAggregateInputType = {
     id?: true
     name?: true
+    nameEn?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -5148,6 +5323,7 @@ export namespace Prisma {
   export type EventsTypesGroupByOutputType = {
     id: string
     name: string
+    nameEn: string | null
     createdAt: Date
     updatedAt: Date
     _count: EventsTypesCountAggregateOutputType | null
@@ -5172,6 +5348,7 @@ export namespace Prisma {
   export type EventsTypesSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    nameEn?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     events?: boolean | EventsTypes$eventsArgs<ExtArgs>
@@ -5181,6 +5358,7 @@ export namespace Prisma {
   export type EventsTypesSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    nameEn?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["eventsTypes"]>
@@ -5188,6 +5366,7 @@ export namespace Prisma {
   export type EventsTypesSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    nameEn?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["eventsTypes"]>
@@ -5195,11 +5374,12 @@ export namespace Prisma {
   export type EventsTypesSelectScalar = {
     id?: boolean
     name?: boolean
+    nameEn?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type EventsTypesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "createdAt" | "updatedAt", ExtArgs["result"]["eventsTypes"]>
+  export type EventsTypesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "nameEn" | "createdAt" | "updatedAt", ExtArgs["result"]["eventsTypes"]>
   export type EventsTypesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     events?: boolean | EventsTypes$eventsArgs<ExtArgs>
     _count?: boolean | EventsTypesCountOutputTypeDefaultArgs<ExtArgs>
@@ -5215,6 +5395,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
+      nameEn: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["eventsTypes"]>
@@ -5643,6 +5824,7 @@ export namespace Prisma {
   interface EventsTypesFieldRefs {
     readonly id: FieldRef<"EventsTypes", 'String'>
     readonly name: FieldRef<"EventsTypes", 'String'>
+    readonly nameEn: FieldRef<"EventsTypes", 'String'>
     readonly createdAt: FieldRef<"EventsTypes", 'DateTime'>
     readonly updatedAt: FieldRef<"EventsTypes", 'DateTime'>
   }
@@ -6096,6 +6278,8 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     imageUrl: string | null
+    nameEn: string | null
+    descriptionEn: string | null
   }
 
   export type EventsMaxAggregateOutputType = {
@@ -6109,6 +6293,8 @@ export namespace Prisma {
     createdAt: Date | null
     updatedAt: Date | null
     imageUrl: string | null
+    nameEn: string | null
+    descriptionEn: string | null
   }
 
   export type EventsCountAggregateOutputType = {
@@ -6122,6 +6308,8 @@ export namespace Prisma {
     createdAt: number
     updatedAt: number
     imageUrl: number
+    nameEn: number
+    descriptionEn: number
     _all: number
   }
 
@@ -6137,6 +6325,8 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     imageUrl?: true
+    nameEn?: true
+    descriptionEn?: true
   }
 
   export type EventsMaxAggregateInputType = {
@@ -6150,6 +6340,8 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     imageUrl?: true
+    nameEn?: true
+    descriptionEn?: true
   }
 
   export type EventsCountAggregateInputType = {
@@ -6163,6 +6355,8 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     imageUrl?: true
+    nameEn?: true
+    descriptionEn?: true
     _all?: true
   }
 
@@ -6249,6 +6443,8 @@ export namespace Prisma {
     createdAt: Date
     updatedAt: Date
     imageUrl: string | null
+    nameEn: string | null
+    descriptionEn: string | null
     _count: EventsCountAggregateOutputType | null
     _min: EventsMinAggregateOutputType | null
     _max: EventsMaxAggregateOutputType | null
@@ -6279,6 +6475,8 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     imageUrl?: boolean
+    nameEn?: boolean
+    descriptionEn?: boolean
     artists?: boolean | Events$artistsArgs<ExtArgs>
     eventType?: boolean | EventsTypesDefaultArgs<ExtArgs>
     site?: boolean | SitesDefaultArgs<ExtArgs>
@@ -6298,6 +6496,8 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     imageUrl?: boolean
+    nameEn?: boolean
+    descriptionEn?: boolean
     eventType?: boolean | EventsTypesDefaultArgs<ExtArgs>
     site?: boolean | SitesDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["events"]>
@@ -6313,6 +6513,8 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     imageUrl?: boolean
+    nameEn?: boolean
+    descriptionEn?: boolean
     eventType?: boolean | EventsTypesDefaultArgs<ExtArgs>
     site?: boolean | SitesDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["events"]>
@@ -6328,9 +6530,11 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     imageUrl?: boolean
+    nameEn?: boolean
+    descriptionEn?: boolean
   }
 
-  export type EventsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "status" | "siteId" | "eventTypeId" | "createdBy" | "createdAt" | "updatedAt" | "imageUrl", ExtArgs["result"]["events"]>
+  export type EventsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "status" | "siteId" | "eventTypeId" | "createdBy" | "createdAt" | "updatedAt" | "imageUrl" | "nameEn" | "descriptionEn", ExtArgs["result"]["events"]>
   export type EventsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     artists?: boolean | Events$artistsArgs<ExtArgs>
     eventType?: boolean | EventsTypesDefaultArgs<ExtArgs>
@@ -6368,6 +6572,8 @@ export namespace Prisma {
       createdAt: Date
       updatedAt: Date
       imageUrl: string | null
+      nameEn: string | null
+      descriptionEn: string | null
     }, ExtArgs["result"]["events"]>
     composites: {}
   }
@@ -6806,6 +7012,8 @@ export namespace Prisma {
     readonly createdAt: FieldRef<"Events", 'DateTime'>
     readonly updatedAt: FieldRef<"Events", 'DateTime'>
     readonly imageUrl: FieldRef<"Events", 'String'>
+    readonly nameEn: FieldRef<"Events", 'String'>
+    readonly descriptionEn: FieldRef<"Events", 'String'>
   }
     
 
@@ -9436,9 +9644,12 @@ export namespace Prisma {
     title: string | null
     description: string | null
     active: boolean | null
+    scope: string | null
     eventId: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    titleEn: string | null
+    descriptionEn: string | null
   }
 
   export type QuizMaxAggregateOutputType = {
@@ -9446,9 +9657,12 @@ export namespace Prisma {
     title: string | null
     description: string | null
     active: boolean | null
+    scope: string | null
     eventId: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    titleEn: string | null
+    descriptionEn: string | null
   }
 
   export type QuizCountAggregateOutputType = {
@@ -9456,9 +9670,12 @@ export namespace Prisma {
     title: number
     description: number
     active: number
+    scope: number
     eventId: number
     createdAt: number
     updatedAt: number
+    titleEn: number
+    descriptionEn: number
     _all: number
   }
 
@@ -9468,9 +9685,12 @@ export namespace Prisma {
     title?: true
     description?: true
     active?: true
+    scope?: true
     eventId?: true
     createdAt?: true
     updatedAt?: true
+    titleEn?: true
+    descriptionEn?: true
   }
 
   export type QuizMaxAggregateInputType = {
@@ -9478,9 +9698,12 @@ export namespace Prisma {
     title?: true
     description?: true
     active?: true
+    scope?: true
     eventId?: true
     createdAt?: true
     updatedAt?: true
+    titleEn?: true
+    descriptionEn?: true
   }
 
   export type QuizCountAggregateInputType = {
@@ -9488,9 +9711,12 @@ export namespace Prisma {
     title?: true
     description?: true
     active?: true
+    scope?: true
     eventId?: true
     createdAt?: true
     updatedAt?: true
+    titleEn?: true
+    descriptionEn?: true
     _all?: true
   }
 
@@ -9571,9 +9797,12 @@ export namespace Prisma {
     title: string
     description: string | null
     active: boolean
-    eventId: string
+    scope: string
+    eventId: string | null
     createdAt: Date
     updatedAt: Date
+    titleEn: string | null
+    descriptionEn: string | null
     _count: QuizCountAggregateOutputType | null
     _min: QuizMinAggregateOutputType | null
     _max: QuizMaxAggregateOutputType | null
@@ -9598,11 +9827,14 @@ export namespace Prisma {
     title?: boolean
     description?: boolean
     active?: boolean
+    scope?: boolean
     eventId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    titleEn?: boolean
+    descriptionEn?: boolean
     questions?: boolean | Quiz$questionsArgs<ExtArgs>
-    event?: boolean | EventsDefaultArgs<ExtArgs>
+    event?: boolean | Quiz$eventArgs<ExtArgs>
     _count?: boolean | QuizCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["quiz"]>
 
@@ -9611,10 +9843,13 @@ export namespace Prisma {
     title?: boolean
     description?: boolean
     active?: boolean
+    scope?: boolean
     eventId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    event?: boolean | EventsDefaultArgs<ExtArgs>
+    titleEn?: boolean
+    descriptionEn?: boolean
+    event?: boolean | Quiz$eventArgs<ExtArgs>
   }, ExtArgs["result"]["quiz"]>
 
   export type QuizSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -9622,10 +9857,13 @@ export namespace Prisma {
     title?: boolean
     description?: boolean
     active?: boolean
+    scope?: boolean
     eventId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    event?: boolean | EventsDefaultArgs<ExtArgs>
+    titleEn?: boolean
+    descriptionEn?: boolean
+    event?: boolean | Quiz$eventArgs<ExtArgs>
   }, ExtArgs["result"]["quiz"]>
 
   export type QuizSelectScalar = {
@@ -9633,38 +9871,44 @@ export namespace Prisma {
     title?: boolean
     description?: boolean
     active?: boolean
+    scope?: boolean
     eventId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    titleEn?: boolean
+    descriptionEn?: boolean
   }
 
-  export type QuizOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "active" | "eventId" | "createdAt" | "updatedAt", ExtArgs["result"]["quiz"]>
+  export type QuizOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "active" | "scope" | "eventId" | "createdAt" | "updatedAt" | "titleEn" | "descriptionEn", ExtArgs["result"]["quiz"]>
   export type QuizInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     questions?: boolean | Quiz$questionsArgs<ExtArgs>
-    event?: boolean | EventsDefaultArgs<ExtArgs>
+    event?: boolean | Quiz$eventArgs<ExtArgs>
     _count?: boolean | QuizCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type QuizIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    event?: boolean | EventsDefaultArgs<ExtArgs>
+    event?: boolean | Quiz$eventArgs<ExtArgs>
   }
   export type QuizIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    event?: boolean | EventsDefaultArgs<ExtArgs>
+    event?: boolean | Quiz$eventArgs<ExtArgs>
   }
 
   export type $QuizPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Quiz"
     objects: {
       questions: Prisma.$QuestionsPayload<ExtArgs>[]
-      event: Prisma.$EventsPayload<ExtArgs>
+      event: Prisma.$EventsPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       title: string
       description: string | null
       active: boolean
-      eventId: string
+      scope: string
+      eventId: string | null
       createdAt: Date
       updatedAt: Date
+      titleEn: string | null
+      descriptionEn: string | null
     }, ExtArgs["result"]["quiz"]>
     composites: {}
   }
@@ -10060,7 +10304,7 @@ export namespace Prisma {
   export interface Prisma__QuizClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     questions<T extends Quiz$questionsArgs<ExtArgs> = {}>(args?: Subset<T, Quiz$questionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$QuestionsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    event<T extends EventsDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventsDefaultArgs<ExtArgs>>): Prisma__EventsClient<$Result.GetResult<Prisma.$EventsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    event<T extends Quiz$eventArgs<ExtArgs> = {}>(args?: Subset<T, Quiz$eventArgs<ExtArgs>>): Prisma__EventsClient<$Result.GetResult<Prisma.$EventsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10094,9 +10338,12 @@ export namespace Prisma {
     readonly title: FieldRef<"Quiz", 'String'>
     readonly description: FieldRef<"Quiz", 'String'>
     readonly active: FieldRef<"Quiz", 'Boolean'>
+    readonly scope: FieldRef<"Quiz", 'String'>
     readonly eventId: FieldRef<"Quiz", 'String'>
     readonly createdAt: FieldRef<"Quiz", 'DateTime'>
     readonly updatedAt: FieldRef<"Quiz", 'DateTime'>
+    readonly titleEn: FieldRef<"Quiz", 'String'>
+    readonly descriptionEn: FieldRef<"Quiz", 'String'>
   }
     
 
@@ -10517,6 +10764,25 @@ export namespace Prisma {
   }
 
   /**
+   * Quiz.event
+   */
+  export type Quiz$eventArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Events
+     */
+    select?: EventsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Events
+     */
+    omit?: EventsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventsInclude<ExtArgs> | null
+    where?: EventsWhereInput
+  }
+
+  /**
    * Quiz without action
    */
   export type QuizDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -10548,6 +10814,7 @@ export namespace Prisma {
   export type QuestionsTypesMinAggregateOutputType = {
     id: string | null
     types: string | null
+    kind: $Enums.QuestionKind | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -10555,6 +10822,7 @@ export namespace Prisma {
   export type QuestionsTypesMaxAggregateOutputType = {
     id: string | null
     types: string | null
+    kind: $Enums.QuestionKind | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -10562,6 +10830,7 @@ export namespace Prisma {
   export type QuestionsTypesCountAggregateOutputType = {
     id: number
     types: number
+    kind: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -10571,6 +10840,7 @@ export namespace Prisma {
   export type QuestionsTypesMinAggregateInputType = {
     id?: true
     types?: true
+    kind?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -10578,6 +10848,7 @@ export namespace Prisma {
   export type QuestionsTypesMaxAggregateInputType = {
     id?: true
     types?: true
+    kind?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -10585,6 +10856,7 @@ export namespace Prisma {
   export type QuestionsTypesCountAggregateInputType = {
     id?: true
     types?: true
+    kind?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -10665,6 +10937,7 @@ export namespace Prisma {
   export type QuestionsTypesGroupByOutputType = {
     id: string
     types: string
+    kind: $Enums.QuestionKind
     createdAt: Date
     updatedAt: Date
     _count: QuestionsTypesCountAggregateOutputType | null
@@ -10689,6 +10962,7 @@ export namespace Prisma {
   export type QuestionsTypesSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     types?: boolean
+    kind?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     questions?: boolean | QuestionsTypes$questionsArgs<ExtArgs>
@@ -10698,6 +10972,7 @@ export namespace Prisma {
   export type QuestionsTypesSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     types?: boolean
+    kind?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["questionsTypes"]>
@@ -10705,6 +10980,7 @@ export namespace Prisma {
   export type QuestionsTypesSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     types?: boolean
+    kind?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["questionsTypes"]>
@@ -10712,11 +10988,12 @@ export namespace Prisma {
   export type QuestionsTypesSelectScalar = {
     id?: boolean
     types?: boolean
+    kind?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type QuestionsTypesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "types" | "createdAt" | "updatedAt", ExtArgs["result"]["questionsTypes"]>
+  export type QuestionsTypesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "types" | "kind" | "createdAt" | "updatedAt", ExtArgs["result"]["questionsTypes"]>
   export type QuestionsTypesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     questions?: boolean | QuestionsTypes$questionsArgs<ExtArgs>
     _count?: boolean | QuestionsTypesCountOutputTypeDefaultArgs<ExtArgs>
@@ -10732,6 +11009,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       types: string
+      kind: $Enums.QuestionKind
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["questionsTypes"]>
@@ -11160,6 +11438,7 @@ export namespace Prisma {
   interface QuestionsTypesFieldRefs {
     readonly id: FieldRef<"QuestionsTypes", 'String'>
     readonly types: FieldRef<"QuestionsTypes", 'String'>
+    readonly kind: FieldRef<"QuestionsTypes", 'QuestionKind'>
     readonly createdAt: FieldRef<"QuestionsTypes", 'DateTime'>
     readonly updatedAt: FieldRef<"QuestionsTypes", 'DateTime'>
   }
@@ -11598,15 +11877,27 @@ export namespace Prisma {
 
   export type AggregateQuestions = {
     _count: QuestionsCountAggregateOutputType | null
+    _avg: QuestionsAvgAggregateOutputType | null
+    _sum: QuestionsSumAggregateOutputType | null
     _min: QuestionsMinAggregateOutputType | null
     _max: QuestionsMaxAggregateOutputType | null
+  }
+
+  export type QuestionsAvgAggregateOutputType = {
+    order: number | null
+  }
+
+  export type QuestionsSumAggregateOutputType = {
+    order: number | null
   }
 
   export type QuestionsMinAggregateOutputType = {
     id: string | null
     wording: string | null
+    wordingEn: string | null
     questionTypeId: string | null
     quizId: string | null
+    order: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -11614,8 +11905,10 @@ export namespace Prisma {
   export type QuestionsMaxAggregateOutputType = {
     id: string | null
     wording: string | null
+    wordingEn: string | null
     questionTypeId: string | null
     quizId: string | null
+    order: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -11623,19 +11916,31 @@ export namespace Prisma {
   export type QuestionsCountAggregateOutputType = {
     id: number
     wording: number
+    wordingEn: number
     questionTypeId: number
     quizId: number
+    order: number
     createdAt: number
     updatedAt: number
     _all: number
   }
 
 
+  export type QuestionsAvgAggregateInputType = {
+    order?: true
+  }
+
+  export type QuestionsSumAggregateInputType = {
+    order?: true
+  }
+
   export type QuestionsMinAggregateInputType = {
     id?: true
     wording?: true
+    wordingEn?: true
     questionTypeId?: true
     quizId?: true
+    order?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -11643,8 +11948,10 @@ export namespace Prisma {
   export type QuestionsMaxAggregateInputType = {
     id?: true
     wording?: true
+    wordingEn?: true
     questionTypeId?: true
     quizId?: true
+    order?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -11652,8 +11959,10 @@ export namespace Prisma {
   export type QuestionsCountAggregateInputType = {
     id?: true
     wording?: true
+    wordingEn?: true
     questionTypeId?: true
     quizId?: true
+    order?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -11697,6 +12006,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: QuestionsAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: QuestionsSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: QuestionsMinAggregateInputType
@@ -11727,6 +12048,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: QuestionsCountAggregateInputType | true
+    _avg?: QuestionsAvgAggregateInputType
+    _sum?: QuestionsSumAggregateInputType
     _min?: QuestionsMinAggregateInputType
     _max?: QuestionsMaxAggregateInputType
   }
@@ -11734,11 +12057,15 @@ export namespace Prisma {
   export type QuestionsGroupByOutputType = {
     id: string
     wording: string
+    wordingEn: string | null
     questionTypeId: string
     quizId: string
+    order: number
     createdAt: Date
     updatedAt: Date
     _count: QuestionsCountAggregateOutputType | null
+    _avg: QuestionsAvgAggregateOutputType | null
+    _sum: QuestionsSumAggregateOutputType | null
     _min: QuestionsMinAggregateOutputType | null
     _max: QuestionsMaxAggregateOutputType | null
   }
@@ -11760,8 +12087,10 @@ export namespace Prisma {
   export type QuestionsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     wording?: boolean
+    wordingEn?: boolean
     questionTypeId?: boolean
     quizId?: boolean
+    order?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     answers?: boolean | Questions$answersArgs<ExtArgs>
@@ -11775,8 +12104,10 @@ export namespace Prisma {
   export type QuestionsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     wording?: boolean
+    wordingEn?: boolean
     questionTypeId?: boolean
     quizId?: boolean
+    order?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     questionType?: boolean | QuestionsTypesDefaultArgs<ExtArgs>
@@ -11786,8 +12117,10 @@ export namespace Prisma {
   export type QuestionsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     wording?: boolean
+    wordingEn?: boolean
     questionTypeId?: boolean
     quizId?: boolean
+    order?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     questionType?: boolean | QuestionsTypesDefaultArgs<ExtArgs>
@@ -11797,13 +12130,15 @@ export namespace Prisma {
   export type QuestionsSelectScalar = {
     id?: boolean
     wording?: boolean
+    wordingEn?: boolean
     questionTypeId?: boolean
     quizId?: boolean
+    order?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type QuestionsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "wording" | "questionTypeId" | "quizId" | "createdAt" | "updatedAt", ExtArgs["result"]["questions"]>
+  export type QuestionsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "wording" | "wordingEn" | "questionTypeId" | "quizId" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["questions"]>
   export type QuestionsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     answers?: boolean | Questions$answersArgs<ExtArgs>
     choices?: boolean | Questions$choicesArgs<ExtArgs>
@@ -11833,8 +12168,10 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       wording: string
+      wordingEn: string | null
       questionTypeId: string
       quizId: string
+      order: number
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["questions"]>
@@ -12267,8 +12604,10 @@ export namespace Prisma {
   interface QuestionsFieldRefs {
     readonly id: FieldRef<"Questions", 'String'>
     readonly wording: FieldRef<"Questions", 'String'>
+    readonly wordingEn: FieldRef<"Questions", 'String'>
     readonly questionTypeId: FieldRef<"Questions", 'String'>
     readonly quizId: FieldRef<"Questions", 'String'>
+    readonly order: FieldRef<"Questions", 'Int'>
     readonly createdAt: FieldRef<"Questions", 'DateTime'>
     readonly updatedAt: FieldRef<"Questions", 'DateTime'>
   }
@@ -12770,6 +13109,7 @@ export namespace Prisma {
   export type ImpressionsMinAggregateOutputType = {
     id: string | null
     name: string | null
+    nameEn: string | null
     emoji: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -12778,6 +13118,7 @@ export namespace Prisma {
   export type ImpressionsMaxAggregateOutputType = {
     id: string | null
     name: string | null
+    nameEn: string | null
     emoji: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -12786,6 +13127,7 @@ export namespace Prisma {
   export type ImpressionsCountAggregateOutputType = {
     id: number
     name: number
+    nameEn: number
     emoji: number
     createdAt: number
     updatedAt: number
@@ -12796,6 +13138,7 @@ export namespace Prisma {
   export type ImpressionsMinAggregateInputType = {
     id?: true
     name?: true
+    nameEn?: true
     emoji?: true
     createdAt?: true
     updatedAt?: true
@@ -12804,6 +13147,7 @@ export namespace Prisma {
   export type ImpressionsMaxAggregateInputType = {
     id?: true
     name?: true
+    nameEn?: true
     emoji?: true
     createdAt?: true
     updatedAt?: true
@@ -12812,6 +13156,7 @@ export namespace Prisma {
   export type ImpressionsCountAggregateInputType = {
     id?: true
     name?: true
+    nameEn?: true
     emoji?: true
     createdAt?: true
     updatedAt?: true
@@ -12893,6 +13238,7 @@ export namespace Prisma {
   export type ImpressionsGroupByOutputType = {
     id: string
     name: string
+    nameEn: string | null
     emoji: string
     createdAt: Date
     updatedAt: Date
@@ -12918,6 +13264,7 @@ export namespace Prisma {
   export type ImpressionsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    nameEn?: boolean
     emoji?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -12928,6 +13275,7 @@ export namespace Prisma {
   export type ImpressionsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    nameEn?: boolean
     emoji?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -12936,6 +13284,7 @@ export namespace Prisma {
   export type ImpressionsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    nameEn?: boolean
     emoji?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -12944,12 +13293,13 @@ export namespace Prisma {
   export type ImpressionsSelectScalar = {
     id?: boolean
     name?: boolean
+    nameEn?: boolean
     emoji?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ImpressionsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "emoji" | "createdAt" | "updatedAt", ExtArgs["result"]["impressions"]>
+  export type ImpressionsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "nameEn" | "emoji" | "createdAt" | "updatedAt", ExtArgs["result"]["impressions"]>
   export type ImpressionsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     questions?: boolean | Impressions$questionsArgs<ExtArgs>
     _count?: boolean | ImpressionsCountOutputTypeDefaultArgs<ExtArgs>
@@ -12965,6 +13315,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
+      nameEn: string | null
       emoji: string
       createdAt: Date
       updatedAt: Date
@@ -13394,6 +13745,7 @@ export namespace Prisma {
   interface ImpressionsFieldRefs {
     readonly id: FieldRef<"Impressions", 'String'>
     readonly name: FieldRef<"Impressions", 'String'>
+    readonly nameEn: FieldRef<"Impressions", 'String'>
     readonly emoji: FieldRef<"Impressions", 'String'>
     readonly createdAt: FieldRef<"Impressions", 'DateTime'>
     readonly updatedAt: FieldRef<"Impressions", 'DateTime'>
@@ -14867,6 +15219,7 @@ export namespace Prisma {
   export type ChoicesMinAggregateOutputType = {
     id: string | null
     wording: string | null
+    wordingEn: string | null
     questionId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -14875,6 +15228,7 @@ export namespace Prisma {
   export type ChoicesMaxAggregateOutputType = {
     id: string | null
     wording: string | null
+    wordingEn: string | null
     questionId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -14883,6 +15237,7 @@ export namespace Prisma {
   export type ChoicesCountAggregateOutputType = {
     id: number
     wording: number
+    wordingEn: number
     questionId: number
     createdAt: number
     updatedAt: number
@@ -14893,6 +15248,7 @@ export namespace Prisma {
   export type ChoicesMinAggregateInputType = {
     id?: true
     wording?: true
+    wordingEn?: true
     questionId?: true
     createdAt?: true
     updatedAt?: true
@@ -14901,6 +15257,7 @@ export namespace Prisma {
   export type ChoicesMaxAggregateInputType = {
     id?: true
     wording?: true
+    wordingEn?: true
     questionId?: true
     createdAt?: true
     updatedAt?: true
@@ -14909,6 +15266,7 @@ export namespace Prisma {
   export type ChoicesCountAggregateInputType = {
     id?: true
     wording?: true
+    wordingEn?: true
     questionId?: true
     createdAt?: true
     updatedAt?: true
@@ -14990,6 +15348,7 @@ export namespace Prisma {
   export type ChoicesGroupByOutputType = {
     id: string
     wording: string
+    wordingEn: string | null
     questionId: string
     createdAt: Date
     updatedAt: Date
@@ -15015,6 +15374,7 @@ export namespace Prisma {
   export type ChoicesSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     wording?: boolean
+    wordingEn?: boolean
     questionId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -15024,6 +15384,7 @@ export namespace Prisma {
   export type ChoicesSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     wording?: boolean
+    wordingEn?: boolean
     questionId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -15033,6 +15394,7 @@ export namespace Prisma {
   export type ChoicesSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     wording?: boolean
+    wordingEn?: boolean
     questionId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -15042,12 +15404,13 @@ export namespace Prisma {
   export type ChoicesSelectScalar = {
     id?: boolean
     wording?: boolean
+    wordingEn?: boolean
     questionId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ChoicesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "wording" | "questionId" | "createdAt" | "updatedAt", ExtArgs["result"]["choices"]>
+  export type ChoicesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "wording" | "wordingEn" | "questionId" | "createdAt" | "updatedAt", ExtArgs["result"]["choices"]>
   export type ChoicesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     question?: boolean | QuestionsDefaultArgs<ExtArgs>
   }
@@ -15066,6 +15429,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       wording: string
+      wordingEn: string | null
       questionId: string
       createdAt: Date
       updatedAt: Date
@@ -15495,6 +15859,7 @@ export namespace Prisma {
   interface ChoicesFieldRefs {
     readonly id: FieldRef<"Choices", 'String'>
     readonly wording: FieldRef<"Choices", 'String'>
+    readonly wordingEn: FieldRef<"Choices", 'String'>
     readonly questionId: FieldRef<"Choices", 'String'>
     readonly createdAt: FieldRef<"Choices", 'DateTime'>
     readonly updatedAt: FieldRef<"Choices", 'DateTime'>
@@ -16053,7 +16418,7 @@ export namespace Prisma {
 
   export type AnswersGroupByOutputType = {
     id: string
-    uuid: string
+    uuid: string | null
     response: string
     questionId: string
     createdAt: Date
@@ -16134,7 +16499,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      uuid: string
+      uuid: string | null
       response: string
       questionId: string
       createdAt: Date
@@ -18165,6 +18530,8 @@ export namespace Prisma {
     sentAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    titleEn: string | null
+    messageEn: string | null
   }
 
   export type NotificationsMaxAggregateOutputType = {
@@ -18178,6 +18545,8 @@ export namespace Prisma {
     sentAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    titleEn: string | null
+    messageEn: string | null
   }
 
   export type NotificationsCountAggregateOutputType = {
@@ -18191,6 +18560,8 @@ export namespace Prisma {
     sentAt: number
     createdAt: number
     updatedAt: number
+    titleEn: number
+    messageEn: number
     _all: number
   }
 
@@ -18206,6 +18577,8 @@ export namespace Prisma {
     sentAt?: true
     createdAt?: true
     updatedAt?: true
+    titleEn?: true
+    messageEn?: true
   }
 
   export type NotificationsMaxAggregateInputType = {
@@ -18219,6 +18592,8 @@ export namespace Prisma {
     sentAt?: true
     createdAt?: true
     updatedAt?: true
+    titleEn?: true
+    messageEn?: true
   }
 
   export type NotificationsCountAggregateInputType = {
@@ -18232,6 +18607,8 @@ export namespace Prisma {
     sentAt?: true
     createdAt?: true
     updatedAt?: true
+    titleEn?: true
+    messageEn?: true
     _all?: true
   }
 
@@ -18318,6 +18695,8 @@ export namespace Prisma {
     sentAt: Date | null
     createdAt: Date
     updatedAt: Date
+    titleEn: string | null
+    messageEn: string | null
     _count: NotificationsCountAggregateOutputType | null
     _min: NotificationsMinAggregateOutputType | null
     _max: NotificationsMaxAggregateOutputType | null
@@ -18348,6 +18727,8 @@ export namespace Prisma {
     sentAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    titleEn?: boolean
+    messageEn?: boolean
   }, ExtArgs["result"]["notifications"]>
 
   export type NotificationsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -18361,6 +18742,8 @@ export namespace Prisma {
     sentAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    titleEn?: boolean
+    messageEn?: boolean
   }, ExtArgs["result"]["notifications"]>
 
   export type NotificationsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -18374,6 +18757,8 @@ export namespace Prisma {
     sentAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    titleEn?: boolean
+    messageEn?: boolean
   }, ExtArgs["result"]["notifications"]>
 
   export type NotificationsSelectScalar = {
@@ -18387,9 +18772,11 @@ export namespace Prisma {
     sentAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    titleEn?: boolean
+    messageEn?: boolean
   }
 
-  export type NotificationsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "message" | "target" | "targetId" | "status" | "scheduledAt" | "sentAt" | "createdAt" | "updatedAt", ExtArgs["result"]["notifications"]>
+  export type NotificationsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "message" | "target" | "targetId" | "status" | "scheduledAt" | "sentAt" | "createdAt" | "updatedAt" | "titleEn" | "messageEn", ExtArgs["result"]["notifications"]>
 
   export type $NotificationsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Notifications"
@@ -18405,6 +18792,8 @@ export namespace Prisma {
       sentAt: Date | null
       createdAt: Date
       updatedAt: Date
+      titleEn: string | null
+      messageEn: string | null
     }, ExtArgs["result"]["notifications"]>
     composites: {}
   }
@@ -18838,6 +19227,8 @@ export namespace Prisma {
     readonly sentAt: FieldRef<"Notifications", 'DateTime'>
     readonly createdAt: FieldRef<"Notifications", 'DateTime'>
     readonly updatedAt: FieldRef<"Notifications", 'DateTime'>
+    readonly titleEn: FieldRef<"Notifications", 'String'>
+    readonly messageEn: FieldRef<"Notifications", 'String'>
   }
     
 
@@ -22602,9 +22993,18 @@ export namespace Prisma {
     latitude: 'latitude',
     longitude: 'longitude',
     type: 'type',
+    category: 'category',
     capacity: 'capacity',
+    arLabel: 'arLabel',
+    arContent: 'arContent',
+    arRadius: 'arRadius',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    nameEn: 'nameEn',
+    descriptionEn: 'descriptionEn',
+    typeEn: 'typeEn',
+    arLabelEn: 'arLabelEn',
+    arContentEn: 'arContentEn'
   };
 
   export type SitesScalarFieldEnum = (typeof SitesScalarFieldEnum)[keyof typeof SitesScalarFieldEnum]
@@ -22613,6 +23013,7 @@ export namespace Prisma {
   export const AmenitiesScalarFieldEnum: {
     id: 'id',
     name: 'name',
+    nameEn: 'nameEn',
     siteId: 'siteId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -22624,6 +23025,7 @@ export namespace Prisma {
   export const EventsTypesScalarFieldEnum: {
     id: 'id',
     name: 'name',
+    nameEn: 'nameEn',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -22641,7 +23043,9 @@ export namespace Prisma {
     createdBy: 'createdBy',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
-    imageUrl: 'imageUrl'
+    imageUrl: 'imageUrl',
+    nameEn: 'nameEn',
+    descriptionEn: 'descriptionEn'
   };
 
   export type EventsScalarFieldEnum = (typeof EventsScalarFieldEnum)[keyof typeof EventsScalarFieldEnum]
@@ -22675,9 +23079,12 @@ export namespace Prisma {
     title: 'title',
     description: 'description',
     active: 'active',
+    scope: 'scope',
     eventId: 'eventId',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    titleEn: 'titleEn',
+    descriptionEn: 'descriptionEn'
   };
 
   export type QuizScalarFieldEnum = (typeof QuizScalarFieldEnum)[keyof typeof QuizScalarFieldEnum]
@@ -22686,6 +23093,7 @@ export namespace Prisma {
   export const QuestionsTypesScalarFieldEnum: {
     id: 'id',
     types: 'types',
+    kind: 'kind',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -22696,8 +23104,10 @@ export namespace Prisma {
   export const QuestionsScalarFieldEnum: {
     id: 'id',
     wording: 'wording',
+    wordingEn: 'wordingEn',
     questionTypeId: 'questionTypeId',
     quizId: 'quizId',
+    order: 'order',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -22708,6 +23118,7 @@ export namespace Prisma {
   export const ImpressionsScalarFieldEnum: {
     id: 'id',
     name: 'name',
+    nameEn: 'nameEn',
     emoji: 'emoji',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -22727,6 +23138,7 @@ export namespace Prisma {
   export const ChoicesScalarFieldEnum: {
     id: 'id',
     wording: 'wording',
+    wordingEn: 'wordingEn',
     questionId: 'questionId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -22775,7 +23187,9 @@ export namespace Prisma {
     scheduledAt: 'scheduledAt',
     sentAt: 'sentAt',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    titleEn: 'titleEn',
+    messageEn: 'messageEn'
   };
 
   export type NotificationsScalarFieldEnum = (typeof NotificationsScalarFieldEnum)[keyof typeof NotificationsScalarFieldEnum]
@@ -22901,6 +23315,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'MarkerCategory'
+   */
+  export type EnumMarkerCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarkerCategory'>
+    
+
+
+  /**
+   * Reference to a field of type 'MarkerCategory[]'
+   */
+  export type ListEnumMarkerCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarkerCategory[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -22936,6 +23364,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'QuestionKind'
+   */
+  export type EnumQuestionKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QuestionKind'>
+    
+
+
+  /**
+   * Reference to a field of type 'QuestionKind[]'
+   */
+  export type ListEnumQuestionKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QuestionKind[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Json'
    */
   export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
@@ -22962,9 +23404,18 @@ export namespace Prisma {
     latitude?: FloatFilter<"Sites"> | number
     longitude?: FloatFilter<"Sites"> | number
     type?: StringFilter<"Sites"> | string
+    category?: EnumMarkerCategoryFilter<"Sites"> | $Enums.MarkerCategory
     capacity?: IntFilter<"Sites"> | number
+    arLabel?: StringNullableFilter<"Sites"> | string | null
+    arContent?: StringNullableFilter<"Sites"> | string | null
+    arRadius?: FloatNullableFilter<"Sites"> | number | null
     createdAt?: DateTimeFilter<"Sites"> | Date | string
     updatedAt?: DateTimeFilter<"Sites"> | Date | string
+    nameEn?: StringNullableFilter<"Sites"> | string | null
+    descriptionEn?: StringNullableFilter<"Sites"> | string | null
+    typeEn?: StringNullableFilter<"Sites"> | string | null
+    arLabelEn?: StringNullableFilter<"Sites"> | string | null
+    arContentEn?: StringNullableFilter<"Sites"> | string | null
     alerts?: AlertsListRelationFilter
     amenities?: AmenitiesListRelationFilter
     events?: EventsListRelationFilter
@@ -22977,9 +23428,18 @@ export namespace Prisma {
     latitude?: SortOrder
     longitude?: SortOrder
     type?: SortOrder
+    category?: SortOrder
     capacity?: SortOrder
+    arLabel?: SortOrderInput | SortOrder
+    arContent?: SortOrderInput | SortOrder
+    arRadius?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    nameEn?: SortOrderInput | SortOrder
+    descriptionEn?: SortOrderInput | SortOrder
+    typeEn?: SortOrderInput | SortOrder
+    arLabelEn?: SortOrderInput | SortOrder
+    arContentEn?: SortOrderInput | SortOrder
     alerts?: AlertsOrderByRelationAggregateInput
     amenities?: AmenitiesOrderByRelationAggregateInput
     events?: EventsOrderByRelationAggregateInput
@@ -22995,9 +23455,18 @@ export namespace Prisma {
     latitude?: FloatFilter<"Sites"> | number
     longitude?: FloatFilter<"Sites"> | number
     type?: StringFilter<"Sites"> | string
+    category?: EnumMarkerCategoryFilter<"Sites"> | $Enums.MarkerCategory
     capacity?: IntFilter<"Sites"> | number
+    arLabel?: StringNullableFilter<"Sites"> | string | null
+    arContent?: StringNullableFilter<"Sites"> | string | null
+    arRadius?: FloatNullableFilter<"Sites"> | number | null
     createdAt?: DateTimeFilter<"Sites"> | Date | string
     updatedAt?: DateTimeFilter<"Sites"> | Date | string
+    nameEn?: StringNullableFilter<"Sites"> | string | null
+    descriptionEn?: StringNullableFilter<"Sites"> | string | null
+    typeEn?: StringNullableFilter<"Sites"> | string | null
+    arLabelEn?: StringNullableFilter<"Sites"> | string | null
+    arContentEn?: StringNullableFilter<"Sites"> | string | null
     alerts?: AlertsListRelationFilter
     amenities?: AmenitiesListRelationFilter
     events?: EventsListRelationFilter
@@ -23010,9 +23479,18 @@ export namespace Prisma {
     latitude?: SortOrder
     longitude?: SortOrder
     type?: SortOrder
+    category?: SortOrder
     capacity?: SortOrder
+    arLabel?: SortOrderInput | SortOrder
+    arContent?: SortOrderInput | SortOrder
+    arRadius?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    nameEn?: SortOrderInput | SortOrder
+    descriptionEn?: SortOrderInput | SortOrder
+    typeEn?: SortOrderInput | SortOrder
+    arLabelEn?: SortOrderInput | SortOrder
+    arContentEn?: SortOrderInput | SortOrder
     _count?: SitesCountOrderByAggregateInput
     _avg?: SitesAvgOrderByAggregateInput
     _max?: SitesMaxOrderByAggregateInput
@@ -23030,9 +23508,18 @@ export namespace Prisma {
     latitude?: FloatWithAggregatesFilter<"Sites"> | number
     longitude?: FloatWithAggregatesFilter<"Sites"> | number
     type?: StringWithAggregatesFilter<"Sites"> | string
+    category?: EnumMarkerCategoryWithAggregatesFilter<"Sites"> | $Enums.MarkerCategory
     capacity?: IntWithAggregatesFilter<"Sites"> | number
+    arLabel?: StringNullableWithAggregatesFilter<"Sites"> | string | null
+    arContent?: StringNullableWithAggregatesFilter<"Sites"> | string | null
+    arRadius?: FloatNullableWithAggregatesFilter<"Sites"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"Sites"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Sites"> | Date | string
+    nameEn?: StringNullableWithAggregatesFilter<"Sites"> | string | null
+    descriptionEn?: StringNullableWithAggregatesFilter<"Sites"> | string | null
+    typeEn?: StringNullableWithAggregatesFilter<"Sites"> | string | null
+    arLabelEn?: StringNullableWithAggregatesFilter<"Sites"> | string | null
+    arContentEn?: StringNullableWithAggregatesFilter<"Sites"> | string | null
   }
 
   export type AmenitiesWhereInput = {
@@ -23041,6 +23528,7 @@ export namespace Prisma {
     NOT?: AmenitiesWhereInput | AmenitiesWhereInput[]
     id?: StringFilter<"Amenities"> | string
     name?: StringFilter<"Amenities"> | string
+    nameEn?: StringNullableFilter<"Amenities"> | string | null
     siteId?: StringFilter<"Amenities"> | string
     createdAt?: DateTimeFilter<"Amenities"> | Date | string
     updatedAt?: DateTimeFilter<"Amenities"> | Date | string
@@ -23050,6 +23538,7 @@ export namespace Prisma {
   export type AmenitiesOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrderInput | SortOrder
     siteId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -23062,6 +23551,7 @@ export namespace Prisma {
     OR?: AmenitiesWhereInput[]
     NOT?: AmenitiesWhereInput | AmenitiesWhereInput[]
     name?: StringFilter<"Amenities"> | string
+    nameEn?: StringNullableFilter<"Amenities"> | string | null
     siteId?: StringFilter<"Amenities"> | string
     createdAt?: DateTimeFilter<"Amenities"> | Date | string
     updatedAt?: DateTimeFilter<"Amenities"> | Date | string
@@ -23071,6 +23561,7 @@ export namespace Prisma {
   export type AmenitiesOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrderInput | SortOrder
     siteId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -23085,6 +23576,7 @@ export namespace Prisma {
     NOT?: AmenitiesScalarWhereWithAggregatesInput | AmenitiesScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Amenities"> | string
     name?: StringWithAggregatesFilter<"Amenities"> | string
+    nameEn?: StringNullableWithAggregatesFilter<"Amenities"> | string | null
     siteId?: StringWithAggregatesFilter<"Amenities"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Amenities"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Amenities"> | Date | string
@@ -23096,6 +23588,7 @@ export namespace Prisma {
     NOT?: EventsTypesWhereInput | EventsTypesWhereInput[]
     id?: StringFilter<"EventsTypes"> | string
     name?: StringFilter<"EventsTypes"> | string
+    nameEn?: StringNullableFilter<"EventsTypes"> | string | null
     createdAt?: DateTimeFilter<"EventsTypes"> | Date | string
     updatedAt?: DateTimeFilter<"EventsTypes"> | Date | string
     events?: EventsListRelationFilter
@@ -23104,6 +23597,7 @@ export namespace Prisma {
   export type EventsTypesOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     events?: EventsOrderByRelationAggregateInput
@@ -23115,6 +23609,7 @@ export namespace Prisma {
     OR?: EventsTypesWhereInput[]
     NOT?: EventsTypesWhereInput | EventsTypesWhereInput[]
     name?: StringFilter<"EventsTypes"> | string
+    nameEn?: StringNullableFilter<"EventsTypes"> | string | null
     createdAt?: DateTimeFilter<"EventsTypes"> | Date | string
     updatedAt?: DateTimeFilter<"EventsTypes"> | Date | string
     events?: EventsListRelationFilter
@@ -23123,6 +23618,7 @@ export namespace Prisma {
   export type EventsTypesOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: EventsTypesCountOrderByAggregateInput
@@ -23136,6 +23632,7 @@ export namespace Prisma {
     NOT?: EventsTypesScalarWhereWithAggregatesInput | EventsTypesScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"EventsTypes"> | string
     name?: StringWithAggregatesFilter<"EventsTypes"> | string
+    nameEn?: StringNullableWithAggregatesFilter<"EventsTypes"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"EventsTypes"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"EventsTypes"> | Date | string
   }
@@ -23154,6 +23651,8 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Events"> | Date | string
     updatedAt?: DateTimeFilter<"Events"> | Date | string
     imageUrl?: StringNullableFilter<"Events"> | string | null
+    nameEn?: StringNullableFilter<"Events"> | string | null
+    descriptionEn?: StringNullableFilter<"Events"> | string | null
     artists?: ArtistsListRelationFilter
     eventType?: XOR<EventsTypesScalarRelationFilter, EventsTypesWhereInput>
     site?: XOR<SitesScalarRelationFilter, SitesWhereInput>
@@ -23172,6 +23671,8 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     imageUrl?: SortOrderInput | SortOrder
+    nameEn?: SortOrderInput | SortOrder
+    descriptionEn?: SortOrderInput | SortOrder
     artists?: ArtistsOrderByRelationAggregateInput
     eventType?: EventsTypesOrderByWithRelationInput
     site?: SitesOrderByWithRelationInput
@@ -23193,6 +23694,8 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Events"> | Date | string
     updatedAt?: DateTimeFilter<"Events"> | Date | string
     imageUrl?: StringNullableFilter<"Events"> | string | null
+    nameEn?: StringNullableFilter<"Events"> | string | null
+    descriptionEn?: StringNullableFilter<"Events"> | string | null
     artists?: ArtistsListRelationFilter
     eventType?: XOR<EventsTypesScalarRelationFilter, EventsTypesWhereInput>
     site?: XOR<SitesScalarRelationFilter, SitesWhereInput>
@@ -23211,6 +23714,8 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     imageUrl?: SortOrderInput | SortOrder
+    nameEn?: SortOrderInput | SortOrder
+    descriptionEn?: SortOrderInput | SortOrder
     _count?: EventsCountOrderByAggregateInput
     _max?: EventsMaxOrderByAggregateInput
     _min?: EventsMinOrderByAggregateInput
@@ -23230,6 +23735,8 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Events"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Events"> | Date | string
     imageUrl?: StringNullableWithAggregatesFilter<"Events"> | string | null
+    nameEn?: StringNullableWithAggregatesFilter<"Events"> | string | null
+    descriptionEn?: StringNullableWithAggregatesFilter<"Events"> | string | null
   }
 
   export type ProgramsWhereInput = {
@@ -23355,11 +23862,14 @@ export namespace Prisma {
     title?: StringFilter<"Quiz"> | string
     description?: StringNullableFilter<"Quiz"> | string | null
     active?: BoolFilter<"Quiz"> | boolean
-    eventId?: StringFilter<"Quiz"> | string
+    scope?: StringFilter<"Quiz"> | string
+    eventId?: StringNullableFilter<"Quiz"> | string | null
     createdAt?: DateTimeFilter<"Quiz"> | Date | string
     updatedAt?: DateTimeFilter<"Quiz"> | Date | string
+    titleEn?: StringNullableFilter<"Quiz"> | string | null
+    descriptionEn?: StringNullableFilter<"Quiz"> | string | null
     questions?: QuestionsListRelationFilter
-    event?: XOR<EventsScalarRelationFilter, EventsWhereInput>
+    event?: XOR<EventsNullableScalarRelationFilter, EventsWhereInput> | null
   }
 
   export type QuizOrderByWithRelationInput = {
@@ -23367,9 +23877,12 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrderInput | SortOrder
     active?: SortOrder
-    eventId?: SortOrder
+    scope?: SortOrder
+    eventId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    titleEn?: SortOrderInput | SortOrder
+    descriptionEn?: SortOrderInput | SortOrder
     questions?: QuestionsOrderByRelationAggregateInput
     event?: EventsOrderByWithRelationInput
   }
@@ -23382,11 +23895,14 @@ export namespace Prisma {
     title?: StringFilter<"Quiz"> | string
     description?: StringNullableFilter<"Quiz"> | string | null
     active?: BoolFilter<"Quiz"> | boolean
-    eventId?: StringFilter<"Quiz"> | string
+    scope?: StringFilter<"Quiz"> | string
+    eventId?: StringNullableFilter<"Quiz"> | string | null
     createdAt?: DateTimeFilter<"Quiz"> | Date | string
     updatedAt?: DateTimeFilter<"Quiz"> | Date | string
+    titleEn?: StringNullableFilter<"Quiz"> | string | null
+    descriptionEn?: StringNullableFilter<"Quiz"> | string | null
     questions?: QuestionsListRelationFilter
-    event?: XOR<EventsScalarRelationFilter, EventsWhereInput>
+    event?: XOR<EventsNullableScalarRelationFilter, EventsWhereInput> | null
   }, "id">
 
   export type QuizOrderByWithAggregationInput = {
@@ -23394,9 +23910,12 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrderInput | SortOrder
     active?: SortOrder
-    eventId?: SortOrder
+    scope?: SortOrder
+    eventId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    titleEn?: SortOrderInput | SortOrder
+    descriptionEn?: SortOrderInput | SortOrder
     _count?: QuizCountOrderByAggregateInput
     _max?: QuizMaxOrderByAggregateInput
     _min?: QuizMinOrderByAggregateInput
@@ -23410,9 +23929,12 @@ export namespace Prisma {
     title?: StringWithAggregatesFilter<"Quiz"> | string
     description?: StringNullableWithAggregatesFilter<"Quiz"> | string | null
     active?: BoolWithAggregatesFilter<"Quiz"> | boolean
-    eventId?: StringWithAggregatesFilter<"Quiz"> | string
+    scope?: StringWithAggregatesFilter<"Quiz"> | string
+    eventId?: StringNullableWithAggregatesFilter<"Quiz"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Quiz"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Quiz"> | Date | string
+    titleEn?: StringNullableWithAggregatesFilter<"Quiz"> | string | null
+    descriptionEn?: StringNullableWithAggregatesFilter<"Quiz"> | string | null
   }
 
   export type QuestionsTypesWhereInput = {
@@ -23421,6 +23943,7 @@ export namespace Prisma {
     NOT?: QuestionsTypesWhereInput | QuestionsTypesWhereInput[]
     id?: StringFilter<"QuestionsTypes"> | string
     types?: StringFilter<"QuestionsTypes"> | string
+    kind?: EnumQuestionKindFilter<"QuestionsTypes"> | $Enums.QuestionKind
     createdAt?: DateTimeFilter<"QuestionsTypes"> | Date | string
     updatedAt?: DateTimeFilter<"QuestionsTypes"> | Date | string
     questions?: QuestionsListRelationFilter
@@ -23429,6 +23952,7 @@ export namespace Prisma {
   export type QuestionsTypesOrderByWithRelationInput = {
     id?: SortOrder
     types?: SortOrder
+    kind?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     questions?: QuestionsOrderByRelationAggregateInput
@@ -23436,18 +23960,20 @@ export namespace Prisma {
 
   export type QuestionsTypesWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    types?: string
     AND?: QuestionsTypesWhereInput | QuestionsTypesWhereInput[]
     OR?: QuestionsTypesWhereInput[]
     NOT?: QuestionsTypesWhereInput | QuestionsTypesWhereInput[]
-    types?: StringFilter<"QuestionsTypes"> | string
+    kind?: EnumQuestionKindFilter<"QuestionsTypes"> | $Enums.QuestionKind
     createdAt?: DateTimeFilter<"QuestionsTypes"> | Date | string
     updatedAt?: DateTimeFilter<"QuestionsTypes"> | Date | string
     questions?: QuestionsListRelationFilter
-  }, "id">
+  }, "id" | "types">
 
   export type QuestionsTypesOrderByWithAggregationInput = {
     id?: SortOrder
     types?: SortOrder
+    kind?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: QuestionsTypesCountOrderByAggregateInput
@@ -23461,6 +23987,7 @@ export namespace Prisma {
     NOT?: QuestionsTypesScalarWhereWithAggregatesInput | QuestionsTypesScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"QuestionsTypes"> | string
     types?: StringWithAggregatesFilter<"QuestionsTypes"> | string
+    kind?: EnumQuestionKindWithAggregatesFilter<"QuestionsTypes"> | $Enums.QuestionKind
     createdAt?: DateTimeWithAggregatesFilter<"QuestionsTypes"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"QuestionsTypes"> | Date | string
   }
@@ -23471,8 +23998,10 @@ export namespace Prisma {
     NOT?: QuestionsWhereInput | QuestionsWhereInput[]
     id?: StringFilter<"Questions"> | string
     wording?: StringFilter<"Questions"> | string
+    wordingEn?: StringNullableFilter<"Questions"> | string | null
     questionTypeId?: StringFilter<"Questions"> | string
     quizId?: StringFilter<"Questions"> | string
+    order?: IntFilter<"Questions"> | number
     createdAt?: DateTimeFilter<"Questions"> | Date | string
     updatedAt?: DateTimeFilter<"Questions"> | Date | string
     answers?: AnswersListRelationFilter
@@ -23485,8 +24014,10 @@ export namespace Prisma {
   export type QuestionsOrderByWithRelationInput = {
     id?: SortOrder
     wording?: SortOrder
+    wordingEn?: SortOrderInput | SortOrder
     questionTypeId?: SortOrder
     quizId?: SortOrder
+    order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     answers?: AnswersOrderByRelationAggregateInput
@@ -23502,8 +24033,10 @@ export namespace Prisma {
     OR?: QuestionsWhereInput[]
     NOT?: QuestionsWhereInput | QuestionsWhereInput[]
     wording?: StringFilter<"Questions"> | string
+    wordingEn?: StringNullableFilter<"Questions"> | string | null
     questionTypeId?: StringFilter<"Questions"> | string
     quizId?: StringFilter<"Questions"> | string
+    order?: IntFilter<"Questions"> | number
     createdAt?: DateTimeFilter<"Questions"> | Date | string
     updatedAt?: DateTimeFilter<"Questions"> | Date | string
     answers?: AnswersListRelationFilter
@@ -23516,13 +24049,17 @@ export namespace Prisma {
   export type QuestionsOrderByWithAggregationInput = {
     id?: SortOrder
     wording?: SortOrder
+    wordingEn?: SortOrderInput | SortOrder
     questionTypeId?: SortOrder
     quizId?: SortOrder
+    order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: QuestionsCountOrderByAggregateInput
+    _avg?: QuestionsAvgOrderByAggregateInput
     _max?: QuestionsMaxOrderByAggregateInput
     _min?: QuestionsMinOrderByAggregateInput
+    _sum?: QuestionsSumOrderByAggregateInput
   }
 
   export type QuestionsScalarWhereWithAggregatesInput = {
@@ -23531,8 +24068,10 @@ export namespace Prisma {
     NOT?: QuestionsScalarWhereWithAggregatesInput | QuestionsScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Questions"> | string
     wording?: StringWithAggregatesFilter<"Questions"> | string
+    wordingEn?: StringNullableWithAggregatesFilter<"Questions"> | string | null
     questionTypeId?: StringWithAggregatesFilter<"Questions"> | string
     quizId?: StringWithAggregatesFilter<"Questions"> | string
+    order?: IntWithAggregatesFilter<"Questions"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Questions"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Questions"> | Date | string
   }
@@ -23543,6 +24082,7 @@ export namespace Prisma {
     NOT?: ImpressionsWhereInput | ImpressionsWhereInput[]
     id?: StringFilter<"Impressions"> | string
     name?: StringFilter<"Impressions"> | string
+    nameEn?: StringNullableFilter<"Impressions"> | string | null
     emoji?: StringFilter<"Impressions"> | string
     createdAt?: DateTimeFilter<"Impressions"> | Date | string
     updatedAt?: DateTimeFilter<"Impressions"> | Date | string
@@ -23552,6 +24092,7 @@ export namespace Prisma {
   export type ImpressionsOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrderInput | SortOrder
     emoji?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -23564,6 +24105,7 @@ export namespace Prisma {
     OR?: ImpressionsWhereInput[]
     NOT?: ImpressionsWhereInput | ImpressionsWhereInput[]
     name?: StringFilter<"Impressions"> | string
+    nameEn?: StringNullableFilter<"Impressions"> | string | null
     emoji?: StringFilter<"Impressions"> | string
     createdAt?: DateTimeFilter<"Impressions"> | Date | string
     updatedAt?: DateTimeFilter<"Impressions"> | Date | string
@@ -23573,6 +24115,7 @@ export namespace Prisma {
   export type ImpressionsOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrderInput | SortOrder
     emoji?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -23587,6 +24130,7 @@ export namespace Prisma {
     NOT?: ImpressionsScalarWhereWithAggregatesInput | ImpressionsScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Impressions"> | string
     name?: StringWithAggregatesFilter<"Impressions"> | string
+    nameEn?: StringNullableWithAggregatesFilter<"Impressions"> | string | null
     emoji?: StringWithAggregatesFilter<"Impressions"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Impressions"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Impressions"> | Date | string
@@ -23642,6 +24186,7 @@ export namespace Prisma {
     NOT?: ChoicesWhereInput | ChoicesWhereInput[]
     id?: StringFilter<"Choices"> | string
     wording?: StringFilter<"Choices"> | string
+    wordingEn?: StringNullableFilter<"Choices"> | string | null
     questionId?: StringFilter<"Choices"> | string
     createdAt?: DateTimeFilter<"Choices"> | Date | string
     updatedAt?: DateTimeFilter<"Choices"> | Date | string
@@ -23651,6 +24196,7 @@ export namespace Prisma {
   export type ChoicesOrderByWithRelationInput = {
     id?: SortOrder
     wording?: SortOrder
+    wordingEn?: SortOrderInput | SortOrder
     questionId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -23663,6 +24209,7 @@ export namespace Prisma {
     OR?: ChoicesWhereInput[]
     NOT?: ChoicesWhereInput | ChoicesWhereInput[]
     wording?: StringFilter<"Choices"> | string
+    wordingEn?: StringNullableFilter<"Choices"> | string | null
     questionId?: StringFilter<"Choices"> | string
     createdAt?: DateTimeFilter<"Choices"> | Date | string
     updatedAt?: DateTimeFilter<"Choices"> | Date | string
@@ -23672,6 +24219,7 @@ export namespace Prisma {
   export type ChoicesOrderByWithAggregationInput = {
     id?: SortOrder
     wording?: SortOrder
+    wordingEn?: SortOrderInput | SortOrder
     questionId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -23686,6 +24234,7 @@ export namespace Prisma {
     NOT?: ChoicesScalarWhereWithAggregatesInput | ChoicesScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Choices"> | string
     wording?: StringWithAggregatesFilter<"Choices"> | string
+    wordingEn?: StringNullableWithAggregatesFilter<"Choices"> | string | null
     questionId?: StringWithAggregatesFilter<"Choices"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Choices"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Choices"> | Date | string
@@ -23696,7 +24245,7 @@ export namespace Prisma {
     OR?: AnswersWhereInput[]
     NOT?: AnswersWhereInput | AnswersWhereInput[]
     id?: StringFilter<"Answers"> | string
-    uuid?: StringFilter<"Answers"> | string
+    uuid?: StringNullableFilter<"Answers"> | string | null
     response?: StringFilter<"Answers"> | string
     questionId?: StringFilter<"Answers"> | string
     createdAt?: DateTimeFilter<"Answers"> | Date | string
@@ -23706,7 +24255,7 @@ export namespace Prisma {
 
   export type AnswersOrderByWithRelationInput = {
     id?: SortOrder
-    uuid?: SortOrder
+    uuid?: SortOrderInput | SortOrder
     response?: SortOrder
     questionId?: SortOrder
     createdAt?: SortOrder
@@ -23716,20 +24265,20 @@ export namespace Prisma {
 
   export type AnswersWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    uuid?: string
     AND?: AnswersWhereInput | AnswersWhereInput[]
     OR?: AnswersWhereInput[]
     NOT?: AnswersWhereInput | AnswersWhereInput[]
+    uuid?: StringNullableFilter<"Answers"> | string | null
     response?: StringFilter<"Answers"> | string
     questionId?: StringFilter<"Answers"> | string
     createdAt?: DateTimeFilter<"Answers"> | Date | string
     updatedAt?: DateTimeFilter<"Answers"> | Date | string
     question?: XOR<QuestionsScalarRelationFilter, QuestionsWhereInput>
-  }, "id" | "uuid">
+  }, "id">
 
   export type AnswersOrderByWithAggregationInput = {
     id?: SortOrder
-    uuid?: SortOrder
+    uuid?: SortOrderInput | SortOrder
     response?: SortOrder
     questionId?: SortOrder
     createdAt?: SortOrder
@@ -23744,7 +24293,7 @@ export namespace Prisma {
     OR?: AnswersScalarWhereWithAggregatesInput[]
     NOT?: AnswersScalarWhereWithAggregatesInput | AnswersScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Answers"> | string
-    uuid?: StringWithAggregatesFilter<"Answers"> | string
+    uuid?: StringNullableWithAggregatesFilter<"Answers"> | string | null
     response?: StringWithAggregatesFilter<"Answers"> | string
     questionId?: StringWithAggregatesFilter<"Answers"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Answers"> | Date | string
@@ -23855,6 +24404,8 @@ export namespace Prisma {
     sentAt?: DateTimeNullableFilter<"Notifications"> | Date | string | null
     createdAt?: DateTimeFilter<"Notifications"> | Date | string
     updatedAt?: DateTimeFilter<"Notifications"> | Date | string
+    titleEn?: StringNullableFilter<"Notifications"> | string | null
+    messageEn?: StringNullableFilter<"Notifications"> | string | null
   }
 
   export type NotificationsOrderByWithRelationInput = {
@@ -23868,6 +24419,8 @@ export namespace Prisma {
     sentAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    titleEn?: SortOrderInput | SortOrder
+    messageEn?: SortOrderInput | SortOrder
   }
 
   export type NotificationsWhereUniqueInput = Prisma.AtLeast<{
@@ -23884,6 +24437,8 @@ export namespace Prisma {
     sentAt?: DateTimeNullableFilter<"Notifications"> | Date | string | null
     createdAt?: DateTimeFilter<"Notifications"> | Date | string
     updatedAt?: DateTimeFilter<"Notifications"> | Date | string
+    titleEn?: StringNullableFilter<"Notifications"> | string | null
+    messageEn?: StringNullableFilter<"Notifications"> | string | null
   }, "id">
 
   export type NotificationsOrderByWithAggregationInput = {
@@ -23897,6 +24452,8 @@ export namespace Prisma {
     sentAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    titleEn?: SortOrderInput | SortOrder
+    messageEn?: SortOrderInput | SortOrder
     _count?: NotificationsCountOrderByAggregateInput
     _max?: NotificationsMaxOrderByAggregateInput
     _min?: NotificationsMinOrderByAggregateInput
@@ -23916,6 +24473,8 @@ export namespace Prisma {
     sentAt?: DateTimeNullableWithAggregatesFilter<"Notifications"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Notifications"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Notifications"> | Date | string
+    titleEn?: StringNullableWithAggregatesFilter<"Notifications"> | string | null
+    messageEn?: StringNullableWithAggregatesFilter<"Notifications"> | string | null
   }
 
   export type AlertsWhereInput = {
@@ -24155,9 +24714,18 @@ export namespace Prisma {
     latitude: number
     longitude: number
     type: string
-    capacity: number
+    category?: $Enums.MarkerCategory
+    capacity?: number
+    arLabel?: string | null
+    arContent?: string | null
+    arRadius?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    nameEn?: string | null
+    descriptionEn?: string | null
+    typeEn?: string | null
+    arLabelEn?: string | null
+    arContentEn?: string | null
     alerts?: AlertsCreateNestedManyWithoutSiteInput
     amenities?: AmenitiesCreateNestedManyWithoutSiteInput
     events?: EventsCreateNestedManyWithoutSiteInput
@@ -24170,9 +24738,18 @@ export namespace Prisma {
     latitude: number
     longitude: number
     type: string
-    capacity: number
+    category?: $Enums.MarkerCategory
+    capacity?: number
+    arLabel?: string | null
+    arContent?: string | null
+    arRadius?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    nameEn?: string | null
+    descriptionEn?: string | null
+    typeEn?: string | null
+    arLabelEn?: string | null
+    arContentEn?: string | null
     alerts?: AlertsUncheckedCreateNestedManyWithoutSiteInput
     amenities?: AmenitiesUncheckedCreateNestedManyWithoutSiteInput
     events?: EventsUncheckedCreateNestedManyWithoutSiteInput
@@ -24185,9 +24762,18 @@ export namespace Prisma {
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    category?: EnumMarkerCategoryFieldUpdateOperationsInput | $Enums.MarkerCategory
     capacity?: IntFieldUpdateOperationsInput | number
+    arLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    arContent?: NullableStringFieldUpdateOperationsInput | string | null
+    arRadius?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+    typeEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arLabelEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     alerts?: AlertsUpdateManyWithoutSiteNestedInput
     amenities?: AmenitiesUpdateManyWithoutSiteNestedInput
     events?: EventsUpdateManyWithoutSiteNestedInput
@@ -24200,9 +24786,18 @@ export namespace Prisma {
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    category?: EnumMarkerCategoryFieldUpdateOperationsInput | $Enums.MarkerCategory
     capacity?: IntFieldUpdateOperationsInput | number
+    arLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    arContent?: NullableStringFieldUpdateOperationsInput | string | null
+    arRadius?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+    typeEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arLabelEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     alerts?: AlertsUncheckedUpdateManyWithoutSiteNestedInput
     amenities?: AmenitiesUncheckedUpdateManyWithoutSiteNestedInput
     events?: EventsUncheckedUpdateManyWithoutSiteNestedInput
@@ -24215,9 +24810,18 @@ export namespace Prisma {
     latitude: number
     longitude: number
     type: string
-    capacity: number
+    category?: $Enums.MarkerCategory
+    capacity?: number
+    arLabel?: string | null
+    arContent?: string | null
+    arRadius?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    nameEn?: string | null
+    descriptionEn?: string | null
+    typeEn?: string | null
+    arLabelEn?: string | null
+    arContentEn?: string | null
   }
 
   export type SitesUpdateManyMutationInput = {
@@ -24227,9 +24831,18 @@ export namespace Prisma {
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    category?: EnumMarkerCategoryFieldUpdateOperationsInput | $Enums.MarkerCategory
     capacity?: IntFieldUpdateOperationsInput | number
+    arLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    arContent?: NullableStringFieldUpdateOperationsInput | string | null
+    arRadius?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+    typeEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arLabelEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type SitesUncheckedUpdateManyInput = {
@@ -24239,14 +24852,24 @@ export namespace Prisma {
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    category?: EnumMarkerCategoryFieldUpdateOperationsInput | $Enums.MarkerCategory
     capacity?: IntFieldUpdateOperationsInput | number
+    arLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    arContent?: NullableStringFieldUpdateOperationsInput | string | null
+    arRadius?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+    typeEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arLabelEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type AmenitiesCreateInput = {
     id?: string
     name: string
+    nameEn?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     site: SitesCreateNestedOneWithoutAmenitiesInput
@@ -24255,6 +24878,7 @@ export namespace Prisma {
   export type AmenitiesUncheckedCreateInput = {
     id?: string
     name: string
+    nameEn?: string | null
     siteId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24263,6 +24887,7 @@ export namespace Prisma {
   export type AmenitiesUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     site?: SitesUpdateOneRequiredWithoutAmenitiesNestedInput
@@ -24271,6 +24896,7 @@ export namespace Prisma {
   export type AmenitiesUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     siteId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24279,6 +24905,7 @@ export namespace Prisma {
   export type AmenitiesCreateManyInput = {
     id?: string
     name: string
+    nameEn?: string | null
     siteId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24287,6 +24914,7 @@ export namespace Prisma {
   export type AmenitiesUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24294,6 +24922,7 @@ export namespace Prisma {
   export type AmenitiesUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     siteId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24302,6 +24931,7 @@ export namespace Prisma {
   export type EventsTypesCreateInput = {
     id?: string
     name: string
+    nameEn?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     events?: EventsCreateNestedManyWithoutEventTypeInput
@@ -24310,6 +24940,7 @@ export namespace Prisma {
   export type EventsTypesUncheckedCreateInput = {
     id?: string
     name: string
+    nameEn?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     events?: EventsUncheckedCreateNestedManyWithoutEventTypeInput
@@ -24318,6 +24949,7 @@ export namespace Prisma {
   export type EventsTypesUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventsUpdateManyWithoutEventTypeNestedInput
@@ -24326,6 +24958,7 @@ export namespace Prisma {
   export type EventsTypesUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventsUncheckedUpdateManyWithoutEventTypeNestedInput
@@ -24334,6 +24967,7 @@ export namespace Prisma {
   export type EventsTypesCreateManyInput = {
     id?: string
     name: string
+    nameEn?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -24341,6 +24975,7 @@ export namespace Prisma {
   export type EventsTypesUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24348,6 +24983,7 @@ export namespace Prisma {
   export type EventsTypesUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24361,6 +24997,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
     artists?: ArtistsCreateNestedManyWithoutEventInput
     eventType: EventsTypesCreateNestedOneWithoutEventsInput
     site: SitesCreateNestedOneWithoutEventsInput
@@ -24379,6 +25017,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
     artists?: ArtistsUncheckedCreateNestedManyWithoutEventInput
     programs?: ProgramsUncheckedCreateNestedManyWithoutEventInput
     quizzes?: QuizUncheckedCreateNestedManyWithoutEventInput
@@ -24393,6 +25033,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     artists?: ArtistsUpdateManyWithoutEventNestedInput
     eventType?: EventsTypesUpdateOneRequiredWithoutEventsNestedInput
     site?: SitesUpdateOneRequiredWithoutEventsNestedInput
@@ -24411,6 +25053,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     artists?: ArtistsUncheckedUpdateManyWithoutEventNestedInput
     programs?: ProgramsUncheckedUpdateManyWithoutEventNestedInput
     quizzes?: QuizUncheckedUpdateManyWithoutEventNestedInput
@@ -24427,6 +25071,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
   }
 
   export type EventsUpdateManyMutationInput = {
@@ -24438,6 +25084,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type EventsUncheckedUpdateManyInput = {
@@ -24451,6 +25099,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ProgramsCreateInput = {
@@ -24575,10 +25225,13 @@ export namespace Prisma {
     title: string
     description?: string | null
     active?: boolean
+    scope?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    titleEn?: string | null
+    descriptionEn?: string | null
     questions?: QuestionsCreateNestedManyWithoutQuizInput
-    event: EventsCreateNestedOneWithoutQuizzesInput
+    event?: EventsCreateNestedOneWithoutQuizzesInput
   }
 
   export type QuizUncheckedCreateInput = {
@@ -24586,9 +25239,12 @@ export namespace Prisma {
     title: string
     description?: string | null
     active?: boolean
-    eventId: string
+    scope?: string
+    eventId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    titleEn?: string | null
+    descriptionEn?: string | null
     questions?: QuestionsUncheckedCreateNestedManyWithoutQuizInput
   }
 
@@ -24597,10 +25253,13 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     active?: BoolFieldUpdateOperationsInput | boolean
+    scope?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titleEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     questions?: QuestionsUpdateManyWithoutQuizNestedInput
-    event?: EventsUpdateOneRequiredWithoutQuizzesNestedInput
+    event?: EventsUpdateOneWithoutQuizzesNestedInput
   }
 
   export type QuizUncheckedUpdateInput = {
@@ -24608,9 +25267,12 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     active?: BoolFieldUpdateOperationsInput | boolean
-    eventId?: StringFieldUpdateOperationsInput | string
+    scope?: StringFieldUpdateOperationsInput | string
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titleEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     questions?: QuestionsUncheckedUpdateManyWithoutQuizNestedInput
   }
 
@@ -24619,9 +25281,12 @@ export namespace Prisma {
     title: string
     description?: string | null
     active?: boolean
-    eventId: string
+    scope?: string
+    eventId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    titleEn?: string | null
+    descriptionEn?: string | null
   }
 
   export type QuizUpdateManyMutationInput = {
@@ -24629,8 +25294,11 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     active?: BoolFieldUpdateOperationsInput | boolean
+    scope?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titleEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type QuizUncheckedUpdateManyInput = {
@@ -24638,14 +25306,18 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     active?: BoolFieldUpdateOperationsInput | boolean
-    eventId?: StringFieldUpdateOperationsInput | string
+    scope?: StringFieldUpdateOperationsInput | string
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titleEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type QuestionsTypesCreateInput = {
     id?: string
     types: string
+    kind?: $Enums.QuestionKind
     createdAt?: Date | string
     updatedAt?: Date | string
     questions?: QuestionsCreateNestedManyWithoutQuestionTypeInput
@@ -24654,6 +25326,7 @@ export namespace Prisma {
   export type QuestionsTypesUncheckedCreateInput = {
     id?: string
     types: string
+    kind?: $Enums.QuestionKind
     createdAt?: Date | string
     updatedAt?: Date | string
     questions?: QuestionsUncheckedCreateNestedManyWithoutQuestionTypeInput
@@ -24662,6 +25335,7 @@ export namespace Prisma {
   export type QuestionsTypesUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     types?: StringFieldUpdateOperationsInput | string
+    kind?: EnumQuestionKindFieldUpdateOperationsInput | $Enums.QuestionKind
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     questions?: QuestionsUpdateManyWithoutQuestionTypeNestedInput
@@ -24670,6 +25344,7 @@ export namespace Prisma {
   export type QuestionsTypesUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     types?: StringFieldUpdateOperationsInput | string
+    kind?: EnumQuestionKindFieldUpdateOperationsInput | $Enums.QuestionKind
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     questions?: QuestionsUncheckedUpdateManyWithoutQuestionTypeNestedInput
@@ -24678,6 +25353,7 @@ export namespace Prisma {
   export type QuestionsTypesCreateManyInput = {
     id?: string
     types: string
+    kind?: $Enums.QuestionKind
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -24685,6 +25361,7 @@ export namespace Prisma {
   export type QuestionsTypesUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     types?: StringFieldUpdateOperationsInput | string
+    kind?: EnumQuestionKindFieldUpdateOperationsInput | $Enums.QuestionKind
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24692,6 +25369,7 @@ export namespace Prisma {
   export type QuestionsTypesUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     types?: StringFieldUpdateOperationsInput | string
+    kind?: EnumQuestionKindFieldUpdateOperationsInput | $Enums.QuestionKind
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24699,6 +25377,8 @@ export namespace Prisma {
   export type QuestionsCreateInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     answers?: AnswersCreateNestedManyWithoutQuestionInput
@@ -24711,8 +25391,10 @@ export namespace Prisma {
   export type QuestionsUncheckedCreateInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     questionTypeId: string
     quizId: string
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     answers?: AnswersUncheckedCreateNestedManyWithoutQuestionInput
@@ -24723,6 +25405,8 @@ export namespace Prisma {
   export type QuestionsUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     answers?: AnswersUpdateManyWithoutQuestionNestedInput
@@ -24735,8 +25419,10 @@ export namespace Prisma {
   export type QuestionsUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     questionTypeId?: StringFieldUpdateOperationsInput | string
     quizId?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     answers?: AnswersUncheckedUpdateManyWithoutQuestionNestedInput
@@ -24747,8 +25433,10 @@ export namespace Prisma {
   export type QuestionsCreateManyInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     questionTypeId: string
     quizId: string
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -24756,6 +25444,8 @@ export namespace Prisma {
   export type QuestionsUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24763,8 +25453,10 @@ export namespace Prisma {
   export type QuestionsUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     questionTypeId?: StringFieldUpdateOperationsInput | string
     quizId?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24772,6 +25464,7 @@ export namespace Prisma {
   export type ImpressionsCreateInput = {
     id?: string
     name: string
+    nameEn?: string | null
     emoji: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24781,6 +25474,7 @@ export namespace Prisma {
   export type ImpressionsUncheckedCreateInput = {
     id?: string
     name: string
+    nameEn?: string | null
     emoji: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24790,6 +25484,7 @@ export namespace Prisma {
   export type ImpressionsUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     emoji?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24799,6 +25494,7 @@ export namespace Prisma {
   export type ImpressionsUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     emoji?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24808,6 +25504,7 @@ export namespace Prisma {
   export type ImpressionsCreateManyInput = {
     id?: string
     name: string
+    nameEn?: string | null
     emoji: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24816,6 +25513,7 @@ export namespace Prisma {
   export type ImpressionsUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     emoji?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24824,6 +25522,7 @@ export namespace Prisma {
   export type ImpressionsUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     emoji?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24866,6 +25565,7 @@ export namespace Prisma {
   export type ChoicesCreateInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     question: QuestionsCreateNestedOneWithoutChoicesInput
@@ -24874,6 +25574,7 @@ export namespace Prisma {
   export type ChoicesUncheckedCreateInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     questionId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24882,6 +25583,7 @@ export namespace Prisma {
   export type ChoicesUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     question?: QuestionsUpdateOneRequiredWithoutChoicesNestedInput
@@ -24890,6 +25592,7 @@ export namespace Prisma {
   export type ChoicesUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     questionId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24898,6 +25601,7 @@ export namespace Prisma {
   export type ChoicesCreateManyInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     questionId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24906,6 +25610,7 @@ export namespace Prisma {
   export type ChoicesUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24913,6 +25618,7 @@ export namespace Prisma {
   export type ChoicesUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     questionId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24920,7 +25626,7 @@ export namespace Prisma {
 
   export type AnswersCreateInput = {
     id?: string
-    uuid?: string
+    uuid?: string | null
     response: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24929,7 +25635,7 @@ export namespace Prisma {
 
   export type AnswersUncheckedCreateInput = {
     id?: string
-    uuid?: string
+    uuid?: string | null
     response: string
     questionId: string
     createdAt?: Date | string
@@ -24938,7 +25644,7 @@ export namespace Prisma {
 
   export type AnswersUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    uuid?: StringFieldUpdateOperationsInput | string
+    uuid?: NullableStringFieldUpdateOperationsInput | string | null
     response?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24947,7 +25653,7 @@ export namespace Prisma {
 
   export type AnswersUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    uuid?: StringFieldUpdateOperationsInput | string
+    uuid?: NullableStringFieldUpdateOperationsInput | string | null
     response?: StringFieldUpdateOperationsInput | string
     questionId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24956,7 +25662,7 @@ export namespace Prisma {
 
   export type AnswersCreateManyInput = {
     id?: string
-    uuid?: string
+    uuid?: string | null
     response: string
     questionId: string
     createdAt?: Date | string
@@ -24965,7 +25671,7 @@ export namespace Prisma {
 
   export type AnswersUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    uuid?: StringFieldUpdateOperationsInput | string
+    uuid?: NullableStringFieldUpdateOperationsInput | string | null
     response?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24973,7 +25679,7 @@ export namespace Prisma {
 
   export type AnswersUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    uuid?: StringFieldUpdateOperationsInput | string
+    uuid?: NullableStringFieldUpdateOperationsInput | string | null
     response?: StringFieldUpdateOperationsInput | string
     questionId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25100,6 +25806,8 @@ export namespace Prisma {
     sentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    titleEn?: string | null
+    messageEn?: string | null
   }
 
   export type NotificationsUncheckedCreateInput = {
@@ -25113,6 +25821,8 @@ export namespace Prisma {
     sentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    titleEn?: string | null
+    messageEn?: string | null
   }
 
   export type NotificationsUpdateInput = {
@@ -25126,6 +25836,8 @@ export namespace Prisma {
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titleEn?: NullableStringFieldUpdateOperationsInput | string | null
+    messageEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type NotificationsUncheckedUpdateInput = {
@@ -25139,6 +25851,8 @@ export namespace Prisma {
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titleEn?: NullableStringFieldUpdateOperationsInput | string | null
+    messageEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type NotificationsCreateManyInput = {
@@ -25152,6 +25866,8 @@ export namespace Prisma {
     sentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    titleEn?: string | null
+    messageEn?: string | null
   }
 
   export type NotificationsUpdateManyMutationInput = {
@@ -25165,6 +25881,8 @@ export namespace Prisma {
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titleEn?: NullableStringFieldUpdateOperationsInput | string | null
+    messageEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type NotificationsUncheckedUpdateManyInput = {
@@ -25178,6 +25896,8 @@ export namespace Prisma {
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titleEn?: NullableStringFieldUpdateOperationsInput | string | null
+    messageEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type AlertsCreateInput = {
@@ -25474,6 +26194,13 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type EnumMarkerCategoryFilter<$PrismaModel = never> = {
+    equals?: $Enums.MarkerCategory | EnumMarkerCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.MarkerCategory[] | ListEnumMarkerCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MarkerCategory[] | ListEnumMarkerCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumMarkerCategoryFilter<$PrismaModel> | $Enums.MarkerCategory
+  }
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -25483,6 +26210,17 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type DateTimeFilter<$PrismaModel = never> = {
@@ -25538,15 +26276,25 @@ export namespace Prisma {
     latitude?: SortOrder
     longitude?: SortOrder
     type?: SortOrder
+    category?: SortOrder
     capacity?: SortOrder
+    arLabel?: SortOrder
+    arContent?: SortOrder
+    arRadius?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    nameEn?: SortOrder
+    descriptionEn?: SortOrder
+    typeEn?: SortOrder
+    arLabelEn?: SortOrder
+    arContentEn?: SortOrder
   }
 
   export type SitesAvgOrderByAggregateInput = {
     latitude?: SortOrder
     longitude?: SortOrder
     capacity?: SortOrder
+    arRadius?: SortOrder
   }
 
   export type SitesMaxOrderByAggregateInput = {
@@ -25556,9 +26304,18 @@ export namespace Prisma {
     latitude?: SortOrder
     longitude?: SortOrder
     type?: SortOrder
+    category?: SortOrder
     capacity?: SortOrder
+    arLabel?: SortOrder
+    arContent?: SortOrder
+    arRadius?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    nameEn?: SortOrder
+    descriptionEn?: SortOrder
+    typeEn?: SortOrder
+    arLabelEn?: SortOrder
+    arContentEn?: SortOrder
   }
 
   export type SitesMinOrderByAggregateInput = {
@@ -25568,15 +26325,25 @@ export namespace Prisma {
     latitude?: SortOrder
     longitude?: SortOrder
     type?: SortOrder
+    category?: SortOrder
     capacity?: SortOrder
+    arLabel?: SortOrder
+    arContent?: SortOrder
+    arRadius?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    nameEn?: SortOrder
+    descriptionEn?: SortOrder
+    typeEn?: SortOrder
+    arLabelEn?: SortOrder
+    arContentEn?: SortOrder
   }
 
   export type SitesSumOrderByAggregateInput = {
     latitude?: SortOrder
     longitude?: SortOrder
     capacity?: SortOrder
+    arRadius?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -25631,6 +26398,16 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
+  export type EnumMarkerCategoryWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MarkerCategory | EnumMarkerCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.MarkerCategory[] | ListEnumMarkerCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MarkerCategory[] | ListEnumMarkerCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumMarkerCategoryWithAggregatesFilter<$PrismaModel> | $Enums.MarkerCategory
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMarkerCategoryFilter<$PrismaModel>
+    _max?: NestedEnumMarkerCategoryFilter<$PrismaModel>
+  }
+
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -25645,6 +26422,22 @@ export namespace Prisma {
     _sum?: NestedIntFilter<$PrismaModel>
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -25669,6 +26462,7 @@ export namespace Prisma {
   export type AmenitiesCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrder
     siteId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -25677,6 +26471,7 @@ export namespace Prisma {
   export type AmenitiesMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrder
     siteId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -25685,6 +26480,7 @@ export namespace Prisma {
   export type AmenitiesMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrder
     siteId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -25693,6 +26489,7 @@ export namespace Prisma {
   export type EventsTypesCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -25700,6 +26497,7 @@ export namespace Prisma {
   export type EventsTypesMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -25707,6 +26505,7 @@ export namespace Prisma {
   export type EventsTypesMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -25757,6 +26556,8 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     imageUrl?: SortOrder
+    nameEn?: SortOrder
+    descriptionEn?: SortOrder
   }
 
   export type EventsMaxOrderByAggregateInput = {
@@ -25770,6 +26571,8 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     imageUrl?: SortOrder
+    nameEn?: SortOrder
+    descriptionEn?: SortOrder
   }
 
   export type EventsMinOrderByAggregateInput = {
@@ -25783,6 +26586,8 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     imageUrl?: SortOrder
+    nameEn?: SortOrder
+    descriptionEn?: SortOrder
   }
 
   export type EventsScalarRelationFilter = {
@@ -25852,6 +26657,11 @@ export namespace Prisma {
     none?: QuestionsWhereInput
   }
 
+  export type EventsNullableScalarRelationFilter = {
+    is?: EventsWhereInput | null
+    isNot?: EventsWhereInput | null
+  }
+
   export type QuestionsOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -25861,9 +26671,12 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     active?: SortOrder
+    scope?: SortOrder
     eventId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    titleEn?: SortOrder
+    descriptionEn?: SortOrder
   }
 
   export type QuizMaxOrderByAggregateInput = {
@@ -25871,9 +26684,12 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     active?: SortOrder
+    scope?: SortOrder
     eventId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    titleEn?: SortOrder
+    descriptionEn?: SortOrder
   }
 
   export type QuizMinOrderByAggregateInput = {
@@ -25881,9 +26697,12 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     active?: SortOrder
+    scope?: SortOrder
     eventId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    titleEn?: SortOrder
+    descriptionEn?: SortOrder
   }
 
   export type BoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -25894,9 +26713,17 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type EnumQuestionKindFilter<$PrismaModel = never> = {
+    equals?: $Enums.QuestionKind | EnumQuestionKindFieldRefInput<$PrismaModel>
+    in?: $Enums.QuestionKind[] | ListEnumQuestionKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.QuestionKind[] | ListEnumQuestionKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumQuestionKindFilter<$PrismaModel> | $Enums.QuestionKind
+  }
+
   export type QuestionsTypesCountOrderByAggregateInput = {
     id?: SortOrder
     types?: SortOrder
+    kind?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -25904,6 +26731,7 @@ export namespace Prisma {
   export type QuestionsTypesMaxOrderByAggregateInput = {
     id?: SortOrder
     types?: SortOrder
+    kind?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -25911,8 +26739,19 @@ export namespace Prisma {
   export type QuestionsTypesMinOrderByAggregateInput = {
     id?: SortOrder
     types?: SortOrder
+    kind?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type EnumQuestionKindWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.QuestionKind | EnumQuestionKindFieldRefInput<$PrismaModel>
+    in?: $Enums.QuestionKind[] | ListEnumQuestionKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.QuestionKind[] | ListEnumQuestionKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumQuestionKindWithAggregatesFilter<$PrismaModel> | $Enums.QuestionKind
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumQuestionKindFilter<$PrismaModel>
+    _max?: NestedEnumQuestionKindFilter<$PrismaModel>
   }
 
   export type AnswersListRelationFilter = {
@@ -25958,17 +26797,25 @@ export namespace Prisma {
   export type QuestionsCountOrderByAggregateInput = {
     id?: SortOrder
     wording?: SortOrder
+    wordingEn?: SortOrder
     questionTypeId?: SortOrder
     quizId?: SortOrder
+    order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type QuestionsAvgOrderByAggregateInput = {
+    order?: SortOrder
   }
 
   export type QuestionsMaxOrderByAggregateInput = {
     id?: SortOrder
     wording?: SortOrder
+    wordingEn?: SortOrder
     questionTypeId?: SortOrder
     quizId?: SortOrder
+    order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -25976,15 +26823,22 @@ export namespace Prisma {
   export type QuestionsMinOrderByAggregateInput = {
     id?: SortOrder
     wording?: SortOrder
+    wordingEn?: SortOrder
     questionTypeId?: SortOrder
     quizId?: SortOrder
+    order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type QuestionsSumOrderByAggregateInput = {
+    order?: SortOrder
   }
 
   export type ImpressionsCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrder
     emoji?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -25993,6 +26847,7 @@ export namespace Prisma {
   export type ImpressionsMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrder
     emoji?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -26001,6 +26856,7 @@ export namespace Prisma {
   export type ImpressionsMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    nameEn?: SortOrder
     emoji?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -26039,6 +26895,7 @@ export namespace Prisma {
   export type ChoicesCountOrderByAggregateInput = {
     id?: SortOrder
     wording?: SortOrder
+    wordingEn?: SortOrder
     questionId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -26047,6 +26904,7 @@ export namespace Prisma {
   export type ChoicesMaxOrderByAggregateInput = {
     id?: SortOrder
     wording?: SortOrder
+    wordingEn?: SortOrder
     questionId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -26055,6 +26913,7 @@ export namespace Prisma {
   export type ChoicesMinOrderByAggregateInput = {
     id?: SortOrder
     wording?: SortOrder
+    wordingEn?: SortOrder
     questionId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -26178,6 +27037,8 @@ export namespace Prisma {
     sentAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    titleEn?: SortOrder
+    messageEn?: SortOrder
   }
 
   export type NotificationsMaxOrderByAggregateInput = {
@@ -26191,6 +27052,8 @@ export namespace Prisma {
     sentAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    titleEn?: SortOrder
+    messageEn?: SortOrder
   }
 
   export type NotificationsMinOrderByAggregateInput = {
@@ -26204,6 +27067,8 @@ export namespace Prisma {
     sentAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    titleEn?: SortOrder
+    messageEn?: SortOrder
   }
 
   export type UuidFilter<$PrismaModel = never> = {
@@ -26216,17 +27081,6 @@ export namespace Prisma {
     gte?: string | StringFieldRefInput<$PrismaModel>
     mode?: QueryMode
     not?: NestedUuidFilter<$PrismaModel> | string
-  }
-
-  export type FloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type SitesNullableScalarRelationFilter = {
@@ -26299,22 +27153,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
-  }
-
-  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type AlertsScalarRelationFilter = {
@@ -26525,8 +27363,20 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type EnumMarkerCategoryFieldUpdateOperationsInput = {
+    set?: $Enums.MarkerCategory
+  }
+
   export type IntFieldUpdateOperationsInput = {
     set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
     increment?: number
     decrement?: number
     multiply?: number
@@ -26897,10 +27747,12 @@ export namespace Prisma {
     deleteMany?: QuestionsScalarWhereInput | QuestionsScalarWhereInput[]
   }
 
-  export type EventsUpdateOneRequiredWithoutQuizzesNestedInput = {
+  export type EventsUpdateOneWithoutQuizzesNestedInput = {
     create?: XOR<EventsCreateWithoutQuizzesInput, EventsUncheckedCreateWithoutQuizzesInput>
     connectOrCreate?: EventsCreateOrConnectWithoutQuizzesInput
     upsert?: EventsUpsertWithoutQuizzesInput
+    disconnect?: EventsWhereInput | boolean
+    delete?: EventsWhereInput | boolean
     connect?: EventsWhereUniqueInput
     update?: XOR<XOR<EventsUpdateToOneWithWhereWithoutQuizzesInput, EventsUpdateWithoutQuizzesInput>, EventsUncheckedUpdateWithoutQuizzesInput>
   }
@@ -26931,6 +27783,10 @@ export namespace Prisma {
     connectOrCreate?: QuestionsCreateOrConnectWithoutQuestionTypeInput | QuestionsCreateOrConnectWithoutQuestionTypeInput[]
     createMany?: QuestionsCreateManyQuestionTypeInputEnvelope
     connect?: QuestionsWhereUniqueInput | QuestionsWhereUniqueInput[]
+  }
+
+  export type EnumQuestionKindFieldUpdateOperationsInput = {
+    set?: $Enums.QuestionKind
   }
 
   export type QuestionsUpdateManyWithoutQuestionTypeNestedInput = {
@@ -27279,14 +28135,6 @@ export namespace Prisma {
     connect?: AlertTimelineWhereUniqueInput | AlertTimelineWhereUniqueInput[]
   }
 
-  export type NullableFloatFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type AlertTimelineUpdateManyWithoutAlertNestedInput = {
     create?: XOR<AlertTimelineCreateWithoutAlertInput, AlertTimelineUncheckedCreateWithoutAlertInput> | AlertTimelineCreateWithoutAlertInput[] | AlertTimelineUncheckedCreateWithoutAlertInput[]
     connectOrCreate?: AlertTimelineCreateOrConnectWithoutAlertInput | AlertTimelineCreateOrConnectWithoutAlertInput[]
@@ -27394,6 +28242,13 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type NestedEnumMarkerCategoryFilter<$PrismaModel = never> = {
+    equals?: $Enums.MarkerCategory | EnumMarkerCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.MarkerCategory[] | ListEnumMarkerCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MarkerCategory[] | ListEnumMarkerCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumMarkerCategoryFilter<$PrismaModel> | $Enums.MarkerCategory
+  }
+
   export type NestedIntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -27403,6 +28258,17 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -27477,6 +28343,16 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
+  export type NestedEnumMarkerCategoryWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MarkerCategory | EnumMarkerCategoryFieldRefInput<$PrismaModel>
+    in?: $Enums.MarkerCategory[] | ListEnumMarkerCategoryFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MarkerCategory[] | ListEnumMarkerCategoryFieldRefInput<$PrismaModel>
+    not?: NestedEnumMarkerCategoryWithAggregatesFilter<$PrismaModel> | $Enums.MarkerCategory
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMarkerCategoryFilter<$PrismaModel>
+    _max?: NestedEnumMarkerCategoryFilter<$PrismaModel>
+  }
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -27491,6 +28367,22 @@ export namespace Prisma {
     _sum?: NestedIntFilter<$PrismaModel>
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -27518,6 +28410,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type NestedEnumQuestionKindFilter<$PrismaModel = never> = {
+    equals?: $Enums.QuestionKind | EnumQuestionKindFieldRefInput<$PrismaModel>
+    in?: $Enums.QuestionKind[] | ListEnumQuestionKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.QuestionKind[] | ListEnumQuestionKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumQuestionKindFilter<$PrismaModel> | $Enums.QuestionKind
+  }
+
+  export type NestedEnumQuestionKindWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.QuestionKind | EnumQuestionKindFieldRefInput<$PrismaModel>
+    in?: $Enums.QuestionKind[] | ListEnumQuestionKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.QuestionKind[] | ListEnumQuestionKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumQuestionKindWithAggregatesFilter<$PrismaModel> | $Enums.QuestionKind
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumQuestionKindFilter<$PrismaModel>
+    _max?: NestedEnumQuestionKindFilter<$PrismaModel>
   }
 
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
@@ -27556,17 +28465,6 @@ export namespace Prisma {
     not?: NestedUuidFilter<$PrismaModel> | string
   }
 
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
   export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -27579,22 +28477,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type NestedUuidNullableFilter<$PrismaModel = never> = {
@@ -27686,6 +28568,7 @@ export namespace Prisma {
   export type AmenitiesCreateWithoutSiteInput = {
     id?: string
     name: string
+    nameEn?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -27693,6 +28576,7 @@ export namespace Prisma {
   export type AmenitiesUncheckedCreateWithoutSiteInput = {
     id?: string
     name: string
+    nameEn?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -27716,6 +28600,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
     artists?: ArtistsCreateNestedManyWithoutEventInput
     eventType: EventsTypesCreateNestedOneWithoutEventsInput
     programs?: ProgramsCreateNestedManyWithoutEventInput
@@ -27732,6 +28618,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
     artists?: ArtistsUncheckedCreateNestedManyWithoutEventInput
     programs?: ProgramsUncheckedCreateNestedManyWithoutEventInput
     quizzes?: QuizUncheckedCreateNestedManyWithoutEventInput
@@ -27802,6 +28690,7 @@ export namespace Prisma {
     NOT?: AmenitiesScalarWhereInput | AmenitiesScalarWhereInput[]
     id?: StringFilter<"Amenities"> | string
     name?: StringFilter<"Amenities"> | string
+    nameEn?: StringNullableFilter<"Amenities"> | string | null
     siteId?: StringFilter<"Amenities"> | string
     createdAt?: DateTimeFilter<"Amenities"> | Date | string
     updatedAt?: DateTimeFilter<"Amenities"> | Date | string
@@ -27837,6 +28726,8 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Events"> | Date | string
     updatedAt?: DateTimeFilter<"Events"> | Date | string
     imageUrl?: StringNullableFilter<"Events"> | string | null
+    nameEn?: StringNullableFilter<"Events"> | string | null
+    descriptionEn?: StringNullableFilter<"Events"> | string | null
   }
 
   export type SitesCreateWithoutAmenitiesInput = {
@@ -27846,9 +28737,18 @@ export namespace Prisma {
     latitude: number
     longitude: number
     type: string
-    capacity: number
+    category?: $Enums.MarkerCategory
+    capacity?: number
+    arLabel?: string | null
+    arContent?: string | null
+    arRadius?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    nameEn?: string | null
+    descriptionEn?: string | null
+    typeEn?: string | null
+    arLabelEn?: string | null
+    arContentEn?: string | null
     alerts?: AlertsCreateNestedManyWithoutSiteInput
     events?: EventsCreateNestedManyWithoutSiteInput
   }
@@ -27860,9 +28760,18 @@ export namespace Prisma {
     latitude: number
     longitude: number
     type: string
-    capacity: number
+    category?: $Enums.MarkerCategory
+    capacity?: number
+    arLabel?: string | null
+    arContent?: string | null
+    arRadius?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    nameEn?: string | null
+    descriptionEn?: string | null
+    typeEn?: string | null
+    arLabelEn?: string | null
+    arContentEn?: string | null
     alerts?: AlertsUncheckedCreateNestedManyWithoutSiteInput
     events?: EventsUncheckedCreateNestedManyWithoutSiteInput
   }
@@ -27890,9 +28799,18 @@ export namespace Prisma {
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    category?: EnumMarkerCategoryFieldUpdateOperationsInput | $Enums.MarkerCategory
     capacity?: IntFieldUpdateOperationsInput | number
+    arLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    arContent?: NullableStringFieldUpdateOperationsInput | string | null
+    arRadius?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+    typeEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arLabelEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     alerts?: AlertsUpdateManyWithoutSiteNestedInput
     events?: EventsUpdateManyWithoutSiteNestedInput
   }
@@ -27904,9 +28822,18 @@ export namespace Prisma {
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    category?: EnumMarkerCategoryFieldUpdateOperationsInput | $Enums.MarkerCategory
     capacity?: IntFieldUpdateOperationsInput | number
+    arLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    arContent?: NullableStringFieldUpdateOperationsInput | string | null
+    arRadius?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+    typeEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arLabelEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     alerts?: AlertsUncheckedUpdateManyWithoutSiteNestedInput
     events?: EventsUncheckedUpdateManyWithoutSiteNestedInput
   }
@@ -27920,6 +28847,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
     artists?: ArtistsCreateNestedManyWithoutEventInput
     site: SitesCreateNestedOneWithoutEventsInput
     programs?: ProgramsCreateNestedManyWithoutEventInput
@@ -27936,6 +28865,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
     artists?: ArtistsUncheckedCreateNestedManyWithoutEventInput
     programs?: ProgramsUncheckedCreateNestedManyWithoutEventInput
     quizzes?: QuizUncheckedCreateNestedManyWithoutEventInput
@@ -27994,6 +28925,7 @@ export namespace Prisma {
   export type EventsTypesCreateWithoutEventsInput = {
     id?: string
     name: string
+    nameEn?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28001,6 +28933,7 @@ export namespace Prisma {
   export type EventsTypesUncheckedCreateWithoutEventsInput = {
     id?: string
     name: string
+    nameEn?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28017,9 +28950,18 @@ export namespace Prisma {
     latitude: number
     longitude: number
     type: string
-    capacity: number
+    category?: $Enums.MarkerCategory
+    capacity?: number
+    arLabel?: string | null
+    arContent?: string | null
+    arRadius?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    nameEn?: string | null
+    descriptionEn?: string | null
+    typeEn?: string | null
+    arLabelEn?: string | null
+    arContentEn?: string | null
     alerts?: AlertsCreateNestedManyWithoutSiteInput
     amenities?: AmenitiesCreateNestedManyWithoutSiteInput
   }
@@ -28031,9 +28973,18 @@ export namespace Prisma {
     latitude: number
     longitude: number
     type: string
-    capacity: number
+    category?: $Enums.MarkerCategory
+    capacity?: number
+    arLabel?: string | null
+    arContent?: string | null
+    arRadius?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    nameEn?: string | null
+    descriptionEn?: string | null
+    typeEn?: string | null
+    arLabelEn?: string | null
+    arContentEn?: string | null
     alerts?: AlertsUncheckedCreateNestedManyWithoutSiteInput
     amenities?: AmenitiesUncheckedCreateNestedManyWithoutSiteInput
   }
@@ -28074,8 +29025,11 @@ export namespace Prisma {
     title: string
     description?: string | null
     active?: boolean
+    scope?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    titleEn?: string | null
+    descriptionEn?: string | null
     questions?: QuestionsCreateNestedManyWithoutQuizInput
   }
 
@@ -28084,8 +29038,11 @@ export namespace Prisma {
     title: string
     description?: string | null
     active?: boolean
+    scope?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    titleEn?: string | null
+    descriptionEn?: string | null
     questions?: QuestionsUncheckedCreateNestedManyWithoutQuizInput
   }
 
@@ -28140,6 +29097,7 @@ export namespace Prisma {
   export type EventsTypesUpdateWithoutEventsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28147,6 +29105,7 @@ export namespace Prisma {
   export type EventsTypesUncheckedUpdateWithoutEventsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28169,9 +29128,18 @@ export namespace Prisma {
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    category?: EnumMarkerCategoryFieldUpdateOperationsInput | $Enums.MarkerCategory
     capacity?: IntFieldUpdateOperationsInput | number
+    arLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    arContent?: NullableStringFieldUpdateOperationsInput | string | null
+    arRadius?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+    typeEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arLabelEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     alerts?: AlertsUpdateManyWithoutSiteNestedInput
     amenities?: AmenitiesUpdateManyWithoutSiteNestedInput
   }
@@ -28183,9 +29151,18 @@ export namespace Prisma {
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    category?: EnumMarkerCategoryFieldUpdateOperationsInput | $Enums.MarkerCategory
     capacity?: IntFieldUpdateOperationsInput | number
+    arLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    arContent?: NullableStringFieldUpdateOperationsInput | string | null
+    arRadius?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+    typeEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arLabelEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     alerts?: AlertsUncheckedUpdateManyWithoutSiteNestedInput
     amenities?: AmenitiesUncheckedUpdateManyWithoutSiteNestedInput
   }
@@ -28242,9 +29219,12 @@ export namespace Prisma {
     title?: StringFilter<"Quiz"> | string
     description?: StringNullableFilter<"Quiz"> | string | null
     active?: BoolFilter<"Quiz"> | boolean
-    eventId?: StringFilter<"Quiz"> | string
+    scope?: StringFilter<"Quiz"> | string
+    eventId?: StringNullableFilter<"Quiz"> | string | null
     createdAt?: DateTimeFilter<"Quiz"> | Date | string
     updatedAt?: DateTimeFilter<"Quiz"> | Date | string
+    titleEn?: StringNullableFilter<"Quiz"> | string | null
+    descriptionEn?: StringNullableFilter<"Quiz"> | string | null
   }
 
   export type EventsCreateWithoutProgramsInput = {
@@ -28256,6 +29236,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
     artists?: ArtistsCreateNestedManyWithoutEventInput
     eventType: EventsTypesCreateNestedOneWithoutEventsInput
     site: SitesCreateNestedOneWithoutEventsInput
@@ -28273,6 +29255,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
     artists?: ArtistsUncheckedCreateNestedManyWithoutEventInput
     quizzes?: QuizUncheckedCreateNestedManyWithoutEventInput
   }
@@ -28302,6 +29286,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     artists?: ArtistsUpdateManyWithoutEventNestedInput
     eventType?: EventsTypesUpdateOneRequiredWithoutEventsNestedInput
     site?: SitesUpdateOneRequiredWithoutEventsNestedInput
@@ -28319,6 +29305,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     artists?: ArtistsUncheckedUpdateManyWithoutEventNestedInput
     quizzes?: QuizUncheckedUpdateManyWithoutEventNestedInput
   }
@@ -28332,6 +29320,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
     eventType: EventsTypesCreateNestedOneWithoutEventsInput
     site: SitesCreateNestedOneWithoutEventsInput
     programs?: ProgramsCreateNestedManyWithoutEventInput
@@ -28349,6 +29339,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
     programs?: ProgramsUncheckedCreateNestedManyWithoutEventInput
     quizzes?: QuizUncheckedCreateNestedManyWithoutEventInput
   }
@@ -28378,6 +29370,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     eventType?: EventsTypesUpdateOneRequiredWithoutEventsNestedInput
     site?: SitesUpdateOneRequiredWithoutEventsNestedInput
     programs?: ProgramsUpdateManyWithoutEventNestedInput
@@ -28395,6 +29389,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     programs?: ProgramsUncheckedUpdateManyWithoutEventNestedInput
     quizzes?: QuizUncheckedUpdateManyWithoutEventNestedInput
   }
@@ -28402,6 +29398,8 @@ export namespace Prisma {
   export type QuestionsCreateWithoutQuizInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     answers?: AnswersCreateNestedManyWithoutQuestionInput
@@ -28413,7 +29411,9 @@ export namespace Prisma {
   export type QuestionsUncheckedCreateWithoutQuizInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     questionTypeId: string
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     answers?: AnswersUncheckedCreateNestedManyWithoutQuestionInput
@@ -28440,6 +29440,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
     artists?: ArtistsCreateNestedManyWithoutEventInput
     eventType: EventsTypesCreateNestedOneWithoutEventsInput
     site: SitesCreateNestedOneWithoutEventsInput
@@ -28457,6 +29459,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
     artists?: ArtistsUncheckedCreateNestedManyWithoutEventInput
     programs?: ProgramsUncheckedCreateNestedManyWithoutEventInput
   }
@@ -28488,8 +29492,10 @@ export namespace Prisma {
     NOT?: QuestionsScalarWhereInput | QuestionsScalarWhereInput[]
     id?: StringFilter<"Questions"> | string
     wording?: StringFilter<"Questions"> | string
+    wordingEn?: StringNullableFilter<"Questions"> | string | null
     questionTypeId?: StringFilter<"Questions"> | string
     quizId?: StringFilter<"Questions"> | string
+    order?: IntFilter<"Questions"> | number
     createdAt?: DateTimeFilter<"Questions"> | Date | string
     updatedAt?: DateTimeFilter<"Questions"> | Date | string
   }
@@ -28514,6 +29520,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     artists?: ArtistsUpdateManyWithoutEventNestedInput
     eventType?: EventsTypesUpdateOneRequiredWithoutEventsNestedInput
     site?: SitesUpdateOneRequiredWithoutEventsNestedInput
@@ -28531,6 +29539,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     artists?: ArtistsUncheckedUpdateManyWithoutEventNestedInput
     programs?: ProgramsUncheckedUpdateManyWithoutEventNestedInput
   }
@@ -28538,6 +29548,8 @@ export namespace Prisma {
   export type QuestionsCreateWithoutQuestionTypeInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     answers?: AnswersCreateNestedManyWithoutQuestionInput
@@ -28549,7 +29561,9 @@ export namespace Prisma {
   export type QuestionsUncheckedCreateWithoutQuestionTypeInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     quizId: string
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     answers?: AnswersUncheckedCreateNestedManyWithoutQuestionInput
@@ -28585,7 +29599,7 @@ export namespace Prisma {
 
   export type AnswersCreateWithoutQuestionInput = {
     id?: string
-    uuid?: string
+    uuid?: string | null
     response: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28593,7 +29607,7 @@ export namespace Prisma {
 
   export type AnswersUncheckedCreateWithoutQuestionInput = {
     id?: string
-    uuid?: string
+    uuid?: string | null
     response: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28612,6 +29626,7 @@ export namespace Prisma {
   export type ChoicesCreateWithoutQuestionInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28619,6 +29634,7 @@ export namespace Prisma {
   export type ChoicesUncheckedCreateWithoutQuestionInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28636,6 +29652,7 @@ export namespace Prisma {
   export type QuestionsTypesCreateWithoutQuestionsInput = {
     id?: string
     types: string
+    kind?: $Enums.QuestionKind
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28643,6 +29660,7 @@ export namespace Prisma {
   export type QuestionsTypesUncheckedCreateWithoutQuestionsInput = {
     id?: string
     types: string
+    kind?: $Enums.QuestionKind
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -28657,9 +29675,12 @@ export namespace Prisma {
     title: string
     description?: string | null
     active?: boolean
+    scope?: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    event: EventsCreateNestedOneWithoutQuizzesInput
+    titleEn?: string | null
+    descriptionEn?: string | null
+    event?: EventsCreateNestedOneWithoutQuizzesInput
   }
 
   export type QuizUncheckedCreateWithoutQuestionsInput = {
@@ -28667,9 +29688,12 @@ export namespace Prisma {
     title: string
     description?: string | null
     active?: boolean
-    eventId: string
+    scope?: string
+    eventId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    titleEn?: string | null
+    descriptionEn?: string | null
   }
 
   export type QuizCreateOrConnectWithoutQuestionsInput = {
@@ -28716,7 +29740,7 @@ export namespace Prisma {
     OR?: AnswersScalarWhereInput[]
     NOT?: AnswersScalarWhereInput | AnswersScalarWhereInput[]
     id?: StringFilter<"Answers"> | string
-    uuid?: StringFilter<"Answers"> | string
+    uuid?: StringNullableFilter<"Answers"> | string | null
     response?: StringFilter<"Answers"> | string
     questionId?: StringFilter<"Answers"> | string
     createdAt?: DateTimeFilter<"Answers"> | Date | string
@@ -28745,6 +29769,7 @@ export namespace Prisma {
     NOT?: ChoicesScalarWhereInput | ChoicesScalarWhereInput[]
     id?: StringFilter<"Choices"> | string
     wording?: StringFilter<"Choices"> | string
+    wordingEn?: StringNullableFilter<"Choices"> | string | null
     questionId?: StringFilter<"Choices"> | string
     createdAt?: DateTimeFilter<"Choices"> | Date | string
     updatedAt?: DateTimeFilter<"Choices"> | Date | string
@@ -28764,6 +29789,7 @@ export namespace Prisma {
   export type QuestionsTypesUpdateWithoutQuestionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     types?: StringFieldUpdateOperationsInput | string
+    kind?: EnumQuestionKindFieldUpdateOperationsInput | $Enums.QuestionKind
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28771,6 +29797,7 @@ export namespace Prisma {
   export type QuestionsTypesUncheckedUpdateWithoutQuestionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     types?: StringFieldUpdateOperationsInput | string
+    kind?: EnumQuestionKindFieldUpdateOperationsInput | $Enums.QuestionKind
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28791,9 +29818,12 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     active?: BoolFieldUpdateOperationsInput | boolean
+    scope?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    event?: EventsUpdateOneRequiredWithoutQuizzesNestedInput
+    titleEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+    event?: EventsUpdateOneWithoutQuizzesNestedInput
   }
 
   export type QuizUncheckedUpdateWithoutQuestionsInput = {
@@ -28801,9 +29831,12 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     active?: BoolFieldUpdateOperationsInput | boolean
-    eventId?: StringFieldUpdateOperationsInput | string
+    scope?: StringFieldUpdateOperationsInput | string
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titleEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type Questions_impressionsUpsertWithWhereUniqueWithoutQuestionInput = {
@@ -28867,6 +29900,7 @@ export namespace Prisma {
   export type ImpressionsCreateWithoutQuestionsInput = {
     id?: string
     name: string
+    nameEn?: string | null
     emoji: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28875,6 +29909,7 @@ export namespace Prisma {
   export type ImpressionsUncheckedCreateWithoutQuestionsInput = {
     id?: string
     name: string
+    nameEn?: string | null
     emoji: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28888,6 +29923,8 @@ export namespace Prisma {
   export type QuestionsCreateWithoutImpressionsInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     answers?: AnswersCreateNestedManyWithoutQuestionInput
@@ -28899,8 +29936,10 @@ export namespace Prisma {
   export type QuestionsUncheckedCreateWithoutImpressionsInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     questionTypeId: string
     quizId: string
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     answers?: AnswersUncheckedCreateNestedManyWithoutQuestionInput
@@ -28926,6 +29965,7 @@ export namespace Prisma {
   export type ImpressionsUpdateWithoutQuestionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     emoji?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28934,6 +29974,7 @@ export namespace Prisma {
   export type ImpressionsUncheckedUpdateWithoutQuestionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     emoji?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28953,6 +29994,8 @@ export namespace Prisma {
   export type QuestionsUpdateWithoutImpressionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     answers?: AnswersUpdateManyWithoutQuestionNestedInput
@@ -28964,8 +30007,10 @@ export namespace Prisma {
   export type QuestionsUncheckedUpdateWithoutImpressionsInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     questionTypeId?: StringFieldUpdateOperationsInput | string
     quizId?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     answers?: AnswersUncheckedUpdateManyWithoutQuestionNestedInput
@@ -28975,6 +30020,8 @@ export namespace Prisma {
   export type QuestionsCreateWithoutChoicesInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     answers?: AnswersCreateNestedManyWithoutQuestionInput
@@ -28986,8 +30033,10 @@ export namespace Prisma {
   export type QuestionsUncheckedCreateWithoutChoicesInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     questionTypeId: string
     quizId: string
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     answers?: AnswersUncheckedCreateNestedManyWithoutQuestionInput
@@ -29013,6 +30062,8 @@ export namespace Prisma {
   export type QuestionsUpdateWithoutChoicesInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     answers?: AnswersUpdateManyWithoutQuestionNestedInput
@@ -29024,8 +30075,10 @@ export namespace Prisma {
   export type QuestionsUncheckedUpdateWithoutChoicesInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     questionTypeId?: StringFieldUpdateOperationsInput | string
     quizId?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     answers?: AnswersUncheckedUpdateManyWithoutQuestionNestedInput
@@ -29035,6 +30088,8 @@ export namespace Prisma {
   export type QuestionsCreateWithoutAnswersInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     choices?: ChoicesCreateNestedManyWithoutQuestionInput
@@ -29046,8 +30101,10 @@ export namespace Prisma {
   export type QuestionsUncheckedCreateWithoutAnswersInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     questionTypeId: string
     quizId: string
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     choices?: ChoicesUncheckedCreateNestedManyWithoutQuestionInput
@@ -29073,6 +30130,8 @@ export namespace Prisma {
   export type QuestionsUpdateWithoutAnswersInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     choices?: ChoicesUpdateManyWithoutQuestionNestedInput
@@ -29084,8 +30143,10 @@ export namespace Prisma {
   export type QuestionsUncheckedUpdateWithoutAnswersInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     questionTypeId?: StringFieldUpdateOperationsInput | string
     quizId?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     choices?: ChoicesUncheckedUpdateManyWithoutQuestionNestedInput
@@ -29184,9 +30245,18 @@ export namespace Prisma {
     latitude: number
     longitude: number
     type: string
-    capacity: number
+    category?: $Enums.MarkerCategory
+    capacity?: number
+    arLabel?: string | null
+    arContent?: string | null
+    arRadius?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    nameEn?: string | null
+    descriptionEn?: string | null
+    typeEn?: string | null
+    arLabelEn?: string | null
+    arContentEn?: string | null
     amenities?: AmenitiesCreateNestedManyWithoutSiteInput
     events?: EventsCreateNestedManyWithoutSiteInput
   }
@@ -29198,9 +30268,18 @@ export namespace Prisma {
     latitude: number
     longitude: number
     type: string
-    capacity: number
+    category?: $Enums.MarkerCategory
+    capacity?: number
+    arLabel?: string | null
+    arContent?: string | null
+    arRadius?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    nameEn?: string | null
+    descriptionEn?: string | null
+    typeEn?: string | null
+    arLabelEn?: string | null
+    arContentEn?: string | null
     amenities?: AmenitiesUncheckedCreateNestedManyWithoutSiteInput
     events?: EventsUncheckedCreateNestedManyWithoutSiteInput
   }
@@ -29244,9 +30323,18 @@ export namespace Prisma {
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    category?: EnumMarkerCategoryFieldUpdateOperationsInput | $Enums.MarkerCategory
     capacity?: IntFieldUpdateOperationsInput | number
+    arLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    arContent?: NullableStringFieldUpdateOperationsInput | string | null
+    arRadius?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+    typeEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arLabelEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     amenities?: AmenitiesUpdateManyWithoutSiteNestedInput
     events?: EventsUpdateManyWithoutSiteNestedInput
   }
@@ -29258,9 +30346,18 @@ export namespace Prisma {
     latitude?: FloatFieldUpdateOperationsInput | number
     longitude?: FloatFieldUpdateOperationsInput | number
     type?: StringFieldUpdateOperationsInput | string
+    category?: EnumMarkerCategoryFieldUpdateOperationsInput | $Enums.MarkerCategory
     capacity?: IntFieldUpdateOperationsInput | number
+    arLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    arContent?: NullableStringFieldUpdateOperationsInput | string | null
+    arRadius?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+    typeEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arLabelEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     amenities?: AmenitiesUncheckedUpdateManyWithoutSiteNestedInput
     events?: EventsUncheckedUpdateManyWithoutSiteNestedInput
   }
@@ -29429,6 +30526,7 @@ export namespace Prisma {
   export type AmenitiesCreateManySiteInput = {
     id?: string
     name: string
+    nameEn?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -29443,6 +30541,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
   }
 
   export type AlertsUpdateWithoutSiteInput = {
@@ -29489,6 +30589,7 @@ export namespace Prisma {
   export type AmenitiesUpdateWithoutSiteInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29496,6 +30597,7 @@ export namespace Prisma {
   export type AmenitiesUncheckedUpdateWithoutSiteInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29503,6 +30605,7 @@ export namespace Prisma {
   export type AmenitiesUncheckedUpdateManyWithoutSiteInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29516,6 +30619,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     artists?: ArtistsUpdateManyWithoutEventNestedInput
     eventType?: EventsTypesUpdateOneRequiredWithoutEventsNestedInput
     programs?: ProgramsUpdateManyWithoutEventNestedInput
@@ -29532,6 +30637,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     artists?: ArtistsUncheckedUpdateManyWithoutEventNestedInput
     programs?: ProgramsUncheckedUpdateManyWithoutEventNestedInput
     quizzes?: QuizUncheckedUpdateManyWithoutEventNestedInput
@@ -29547,6 +30654,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type EventsCreateManyEventTypeInput = {
@@ -29559,6 +30668,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     imageUrl?: string | null
+    nameEn?: string | null
+    descriptionEn?: string | null
   }
 
   export type EventsUpdateWithoutEventTypeInput = {
@@ -29570,6 +30681,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     artists?: ArtistsUpdateManyWithoutEventNestedInput
     site?: SitesUpdateOneRequiredWithoutEventsNestedInput
     programs?: ProgramsUpdateManyWithoutEventNestedInput
@@ -29586,6 +30699,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     artists?: ArtistsUncheckedUpdateManyWithoutEventNestedInput
     programs?: ProgramsUncheckedUpdateManyWithoutEventNestedInput
     quizzes?: QuizUncheckedUpdateManyWithoutEventNestedInput
@@ -29601,6 +30716,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ArtistsCreateManyEventInput = {
@@ -29623,8 +30740,11 @@ export namespace Prisma {
     title: string
     description?: string | null
     active?: boolean
+    scope?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    titleEn?: string | null
+    descriptionEn?: string | null
   }
 
   export type ArtistsUpdateWithoutEventInput = {
@@ -29677,8 +30797,11 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     active?: BoolFieldUpdateOperationsInput | boolean
+    scope?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titleEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     questions?: QuestionsUpdateManyWithoutQuizNestedInput
   }
 
@@ -29687,8 +30810,11 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     active?: BoolFieldUpdateOperationsInput | boolean
+    scope?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titleEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     questions?: QuestionsUncheckedUpdateManyWithoutQuizNestedInput
   }
 
@@ -29697,14 +30823,19 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     active?: BoolFieldUpdateOperationsInput | boolean
+    scope?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titleEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type QuestionsCreateManyQuizInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     questionTypeId: string
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -29712,6 +30843,8 @@ export namespace Prisma {
   export type QuestionsUpdateWithoutQuizInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     answers?: AnswersUpdateManyWithoutQuestionNestedInput
@@ -29723,7 +30856,9 @@ export namespace Prisma {
   export type QuestionsUncheckedUpdateWithoutQuizInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     questionTypeId?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     answers?: AnswersUncheckedUpdateManyWithoutQuestionNestedInput
@@ -29734,7 +30869,9 @@ export namespace Prisma {
   export type QuestionsUncheckedUpdateManyWithoutQuizInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     questionTypeId?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29742,7 +30879,9 @@ export namespace Prisma {
   export type QuestionsCreateManyQuestionTypeInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     quizId: string
+    order?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -29750,6 +30889,8 @@ export namespace Prisma {
   export type QuestionsUpdateWithoutQuestionTypeInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     answers?: AnswersUpdateManyWithoutQuestionNestedInput
@@ -29761,7 +30902,9 @@ export namespace Prisma {
   export type QuestionsUncheckedUpdateWithoutQuestionTypeInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     quizId?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     answers?: AnswersUncheckedUpdateManyWithoutQuestionNestedInput
@@ -29772,14 +30915,16 @@ export namespace Prisma {
   export type QuestionsUncheckedUpdateManyWithoutQuestionTypeInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     quizId?: StringFieldUpdateOperationsInput | string
+    order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AnswersCreateManyQuestionInput = {
     id?: string
-    uuid?: string
+    uuid?: string | null
     response: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -29788,6 +30933,7 @@ export namespace Prisma {
   export type ChoicesCreateManyQuestionInput = {
     id?: string
     wording: string
+    wordingEn?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -29798,7 +30944,7 @@ export namespace Prisma {
 
   export type AnswersUpdateWithoutQuestionInput = {
     id?: StringFieldUpdateOperationsInput | string
-    uuid?: StringFieldUpdateOperationsInput | string
+    uuid?: NullableStringFieldUpdateOperationsInput | string | null
     response?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29806,7 +30952,7 @@ export namespace Prisma {
 
   export type AnswersUncheckedUpdateWithoutQuestionInput = {
     id?: StringFieldUpdateOperationsInput | string
-    uuid?: StringFieldUpdateOperationsInput | string
+    uuid?: NullableStringFieldUpdateOperationsInput | string | null
     response?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29814,7 +30960,7 @@ export namespace Prisma {
 
   export type AnswersUncheckedUpdateManyWithoutQuestionInput = {
     id?: StringFieldUpdateOperationsInput | string
-    uuid?: StringFieldUpdateOperationsInput | string
+    uuid?: NullableStringFieldUpdateOperationsInput | string | null
     response?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29823,6 +30969,7 @@ export namespace Prisma {
   export type ChoicesUpdateWithoutQuestionInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29830,6 +30977,7 @@ export namespace Prisma {
   export type ChoicesUncheckedUpdateWithoutQuestionInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29837,6 +30985,7 @@ export namespace Prisma {
   export type ChoicesUncheckedUpdateManyWithoutQuestionInput = {
     id?: StringFieldUpdateOperationsInput | string
     wording?: StringFieldUpdateOperationsInput | string
+    wordingEn?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

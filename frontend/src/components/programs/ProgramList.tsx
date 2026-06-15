@@ -15,7 +15,7 @@ interface ProgramListProps {
 
 export function ProgramList({ programs, isLoading = false, error = null, activeDay = 1 }: ProgramListProps) {
 
-  // État chargement — 3 skeletons
+  // État chargement - 3 skeletons
   if (isLoading) {
     return (
       <div className="space-y-3 px-4 pb-24">

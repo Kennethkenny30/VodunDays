@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StarRatingProps {
@@ -28,18 +29,16 @@ export function StarRating({ value, onChange }: StarRatingProps) {
             )}
             aria-label={`${star} étoile${star > 1 ? "s" : ""} sur 5`}
           >
-            <span
-              className="text-[26px] leading-none select-none"
+            <Star
+              className="size-7 select-none transition-colors duration-150"
+              fill={isFilled ? "#F56E0F" : "none"}
               style={{
                 color: isFilled ? "#F56E0F" : "#878787",
                 filter: isFilled
                   ? "drop-shadow(0 0 6px rgba(245, 110, 15, 0.5))"
                   : "none",
-                transition: "color 150ms ease, filter 150ms ease",
               }}
-            >
-              ★
-            </span>
+            />
           </button>
         );
       })}

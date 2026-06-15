@@ -282,27 +282,29 @@ export function UsersRolesManager({ className }: UsersRolesManagerProps) {
                         confirmLabel={user.active ? "Désactiver" : "Réactiver"}
                         variant={user.active ? "destructive" : "default"}
                         onConfirm={() => handleToggleActive(user.id, !user.active)}
-                      >
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          {user.active ? (
-                            <><UserX className="mr-2 size-4" />Désactiver</>
-                          ) : (
-                            <><UserCheck className="mr-2 size-4" />Réactiver</>
-                          )}
-                        </DropdownMenuItem>
-                      </ConfirmDialog>
+                        trigger={
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            {user.active ? (
+                              <><UserX className="mr-2 size-4" />Désactiver</>
+                            ) : (
+                              <><UserCheck className="mr-2 size-4" />Réactiver</>
+                            )}
+                          </DropdownMenuItem>
+                        }
+                      />
                       <ConfirmDialog
                         title="Supprimer l'utilisateur"
                         description={`Cette action est irréversible. Le compte de ${user.firstname} ${user.lastname} sera définitivement supprimé.`}
                         confirmLabel="Supprimer"
                         variant="destructive"
                         onConfirm={() => handleDelete(user.id)}
-                      >
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
-                          <Trash2 className="mr-2 size-4" />
-                          Supprimer
-                        </DropdownMenuItem>
-                      </ConfirmDialog>
+                        trigger={
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                            <Trash2 className="mr-2 size-4" />
+                            Supprimer
+                          </DropdownMenuItem>
+                        }
+                      />
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -463,13 +465,13 @@ export function UsersRolesManager({ className }: UsersRolesManagerProps) {
         </TabsList>
         <TabsContent value="active" className="mt-4">
           {activeUsers.length === 0
-            ? <EmptyState title="Aucun utilisateur actif" description="Créez un premier compte administrateur." icon={<Users className="size-8" />} />
+            ? <EmptyState title="Aucun utilisateur actif" description="Créez un premier compte administrateur." icon={Users} />
             : renderUserTable(activeUsers)
           }
         </TabsContent>
         <TabsContent value="inactive" className="mt-4">
           {inactiveUsers.length === 0
-            ? <EmptyState title="Aucun compte désactivé" description="Tous les comptes sont actifs." icon={<Users className="size-8" />} />
+            ? <EmptyState title="Aucun compte désactivé" description="Tous les comptes sont actifs." icon={Users} />
             : renderUserTable(inactiveUsers)
           }
         </TabsContent>

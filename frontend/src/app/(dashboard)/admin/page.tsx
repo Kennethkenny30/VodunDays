@@ -25,7 +25,7 @@ export default function AdminPage() {
           {today || "Chargement..."}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Vodun Days — édition en cours
+          Vodun Days - édition en cours
         </p>
       </div>
 

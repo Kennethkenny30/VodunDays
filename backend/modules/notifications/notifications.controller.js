@@ -42,3 +42,10 @@ export const getStats = async (req, res, next) => {
     return successResponse(res, result);
   } catch (e) { next(e); }
 };
+
+export const getPublic = async (req, res, next) => {
+  try {
+    const result = await service.findAll({ status: "SENT", limit: 20 });
+    return successResponse(res, result);
+  } catch (e) { next(e); }
+};

@@ -83,7 +83,7 @@ export const log = async ({
   userName = null,
   ipAddress = null,
 }) => {
-  // Non bloquant — on n'attend pas et on ne throw pas
+  // Non bloquant - on n'attend pas et on ne throw pas
   prisma.auditLogs
     .create({
       data: { action, module, description, metadata, userId, userName, ipAddress },

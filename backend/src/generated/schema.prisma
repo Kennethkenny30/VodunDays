@@ -11,25 +11,57 @@ datasource db {
   extensions = [pgcrypto, postgis, uuid_ossp(map: "uuid-ossp")]
 }
 
+enum MarkerCategory {
+  SITE
+  TOILETTES
+  URGENCES
+  TRANSPORT
+  ASSISTANCE
+  PRA
+}
+
+enum QuestionKind {
+  RATING
+  SINGLE
+  MULTIPLE
+  TEXT
+}
+
 model Sites {
-  id          String                   @id @default(uuid())
+  id          String         @id @default(uuid())
   name        String
   description String?
   latitude    Float
   longitude   Float
-  type        String
-  capacity    Int
-  createdAt   DateTime                 @default(now())
-  updatedAt   DateTime                 @updatedAt
-  zoneGeo     Unsupported("geometry")?
-  alerts      Alerts[]
-  amenities   Amenities[]
-  events      Events[]
+  type        String // sous-type libre : "Scène", "Navette", "PRA-Plage"...
+  category    MarkerCategory @default(SITE)
+  capacity    Int            @default(0)
+
+  arLabel   String? // texte affiché en AR
+  arContent String? // URL vidéo/image ou contenu JSON AR
+  arRadius  Float? // rayon de détection en mètres
+  zoneGeo   Unsupported("geometry")?
+  createdAt DateTime                 @default(now())
+  updatedAt DateTime                 @updatedAt
+
+  // Champs i18n EN - repli sur FR si null
+  nameEn        String?
+  descriptionEn String?
+  typeEn        String?
+  arLabelEn     String?
+  arContentEn   String?
+
+  alerts    Alerts[]
+  amenities Amenities[]
+  events    Events[]
+
+  @@index([category]) // filtrage map rapide
 }
 
 model Amenities {
   id        String   @id @default(uuid())
   name      String
+  nameEn    String?
   siteId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -39,27 +71,31 @@ model Amenities {
 model EventsTypes {
   id        String   @id @default(uuid())
   name      String
+  nameEn    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   events    Events[]
 }
 
 model Events {
-  id          String      @id @default(uuid())
-  name        String
-  description String?
-  status      String
-  siteId      String
-  eventTypeId String
-  createdBy   String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  imageUrl    String?
-  artists     Artists[]
-  eventType   EventsTypes @relation(fields: [eventTypeId], references: [id])
-  site        Sites       @relation(fields: [siteId], references: [id])
-  programs    Programs[]
-  quizzes     Quiz[]
+  id            String      @id @default(uuid())
+  name          String
+  description   String?
+  status        String
+  siteId        String
+  eventTypeId   String
+  createdBy     String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  imageUrl      String?
+  // Champs i18n EN
+  nameEn        String?
+  descriptionEn String?
+  artists       Artists[]
+  eventType     EventsTypes @relation(fields: [eventTypeId], references: [id])
+  site          Sites       @relation(fields: [siteId], references: [id])
+  programs      Programs[]
+  quizzes       Quiz[]
 }
 
 model Programs {
@@ -82,30 +118,38 @@ model Artists {
 }
 
 model Quiz {
-  id          String      @id @default(uuid())
-  title       String
-  description String?
-  active      Boolean     @default(false)
-  eventId     String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  questions   Questions[]
-  event       Events      @relation(fields: [eventId], references: [id])
+  id            String      @id @default(uuid())
+  title         String
+  description   String?
+  active        Boolean     @default(false)
+  // FESTIVAL | ALL_EVENTS | ALL_SITES | EVENT
+  scope         String      @default("FESTIVAL")
+  eventId       String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  // Champs i18n EN
+  titleEn       String?
+  descriptionEn String?
+  questions     Questions[]
+  event         Events?     @relation(fields: [eventId], references: [id])
 }
 
 model QuestionsTypes {
-  id        String      @id @default(uuid())
-  types     String
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id        String       @id @default(uuid())
+  types     String       @unique
+  kind      QuestionKind @default(TEXT)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
   questions Questions[]
 }
 
 model Questions {
   id             String                  @id @default(uuid())
   wording        String
+  wordingEn      String?
   questionTypeId String
   quizId         String
+  order          Int                     @default(0)
   createdAt      DateTime                @default(now())
   updatedAt      DateTime                @updatedAt
   answers        Answers[]
@@ -113,11 +157,14 @@ model Questions {
   questionType   QuestionsTypes          @relation(fields: [questionTypeId], references: [id])
   quiz           Quiz                    @relation(fields: [quizId], references: [id])
   impressions    Questions_impressions[]
+
+  @@index([quizId, order])
 }
 
 model Impressions {
   id        String                  @id @default(uuid())
   name      String
+  nameEn    String?
   emoji     String
   createdAt DateTime                @default(now())
   updatedAt DateTime                @updatedAt
@@ -136,6 +183,7 @@ model Questions_impressions {
 model Choices {
   id         String    @id @default(uuid())
   wording    String
+  wordingEn  String?
   questionId String
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -144,7 +192,8 @@ model Choices {
 
 model Answers {
   id         String    @id @default(uuid())
-  uuid       String    @unique @default(uuid())
+  // uuid festivalier pour déduplication - non-unique car plusieurs réponses d'un même festivalier
+  uuid       String?
   response   String
   questionId String
   createdAt  DateTime  @default(now())
@@ -179,6 +228,9 @@ model Notifications {
   sentAt      DateTime? @db.Timestamptz(6)
   createdAt   DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+  // Champs i18n EN
+  titleEn     String?
+  messageEn   String?
 
   @@index([status], map: "idx_notifications_status")
 }

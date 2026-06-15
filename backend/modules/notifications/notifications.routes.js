@@ -2,7 +2,8 @@ import { Router } from "express";
 import Joi from "joi";
 import { validate } from "../../middlewares/validate.middleware.js";
 import { authenticate, authorize } from "../../middlewares/auth.middleware.js";
-import { getAll, getById, create, update, remove, getStats } from "./notifications.controller.js";
+import { auditLog } from "../../middlewares/audit.middleware.js";
+import { getAll, getById, create, update, remove, getStats, getPublic } from "./notifications.controller.js";
 
 const router = Router();
 
@@ -19,14 +20,17 @@ const updateSchema = Joi.object({
   sentAt: Joi.date().iso().optional(),
 });
 
-// Toutes les routes nécessitent d'être connecté (ADMIN ou SUPER_ADMIN)
+// Route publique pour les festivaliers - pas d'auth requise
+router.get("/public", getPublic);
+
+// Toutes les routes suivantes nécessitent ADMIN ou SUPER_ADMIN
 router.use(authenticate, authorize("ADMIN", "SUPER_ADMIN"));
 
 router.get("/",          getAll);
 router.get("/stats",     getStats);
 router.get("/:id",       getById);
-router.post("/",         validate(createSchema), create);
-router.patch("/:id",     validate(updateSchema), update);
-router.delete("/:id",    remove);
+router.post("/",      validate(createSchema), auditLog("notifications", "CREATE", (req) => `Notification créée : "${req.body.title}"`), create);
+router.patch("/:id",  validate(updateSchema), auditLog("notifications", "UPDATE"), update);
+router.delete("/:id", auditLog("notifications", "DELETE"), remove);
 
 export default router;

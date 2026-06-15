@@ -1,4 +1,4 @@
-import { successResponse, errorResponse } from "../../utils/response.js";
+import { successResponse } from "../../utils/response.js";
 import * as authService from "./auth.service.js";
 
 // ─── Helpers cookie ────────────────────────────────────────────────────────────
@@ -60,6 +60,16 @@ export const me = async (req, res, next) => {
   try {
     const user = await authService.getMe(req.user.id);
     return successResponse(res, user, "Profil récupéré");
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PATCH /api/auth/me
+export const updateMe = async (req, res, next) => {
+  try {
+    const result = await authService.updateMe({ userId: req.user.id, ...req.body });
+    return successResponse(res, result, "Profil mis à jour");
   } catch (error) {
     next(error);
   }

@@ -128,14 +128,24 @@ exports.Prisma.SitesScalarFieldEnum = {
   latitude: 'latitude',
   longitude: 'longitude',
   type: 'type',
+  category: 'category',
   capacity: 'capacity',
+  arLabel: 'arLabel',
+  arContent: 'arContent',
+  arRadius: 'arRadius',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  nameEn: 'nameEn',
+  descriptionEn: 'descriptionEn',
+  typeEn: 'typeEn',
+  arLabelEn: 'arLabelEn',
+  arContentEn: 'arContentEn'
 };
 
 exports.Prisma.AmenitiesScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  nameEn: 'nameEn',
   siteId: 'siteId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -144,6 +154,7 @@ exports.Prisma.AmenitiesScalarFieldEnum = {
 exports.Prisma.EventsTypesScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  nameEn: 'nameEn',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -158,7 +169,9 @@ exports.Prisma.EventsScalarFieldEnum = {
   createdBy: 'createdBy',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  imageUrl: 'imageUrl'
+  imageUrl: 'imageUrl',
+  nameEn: 'nameEn',
+  descriptionEn: 'descriptionEn'
 };
 
 exports.Prisma.ProgramsScalarFieldEnum = {
@@ -183,14 +196,18 @@ exports.Prisma.QuizScalarFieldEnum = {
   title: 'title',
   description: 'description',
   active: 'active',
+  scope: 'scope',
   eventId: 'eventId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  titleEn: 'titleEn',
+  descriptionEn: 'descriptionEn'
 };
 
 exports.Prisma.QuestionsTypesScalarFieldEnum = {
   id: 'id',
   types: 'types',
+  kind: 'kind',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -198,8 +215,10 @@ exports.Prisma.QuestionsTypesScalarFieldEnum = {
 exports.Prisma.QuestionsScalarFieldEnum = {
   id: 'id',
   wording: 'wording',
+  wordingEn: 'wordingEn',
   questionTypeId: 'questionTypeId',
   quizId: 'quizId',
+  order: 'order',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -207,6 +226,7 @@ exports.Prisma.QuestionsScalarFieldEnum = {
 exports.Prisma.ImpressionsScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  nameEn: 'nameEn',
   emoji: 'emoji',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -220,6 +240,7 @@ exports.Prisma.Questions_impressionsScalarFieldEnum = {
 exports.Prisma.ChoicesScalarFieldEnum = {
   id: 'id',
   wording: 'wording',
+  wordingEn: 'wordingEn',
   questionId: 'questionId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -259,7 +280,9 @@ exports.Prisma.NotificationsScalarFieldEnum = {
   scheduledAt: 'scheduledAt',
   sentAt: 'sentAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  titleEn: 'titleEn',
+  messageEn: 'messageEn'
 };
 
 exports.Prisma.AlertsScalarFieldEnum = {
@@ -323,7 +346,21 @@ exports.Prisma.JsonNullValueFilter = {
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
+exports.MarkerCategory = exports.$Enums.MarkerCategory = {
+  SITE: 'SITE',
+  TOILETTES: 'TOILETTES',
+  URGENCES: 'URGENCES',
+  TRANSPORT: 'TRANSPORT',
+  ASSISTANCE: 'ASSISTANCE',
+  PRA: 'PRA'
+};
 
+exports.QuestionKind = exports.$Enums.QuestionKind = {
+  RATING: 'RATING',
+  SINGLE: 'SINGLE',
+  MULTIPLE: 'MULTIPLE',
+  TEXT: 'TEXT'
+};
 
 exports.Prisma.ModelName = {
   Sites: 'Sites',

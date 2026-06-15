@@ -10,7 +10,7 @@ export const findAll = async (quizId) => {
       impressions: { include: { impression: true } },
       choices: true,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
   });
 };
 
@@ -32,24 +32,48 @@ export const findById = async (id) => {
 };
 
 export const create = async (data) => {
+  // Calcule l'ordre suivant pour ce quiz
+  const aggregate = await prisma.questions.aggregate({
+    where: { quizId: data.quizId },
+    _max: { order: true },
+  });
+  const nextOrder = (aggregate._max.order ?? -1) + 1;
+
   return prisma.questions.create({
     data: {
-      wording: data.wording,
+      wording:        data.wording,
       questionTypeId: data.questionTypeId,
-      quizId: data.quizId,
+      quizId:         data.quizId,
+      order:          nextOrder,
+      wordingEn:      data.wordingEn ?? null,
     },
     include: { questionType: true, quiz: true },
   });
 };
 
 export const update = async (id, data) => {
-  await findById(id);
+  const existing = await findById(id);
+
+  // Si le type change vers un kind sans choix, supprime les choices orphelins
+  if (
+    data.questionTypeId !== undefined &&
+    data.questionTypeId !== existing.questionTypeId
+  ) {
+    const newType = await prisma.questionsTypes.findUnique({
+      where: { id: data.questionTypeId },
+    });
+    if (newType && newType.kind !== "SINGLE" && newType.kind !== "MULTIPLE") {
+      await prisma.choices.deleteMany({ where: { questionId: id } });
+    }
+  }
+
   return prisma.questions.update({
     where: { id },
     data: {
-      ...(data.wording !== undefined && { wording: data.wording }),
-      ...(data.questionTypeId !== undefined && { questionTypeId: data.questionTypeId }),
-      ...(data.quizId !== undefined && { quizId: data.quizId }),
+      ...(data.wording         !== undefined && { wording: data.wording }),
+      ...(data.questionTypeId  !== undefined && { questionTypeId: data.questionTypeId }),
+      ...(data.quizId          !== undefined && { quizId: data.quizId }),
+      ...(data.wordingEn       !== undefined && { wordingEn: data.wordingEn }),
     },
     include: { questionType: true, quiz: true },
   });
@@ -58,4 +82,16 @@ export const update = async (id, data) => {
 export const remove = async (id) => {
   await findById(id);
   return prisma.questions.delete({ where: { id } });
+};
+
+// Met à jour l'ordre de toutes les questions d'après la liste d'ids fournie (indice = nouvel ordre)
+export const reorder = async (orderedIds) => {
+  await prisma.$transaction(
+    orderedIds.map((questionId, index) =>
+      prisma.questions.update({
+        where: { id: questionId },
+        data: { order: index },
+      })
+    )
+  );
 };

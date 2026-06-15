@@ -2,6 +2,7 @@ import { Router } from "express";
 import Joi from "joi";
 import { validate } from "../../middlewares/validate.middleware.js";
 import { authenticate, authorize } from "../../middlewares/auth.middleware.js";
+import { auditLog } from "../../middlewares/audit.middleware.js";
 import { getAll, getById, create, update, remove } from "./programs.controller.js";
 
 const router = Router();
@@ -23,8 +24,8 @@ router.get("/", getAll);
 router.get("/:id", getById);
 
 // Écriture : ADMIN et SUPER_ADMIN
-router.post("/", authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(createSchema), create);
-router.patch("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(updateSchema), update);
-router.delete("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), remove);
+router.post("/",     authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(createSchema), auditLog("programs", "CREATE"), create);
+router.patch("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(updateSchema), auditLog("programs", "UPDATE"), update);
+router.delete("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), auditLog("programs", "DELETE"), remove);
 
 export default router;

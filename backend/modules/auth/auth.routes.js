@@ -3,7 +3,7 @@ import Joi from "joi";
 import { validate } from "../../middlewares/validate.middleware.js";
 import { authenticate, authorize } from "../../middlewares/auth.middleware.js";
 import { auditLog } from "../../middlewares/audit.middleware.js";
-import { login, logout, me, register } from "./auth.controller.js";
+import { login, logout, me, register, updateMe } from "./auth.controller.js";
 
 const router = Router();
 
@@ -24,6 +24,15 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+const updateMeSchema = Joi.object({
+  firstname: Joi.string().optional(),
+  lastname: Joi.string().optional(),
+  phone: Joi.string().optional().allow(""),
+  email: Joi.string().email().optional(),
+  currentPassword: Joi.string().optional(),
+  newPassword: Joi.string().min(8).optional(),
+}).with("newPassword", "currentPassword");
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 // Publiques
@@ -36,6 +45,7 @@ router.post("/logout", logout);
 
 // Protégées
 router.get("/me", authenticate, me);
+router.patch("/me", authenticate, validate(updateMeSchema), updateMe);
 
 // Création de compte : réservée au SUPER_ADMIN
 router.post(

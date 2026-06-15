@@ -2,17 +2,16 @@
 
 import { Landmark, Toilet, Siren, Bus, LifeBuoy, Scan, LayoutGrid } from "lucide-react";
 import type React from "react";
+import { useTranslations } from "next-intl";
 
-// ─── Config ───────────────────────────────────────────────────────────────────
-
-const FILTER_OPTIONS = [
-  { value: "all",        label: "Tous",       color: "#F56E0F", Icon: LayoutGrid },
-  { value: "sites",      label: "Sites",      color: "#F56E0F", Icon: Landmark   },
-  { value: "toilettes",  label: "Toilettes",  color: "#4488FF", Icon: Toilet     },
-  { value: "urgences",   label: "Urgences",   color: "#FF4444", Icon: Siren      },
-  { value: "transport",  label: "Transport",  color: "#FFbb00", Icon: Bus        },
-  { value: "assistance", label: "Assistance", color: "#AA44FF", Icon: LifeBuoy   },
-  { value: "pra",        label: "AR",         color: "#00E5CC", Icon: Scan       },
+const FILTER_CONFIG = [
+  { value: "all",        key: "all",        color: "#F56E0F", Icon: LayoutGrid },
+  { value: "sites",      key: "sites",      color: "#F56E0F", Icon: Landmark   },
+  { value: "toilettes",  key: "toilettes",  color: "#4488FF", Icon: Toilet     },
+  { value: "urgences",   key: "urgences",   color: "#FF4444", Icon: Siren      },
+  { value: "transport",  key: "transport",  color: "#FFbb00", Icon: Bus        },
+  { value: "assistance", key: "assistance", color: "#AA44FF", Icon: LifeBuoy   },
+  { value: "pra",        key: "ar",         color: "#00E5CC", Icon: Scan       },
 ] as const;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -34,9 +33,11 @@ interface CarteFilterBarProps {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function CarteFilterBar({ activeFilters, onFiltersChange }: CarteFilterBarProps) {
+  const t = useTranslations("carte.filters");
+
   const handleFilterClick = (value: string) => {
     const next = new Set(activeFilters);
-    const individual = FILTER_OPTIONS.filter(f => f.value !== "all").map(f => f.value);
+    const individual = FILTER_CONFIG.filter(f => f.value !== "all").map(f => f.value);
 
     if (value === "all") {
       const allActive = individual.every(f => activeFilters.has(f));
@@ -65,7 +66,8 @@ export function CarteFilterBar({ activeFilters, onFiltersChange }: CarteFilterBa
       className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-hide"
       style={{ WebkitOverflowScrolling: "touch" }}
     >
-      {FILTER_OPTIONS.map(({ value, label, color, Icon }) => {
+      {FILTER_CONFIG.map(({ value, key, color, Icon }) => {
+        const label = t(key);
         const isActive = value === "all"
           ? activeFilters.has("all")
           : activeFilters.has(value);
@@ -107,7 +109,7 @@ export function CarteFilterBar({ activeFilters, onFiltersChange }: CarteFilterBa
               transform: isActive ? "scale(1.02)" : "scale(1)",
             }}
           >
-            {/* Icon — only shown when active, for clean minimal look */}
+            {/* Icon - only shown when active, for clean minimal look */}
             {isActive && (
               <Icon
                 size={12}

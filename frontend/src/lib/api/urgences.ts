@@ -6,7 +6,7 @@ type AlertsResult = {
   pagination: { total: number; page: number; limit: number; totalPages: number }
 }
 
-type AlertStats = {
+export type AlertStats = {
   total: number
   byStatus: { open: number; inProgress: number; resolved: number; closed: number }
   byType: { type: string; count: number }[]
@@ -22,17 +22,13 @@ type AlertQueryParams = {
 
 export async function createAlert(payload: AlertCreatePayload) {
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"
-  console.log("[createAlert] URL:", `${API_BASE}/urgences`)
-  console.log("[createAlert] payload:", JSON.stringify(payload))
   const res = await fetch(`${API_BASE}/urgences`, {
     method:      "POST",
     credentials: "include",
     headers:     { "Content-Type": "application/json" },
     body:        JSON.stringify(payload),
   })
-  const json = await res.json()
-  console.log("[createAlert] response:", JSON.stringify(json))
-  return json
+  return res.json()
 }
 
 export async function getAlerts(params?: AlertQueryParams) {

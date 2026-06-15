@@ -3,7 +3,16 @@ import * as quizService from "./quiz.service.js";
 
 export const getAll = async (req, res, next) => {
   try {
-    const result = await quizService.findAll(req.query.eventId, req.query.active);
+    const result = await quizService.findAll(req.query.eventId, req.query.active, req.query.scope);
+    return successResponse(res, result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPublic = async (req, res, next) => {
+  try {
+    const result = await quizService.findPublic(req.query.eventId);
     return successResponse(res, result);
   } catch (error) {
     next(error);

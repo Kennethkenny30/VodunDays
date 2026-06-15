@@ -8,11 +8,8 @@ import {
   MarkerPopup,
   useMap,
 } from "@/components/ui/map";
-// Scan ajouté pour la catégorie PRA
 import { Landmark, Toilet, Siren, Bus, LifeBuoy, Navigation, Scan } from "lucide-react";
 import { MARKER_CATEGORIES, type POI, type MarkerCategory } from "@/lib/markers";
-
-// ─── Utilitaire couleur ────────────────────────────────────────────────────────
 
 function hexToRgbParts(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -21,29 +18,24 @@ function hexToRgbParts(hex: string): string {
   return `${r}, ${g}, ${b}`;
 }
 
-// ─── Icônes par catégorie ─────────────────────────────────────────────────────
-
 const CATEGORY_ICONS: Record<
   MarkerCategory,
   React.ComponentType<{ className?: string; size?: number; style?: React.CSSProperties }>
 > = {
-  sites:      Landmark,   // Site culturel / lieu emblématique
-  toilettes:  Toilet,     // Sanitaires
-  urgences:   Siren,      // Urgences / secours
-  transport:  Bus,        // Transport / navette
-  assistance: LifeBuoy,   // Point d'assistance / info
-  pra:        Scan,       // Point de Réalité Augmentée
+  sites:      Landmark,
+  toilettes:  Toilet,
+  urgences:   Siren,
+  transport:  Bus,
+  assistance: LifeBuoy,
+  pra:        Scan,
 };
-
-// ─── Keyframes injectées une seule fois ───────────────────────────────────────
 
 const KEYFRAMES = `
   @keyframes sm-ping   { 0%{opacity:.5;transform:scale(1)} 70%{opacity:0;transform:scale(2.2)} 100%{opacity:0} }
   @keyframes sm-breathe{ 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
   @keyframes sm-dot    { 0%,100%{opacity:.9;transform:translateX(-50%) scaleX(1)} 50%{opacity:.5;transform:translateX(-50%) scaleX(.7)} }
+  @keyframes sm-tooltip-in { from{opacity:0;transform:translateX(-50%) translateY(4px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
 `;
-
-// ─── Types ─────────────────────────────────────────────────────────────────────
 
 interface SiteMarkerProps {
   poi: POI;
@@ -52,14 +44,68 @@ interface SiteMarkerProps {
   onNavigate: (poi: POI) => void;
 }
 
-// ─── Composant ────────────────────────────────────────────────────────────────
+// Contenu du tooltip partagé entre hover desktop et tap mobile
+function MarkerTooltipContent({
+  cat,
+  Icon,
+  name,
+}: {
+  cat: { color: string; label: string };
+  Icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
+  name: string;
+}) {
+  return (
+    <div style={{
+      background: "rgba(15,15,19,0.98)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      color: "#F0F0F2",
+      padding: "10px 14px",
+      borderRadius: 14,
+      border: `1px solid rgba(${hexToRgbParts(cat.color)}, 0.28)`,
+      maxWidth: 200,
+      minWidth: 120,
+      boxShadow: `0 8px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)`,
+    }}>
+      <div style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
+        marginBottom: 6,
+        background: `rgba(${hexToRgbParts(cat.color)}, 0.14)`,
+        border: `1px solid rgba(${hexToRgbParts(cat.color)}, 0.28)`,
+        borderRadius: 99,
+        padding: "2px 8px 2px 6px",
+      }}>
+        <Icon size={10} style={{ color: cat.color, flexShrink: 0 }} />
+        <span style={{
+          color: cat.color,
+          fontSize: 8.5,
+          fontWeight: 800,
+          letterSpacing: "0.10em",
+          textTransform: "uppercase",
+        }}>
+          {cat.label}
+        </span>
+      </div>
+      <div style={{
+        fontSize: 13,
+        fontWeight: 700,
+        lineHeight: 1.3,
+        color: "#F0F0F2",
+        letterSpacing: "-0.01em",
+      }}>
+        {name}
+      </div>
+    </div>
+  );
+}
 
 export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerProps) {
   const cat  = MARKER_CATEGORIES[poi.category];
   const Icon = CATEGORY_ICONS[poi.category];
   const ref  = useRef<HTMLDivElement>(null);
 
-  // Zoom courant — le label disparaît sous le seuil LABEL_MIN_ZOOM
   const LABEL_MIN_ZOOM = 14;
   const { map } = useMap();
   const [zoom, setZoom] = useState(() => map?.getZoom() ?? 15);
@@ -71,7 +117,10 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
   }, [map]);
   const showLabel = isSelected || zoom >= LABEL_MIN_ZOOM;
 
-  // Gestion click natif (capture + touch) pour bypass MapLibre mobile
+  // Tooltip mobile : affiché 1 500 ms après un tap
+  const [showMobileTooltip, setShowMobileTooltip] = useState(false);
+  const mobileTooltipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -80,6 +129,9 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
     const handleTouch = (e: TouchEvent) => {
       e.stopPropagation();
       e.preventDefault();
+      setShowMobileTooltip(true);
+      if (mobileTooltipTimer.current) clearTimeout(mobileTooltipTimer.current);
+      mobileTooltipTimer.current = setTimeout(() => setShowMobileTooltip(false), 1500);
       onClick(poi);
     };
 
@@ -88,6 +140,7 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
     return () => {
       el.removeEventListener("click",    handleClick, true);
       el.removeEventListener("touchend", handleTouch);
+      if (mobileTooltipTimer.current) clearTimeout(mobileTooltipTimer.current);
     };
   }, [poi, onClick]);
 
@@ -98,10 +151,24 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
       <MarkerContent>
         <style>{KEYFRAMES}</style>
 
-        {/* Wrapper global : marqueur + label empilés verticalement */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
 
-          {/* ── Marqueur ── */}
+          {/* Tooltip mobile - absolu au-dessus du marqueur */}
+          {showMobileTooltip && (
+            <div style={{
+              position: "absolute",
+              bottom: "calc(100% + 14px)",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 9999,
+              pointerEvents: "none",
+              animation: "sm-tooltip-in 150ms ease forwards",
+            }}>
+              <MarkerTooltipContent cat={cat} Icon={Icon} name={poi.name} />
+            </div>
+          )}
+
+          {/* Marqueur */}
           <div
             ref={ref}
             style={{
@@ -112,7 +179,7 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
               transition: "width 200ms ease, height 200ms ease",
             }}
           >
-            {/* ── Halo ping (sélection) ── */}
+            {/* Halo ping (sélection) */}
             {isSelected && (
               <>
                 <div style={{
@@ -134,30 +201,28 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
               </>
             )}
 
-            {/* ── Corps du marqueur ── */}
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                borderRadius: "50%",
-                background: isSelected
-                  ? `rgba(${hexToRgbParts(cat.color)}, 0.18)`
-                  : `rgba(${hexToRgbParts(cat.color)}, 0.12)`,
-                border: isSelected
-                  ? `1.5px solid rgba(${hexToRgbParts(cat.color)}, 0.80)`
-                  : `1.5px solid rgba(${hexToRgbParts(cat.color)}, 0.55)`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: isSelected
-                  ? `0 0 0 3px rgba(${hexToRgbParts(cat.color)}, 0.15), 0 4px 16px rgba(0,0,0,0.5)`
-                  : `0 2px 8px rgba(0,0,0,0.4)`,
-                animation: isSelected ? "sm-breathe 2.4s ease-in-out infinite" : "none",
-                transition: "box-shadow 250ms ease, background 250ms ease, border-color 250ms ease",
-                backdropFilter: "blur(4px)",
-                WebkitBackdropFilter: "blur(4px)",
-              }}
-            >
+            {/* Corps du marqueur */}
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: "50%",
+              background: isSelected
+                ? `rgba(${hexToRgbParts(cat.color)}, 0.18)`
+                : `rgba(${hexToRgbParts(cat.color)}, 0.12)`,
+              border: isSelected
+                ? `1.5px solid rgba(${hexToRgbParts(cat.color)}, 0.80)`
+                : `1.5px solid rgba(${hexToRgbParts(cat.color)}, 0.55)`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: isSelected
+                ? `0 0 0 3px rgba(${hexToRgbParts(cat.color)}, 0.15), 0 4px 16px rgba(0,0,0,0.5)`
+                : `0 2px 8px rgba(0,0,0,0.4)`,
+              animation: isSelected ? "sm-breathe 2.4s ease-in-out infinite" : "none",
+              transition: "box-shadow 250ms ease, background 250ms ease, border-color 250ms ease",
+              backdropFilter: "blur(4px)",
+              WebkitBackdropFilter: "blur(4px)",
+            }}>
               <Icon
                 size={isSelected ? 18 : 15}
                 style={{
@@ -169,7 +234,7 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
               />
             </div>
 
-            {/* ── Tige / ancre ── */}
+            {/* Tige / ancre */}
             <div style={{
               position: "absolute",
               bottom: -7,
@@ -183,7 +248,7 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
             }} />
           </div>
 
-          {/* ── Label — visible selon zoom, toujours sélectionné ── */}
+          {/* Label - visible selon zoom */}
           <div style={{
             marginTop: 10,
             pointerEvents: "none",
@@ -218,53 +283,28 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
               letterSpacing: "0.01em",
               transition: "all 200ms ease",
             }}>
-                            {poi.name}
+              {poi.name}
             </span>
           </div>
 
         </div>
       </MarkerContent>
 
-      {/* ── Tooltip (au repos) ── */}
+      {/* Tooltip desktop (hover) - neutralise le wrapper par défaut de MarkerTooltip */}
       {!isSelected && (
-        <MarkerTooltip>
-          <div style={{
-            background: "rgba(18,18,22,0.97)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            color: "#F0F0F2",
-            padding: "7px 13px",
-            borderRadius: 11,
-            fontSize: 12,
-            fontWeight: 700,
-            border: `1px solid ${cat.color}30`,
-            maxWidth: 170,
-            boxShadow: `0 6px 24px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05)`,
-          }}>
-            <div style={{
-              color: cat.color,
-              fontSize: 9,
-              marginBottom: 3,
-              fontWeight: 800,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              opacity: 0.9,
-            }}>
-              {cat.label}
-            </div>
-            {poi.name}
-          </div>
+        <MarkerTooltip className="p-0 bg-transparent shadow-none border-0 rounded-none">
+          <MarkerTooltipContent cat={cat} Icon={Icon} name={poi.name} />
         </MarkerTooltip>
       )}
 
-      {/* ── Popup (sélection) ── */}
+      {/* Popup sélection */}
       {isSelected && (
         <MarkerPopup offset={[0, -52]} closeOnClick={false} closeButton={false}>
           <div style={{
             background: "linear-gradient(150deg, rgba(22,22,27,0.99) 0%, rgba(16,16,20,0.98) 100%)",
             backdropFilter: "blur(28px)",
             WebkitBackdropFilter: "blur(28px)",
-            border: `1px solid ${cat.color}35`,
+            border: `1px solid rgba(${hexToRgbParts(cat.color)}, 0.35)`,
             borderRadius: 20,
             padding: "18px 20px",
             minWidth: 230,
@@ -282,31 +322,35 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
               width: 90,
               height: 90,
               borderRadius: "50%",
-              background: `radial-gradient(circle, ${cat.color}22 0%, transparent 70%)`,
+              background: `radial-gradient(circle, rgba(${hexToRgbParts(cat.color)}, 0.13) 0%, transparent 70%)`,
               pointerEvents: "none",
             }} />
 
-            {/* Badge catégorie */}
+            {/* Badge catégorie avec icône */}
             <div style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 5,
-              background: `${cat.color}18`,
-              border: `1px solid ${cat.color}30`,
+              gap: 6,
+              background: `rgba(${hexToRgbParts(cat.color)}, 0.14)`,
+              border: `1px solid rgba(${hexToRgbParts(cat.color)}, 0.30)`,
               borderRadius: 99,
-              padding: "3px 10px",
-              marginBottom: 12,
+              padding: "4px 11px 4px 8px",
+              marginBottom: 10,
             }}>
-                            <span style={{
+              <Icon size={12} style={{ color: cat.color, flexShrink: 0 }} />
+              <span style={{
                 color: cat.color,
                 fontSize: 9,
                 fontWeight: 800,
                 textTransform: "uppercase",
-                letterSpacing: "0.14em",
+                letterSpacing: "0.12em",
               }}>
                 {cat.label}
               </span>
             </div>
+
+            {/* Séparateur subtil */}
+            <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 10 }} />
 
             {/* Nom */}
             <div style={{
@@ -319,13 +363,17 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
               {poi.name}
             </div>
 
-            {/* Description */}
+            {/* Description clampée à 3 lignes */}
             {poi.description && (
               <p style={{
                 fontSize: 12,
                 color: "#888896",
                 marginBottom: 12,
                 lineHeight: 1.6,
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
               }}>
                 {poi.description}
               </p>
@@ -333,25 +381,17 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
 
             {/* Aménités */}
             {poi.amenities && poi.amenities.length > 0 && (
-              <div style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 4,
-                marginBottom: 14,
-              }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 14 }}>
                 {poi.amenities.map((a) => (
-                  <span
-                    key={a}
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      color: "#868696",
-                      border: "1px solid rgba(255,255,255,0.09)",
-                      borderRadius: 99,
-                      padding: "2px 9px",
-                      fontSize: 10,
-                      fontWeight: 600,
-                    }}
-                  >
+                  <span key={a} style={{
+                    background: "rgba(255,255,255,0.05)",
+                    color: "#868696",
+                    border: "1px solid rgba(255,255,255,0.09)",
+                    borderRadius: 99,
+                    padding: "2px 9px",
+                    fontSize: 10,
+                    fontWeight: 600,
+                  }}>
                     {a}
                   </span>
                 ))}
@@ -376,7 +416,7 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
                 justifyContent: "center",
                 gap: 8,
                 letterSpacing: "0.01em",
-                boxShadow: `0 4px 18px ${cat.color}55, inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.15)`,
+                boxShadow: `0 4px 18px rgba(${hexToRgbParts(cat.color)}, 0.35), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.15)`,
                 transition: "filter 150ms ease, transform 150ms ease",
               }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.filter = "brightness(1.08)"; }}

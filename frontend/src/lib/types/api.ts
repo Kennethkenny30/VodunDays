@@ -30,6 +30,15 @@ export type UserUpdatePayload = {
   phone?: string
 }
 
+export type UpdateMePayload = {
+  firstname?: string
+  lastname?: string
+  phone?: string
+  email?: string
+  currentPassword?: string
+  newPassword?: string
+}
+
 // ─── Catégories de marqueurs carte ───────────────────────────────────────────
 // Enum aligné avec schema.prisma MarkerCategory
 
@@ -52,17 +61,23 @@ export type Site = {
   // sous-type fonctionnel libre (ex: "CULTUREL", "NAVETTE", "PRA_SCENE"…)
   type: string
   // catégorie de marqueur carte - pilote l'icône et le filtre
-  category: MarkerCategory
+  category?: MarkerCategory
   capacity: number
-  // ── Champs PRA (nuls si category !== "PRA") ───────────────────────────────
-  arLabel:   string | null
-  arContent: string | null
-  arRadius:  number | null
+  // Champs PRA (nuls si category !== "PRA")
+  arLabel?:   string | null
+  arContent?: string | null
+  arRadius?:  number | null
   createdAt: string
   updatedAt: string
   amenities?: Amenity[]
   events?: Event[]
   _count?: { events: number }
+  // Champs i18n EN (optionnels, repli sur FR si null)
+  nameEn?:        string | null
+  descriptionEn?: string | null
+  typeEn?:        string | null
+  arLabelEn?:     string | null
+  arContentEn?:   string | null
 }
 
 export type SiteCreatePayload = {
@@ -77,6 +92,12 @@ export type SiteCreatePayload = {
   arLabel?:   string
   arContent?: string
   arRadius?:  number
+  // EN optionnel
+  nameEn?:        string
+  descriptionEn?: string
+  typeEn?:        string
+  arLabelEn?:     string
+  arContentEn?:   string
 }
 
 export type Amenity = {
@@ -85,6 +106,7 @@ export type Amenity = {
   siteId: string
   createdAt: string
   updatedAt: string
+  nameEn?: string | null
 }
 
 export type EventType = {
@@ -92,6 +114,7 @@ export type EventType = {
   name: string
   createdAt: string
   updatedAt: string
+  nameEn?: string | null
 }
 
 export type EventStatus = "DRAFT" | "PUBLISHED" | "CANCELLED" | "ARCHIVED"
@@ -111,6 +134,9 @@ export type Event = {
   programs?: Program[]
   artists?: Artist[]
   quizzes?: Quiz[]
+  imageUrl?:      string | null
+  nameEn?:        string | null
+  descriptionEn?: string | null
 }
 
 export type EventCreatePayload = {
@@ -119,6 +145,8 @@ export type EventCreatePayload = {
   status: EventStatus
   siteId: string
   eventTypeId: string
+  nameEn?:        string
+  descriptionEn?: string
 }
 
 export type Program = {
@@ -149,11 +177,14 @@ export type Quiz = {
   title: string
   description: string | null
   active: boolean
-  eventId: string
+  scope: QuizScope
+  eventId: string | null
   createdAt: string
   updatedAt: string
   questions?: Question[]
-  event?: Event
+  event?: Event | null
+  titleEn?:       string | null
+  descriptionEn?: string | null
 }
 
 export type AuditActionType = "CREATE" | "UPDATE" | "DELETE" | "AUTH" | "INCIDENT" | "CONFIG"
@@ -184,6 +215,8 @@ export type Notification = {
   sentAt:      string | null
   createdAt:   string
   updatedAt:   string
+  titleEn?:   string | null
+  messageEn?: string | null
 }
 
 export type NotificationCreatePayload = {
@@ -192,6 +225,8 @@ export type NotificationCreatePayload = {
   target?:     NotificationTarget
   targetId?:   string
   scheduledAt?: string
+  titleEn?:   string
+  messageEn?: string
 }
 
 export type AlertType   = "MEDICAL" | "SECURITY" | "FIRE" | "LOST" | "TECHNICAL" | "OTHER"
@@ -241,16 +276,24 @@ export type UserCreatePayload = {
   role?: UserRole
 }
 
+export type QuizScope = "FESTIVAL" | "ALL_EVENTS" | "ALL_SITES" | "EVENT"
+
+export type QuestionKind = "RATING" | "SINGLE" | "MULTIPLE" | "TEXT"
+
 export type QuizCreatePayload = {
   title: string
   description?: string
   active?: boolean
-  eventId: string
+  scope?: QuizScope
+  eventId?: string
+  titleEn?:       string
+  descriptionEn?: string
 }
 
 export type QuestionType = {
   id: string
   types: string
+  kind: QuestionKind
   createdAt: string
   updatedAt: string
 }
@@ -261,6 +304,7 @@ export type Impression = {
   emoji: string
   createdAt: string
   updatedAt: string
+  nameEn?: string | null
 }
 
 export type Choice = {
@@ -269,6 +313,7 @@ export type Choice = {
   questionId: string
   createdAt: string
   updatedAt: string
+  wordingEn?: string | null
 }
 
 export type Question = {
@@ -276,17 +321,20 @@ export type Question = {
   wording: string
   questionTypeId: string
   quizId: string
+  order: number
   createdAt: string
   updatedAt: string
   questionType?: QuestionType
   choices?: Choice[]
   impressions?: Impression[]
+  wordingEn?: string | null
 }
 
 export type QuestionCreatePayload = {
   wording: string
   questionTypeId: string
   quizId: string
+  wordingEn?: string
 }
 
 export type Answer = {

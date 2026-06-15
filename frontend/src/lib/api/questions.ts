@@ -1,8 +1,8 @@
 // API Questions - Vodun Days Dashboard
 import { api } from "./client"
-import type { Question, QuestionCreatePayload, QuestionType, Impression, Choice } from "@/lib/types/api"
+import type { Question, QuestionCreatePayload, QuestionType, QuestionKind, Impression, Choice } from "@/lib/types/api"
 
-// ─── Questions ────────────────────────────────────────────────────────────────
+// Questions
 
 export async function getQuestions(quizId?: string) {
   const query = quizId ? `?quizId=${quizId}` : ""
@@ -25,21 +25,29 @@ export async function deleteQuestion(id: string) {
   return api.delete<null>(`/questions/${id}`)
 }
 
-// ─── Types de questions ───────────────────────────────────────────────────────
+export async function reorderQuestions(orderedIds: string[]) {
+  return api.patch<null>("/questions/reorder", { ids: orderedIds })
+}
+
+// Types de questions
 
 export async function getQuestionTypes() {
   return api.get<QuestionType[]>("/questions-types")
 }
 
-export async function createQuestionType(types: string) {
-  return api.post<QuestionType>("/questions-types", { types })
+export async function createQuestionType(types: string, kind: QuestionKind) {
+  return api.post<QuestionType>("/questions-types", { types, kind })
+}
+
+export async function updateQuestionType(id: string, types: string, kind: QuestionKind) {
+  return api.patch<QuestionType>(`/questions-types/${id}`, { types, kind })
 }
 
 export async function deleteQuestionType(id: string) {
   return api.delete<null>(`/questions-types/${id}`)
 }
 
-// ─── Impressions ──────────────────────────────────────────────────────────────
+// Impressions
 
 export async function getImpressions() {
   return api.get<Impression[]>("/impressions")
@@ -53,7 +61,7 @@ export async function deleteImpression(id: string) {
   return api.delete<null>(`/impressions/${id}`)
 }
 
-// ─── Choix (options QCM) ──────────────────────────────────────────────────────
+// Choix (options QCM)
 
 export async function getChoices(questionId?: string) {
   const query = questionId ? `?questionId=${questionId}` : ""
@@ -72,7 +80,7 @@ export async function deleteChoice(id: string) {
   return api.delete<null>(`/choices/${id}`)
 }
 
-// ─── Liaisons question-impression ────────────────────────────────────────────
+// Liaisons question-impression
 
 type QuestionImpression = { questionId: string; impressionId: string; impression: Impression }
 
@@ -89,7 +97,7 @@ export async function unlinkImpression(questionId: string, impressionId: string)
   return api.delete<null>(`/questions-impressions/${questionId}/${impressionId}`)
 }
 
-// ─── Réponses festivaliers ────────────────────────────────────────────────────
+// Réponses festivaliers
 
 export async function submitAnswer(payload: {
   response: string

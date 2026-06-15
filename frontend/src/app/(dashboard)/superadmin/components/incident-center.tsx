@@ -105,7 +105,7 @@ function IncidentCard({
               </TooltipTrigger>
               <TooltipContent side="left" className="text-xs max-w-[200px]">
                 {enabled
-                  ? `⚠️ Actif — ${impact}`
+                  ? `Actif - ${impact}`
                   : tooltip}
               </TooltipContent>
             </Tooltip>
@@ -150,7 +150,7 @@ function IncidentCard({
               </div>
             </TooltipTrigger>
             <TooltipContent side="right" className="text-xs">
-              {enabled ? "Cliquer pour désactiver" : "Cliquer pour activer — confirmation requise"}
+              {enabled ? "Cliquer pour désactiver" : "Cliquer pour activer - confirmation requise"}
             </TooltipContent>
           </Tooltip>
         </div>
@@ -167,7 +167,7 @@ function IncidentCard({
             <AlertDialogDescription>
               {enabled
                 ? `Êtes-vous sûr de vouloir désactiver cette mesure d'urgence ?`
-                : `⚠️ Cette action aura un impact immédiat sur tous les utilisateurs. ${impact}`}
+                : `Attention : cette action aura un impact immédiat sur tous les utilisateurs. ${impact}`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -227,7 +227,7 @@ export function IncidentCenter({ className }: IncidentCenterProps) {
             />
           </TooltipTrigger>
           <TooltipContent side="right" className="text-xs max-w-[220px]">
-            Interrupteurs d'urgence — permettent de couper des fonctionnalités critiques instantanément en cas d'incident
+            Interrupteurs d'urgence - permettent de couper des fonctionnalités critiques instantanément en cas d'incident
           </TooltipContent>
         </Tooltip>
 
@@ -256,7 +256,7 @@ export function IncidentCenter({ className }: IncidentCenterProps) {
           </TooltipTrigger>
           <TooltipContent side="left" className="text-xs">
             {hasActiveIncident
-              ? "Incident actif — des mesures d'urgence sont en cours"
+              ? "Incident actif - des mesures d'urgence sont en cours"
               : "Tous les systèmes sont opérationnels"}
           </TooltipContent>
         </Tooltip>
@@ -269,7 +269,7 @@ export function IncidentCenter({ className }: IncidentCenterProps) {
           icon={Wrench}
           title="Mode dégradé"
           description="App statique, sans WebSocket ni temps réel"
-          tooltip="Bascule l'application en mode statique — désactive les connexions temps réel"
+          tooltip="Bascule l'application en mode statique - désactive les connexions temps réel"
           impact="L'application passe en mode statique. Les WebSockets, le GPS et les notifications en temps réel sont coupés."
           enabled={incidents.degradedMode}
           onToggle={handleToggle("degradedMode")}
@@ -289,7 +289,7 @@ export function IncidentCenter({ className }: IncidentCenterProps) {
           icon={BellOff}
           title="Suspendre les push"
           description="Stoppe toutes les notifications sortantes"
-          tooltip="Bloque l'envoi de toutes les notifications push — aucun message ne sera envoyé"
+          tooltip="Bloque l'envoi de toutes les notifications push - aucun message ne sera envoyé"
           impact="Toutes les notifications push sont suspendues. Les messages en file d'attente ne seront pas délivrés."
           enabled={incidents.pushNotifications}
           onToggle={handleToggle("pushNotifications")}

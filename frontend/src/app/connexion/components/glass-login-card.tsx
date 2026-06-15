@@ -166,6 +166,7 @@ export function GlassLoginCard() {
                   className="pl-10"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onPaste={(e) => e.preventDefault()}
                   disabled={loading}
                   required
                 />
@@ -186,6 +187,7 @@ export function GlassLoginCard() {
                   className="pl-10 pr-10"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onPaste={(e) => e.preventDefault()}
                   disabled={loading}
                   required
                 />
@@ -246,7 +248,7 @@ export function GlassLoginCard() {
           </form>
 
           <p className="text-xs text-muted-foreground text-center mt-6">
-            Plateforme sécurisée — Vodun Days © 2026
+            Plateforme sécurisée - Vodun Days © 2026
           </p>
         </div>
       </GlassSurface>

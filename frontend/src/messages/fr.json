@@ -1,0 +1,416 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "next": "Suivant",
+    "back": "Retour",
+    "send": "Envoyer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "close": "Fermer",
+    "copied": "Copié !",
+    "copy": "Copier le numéro",
+    "planner": {
+      "title": "Mon Festival",
+      "conflict": "Conflit",
+      "empty": "Planifiez votre expérience"
+    }
+  },
+  "nav": {
+    "programme": "Programme",
+    "culture": "Culture",
+    "carte": "Carte",
+    "avis": "Avis",
+    "parametres": "Paramètres"
+  },
+  "params": {
+    "appLabel": "Application",
+    "title": "Paramètres",
+    "sections": {
+      "preferences": "Préférences",
+      "application": "Application",
+      "legal": "Légal"
+    },
+    "rows": {
+      "notifications": "Notifications",
+      "language": "Langue",
+      "version": "Version",
+      "about": "À propos",
+      "help": "Aide & Support",
+      "privacy": "Confidentialité",
+      "contact": "Contact"
+    },
+    "notifications": {
+      "enabled": "Activées",
+      "disabled": "Désactivées",
+      "enabledSub": "Vous recevez les alertes",
+      "disabledSub": "Aucune alerte envoyée",
+      "newEvents": "Nouveaux événements",
+      "reminders": "Rappels avant les dates",
+      "updates": "Mises à jour de l'app"
+    },
+    "version": {
+      "title": "Version",
+      "current": "Vodun Days - Version actuelle",
+      "copy": "Copier le numéro",
+      "copied": "Copié !",
+      "releaseDate": "Date de sortie",
+      "releaseDateValue": "Janvier 2026",
+      "platform": "Plateforme",
+      "platformValue": "iOS & Android",
+      "developer": "Développeur",
+      "developerValue": "Équipe Vodun Days"
+    },
+    "about": {
+      "title": "À propos",
+      "tagline": "Premier rendez-vous international autour des arts, de la culture et de la spiritualité Vodun.",
+      "description": "Du 8 au 10 janvier 2026, Ouidah devient la capitale internationale de la célébration du Vodun. Danses Hounvè, sorties des Zangbétos et Egungun, processions en l'honneur des divinités, concerts en plein air sur le bord de mer…",
+      "edition": "Édition",
+      "editionValue": "2026",
+      "location": "Lieu",
+      "locationValue": "Ouidah, Bénin",
+      "duration": "Durée",
+      "durationValue": "3 jours",
+      "entry": "Entrée",
+      "entryValue": "Billetterie en ligne",
+      "place": "Porte du non-retour, Plage de Ouidah",
+      "visit": "Visiter vodundays.bj"
+    },
+    "help": {
+      "title": "Aide & Support",
+      "subtitle": "Questions fréquentes sur les Vodun Days 2026.",
+      "moreInfo": "Plus d'infos sur vodundays.bj",
+      "faq": [
+        {
+          "q": "Quelles sont les dates des Vodun Days ?",
+          "a": "Les Vodun Days ont lieu les 8, 9 et 10 janvier 2026 à Ouidah, près de la Porte du non-retour."
+        },
+        {
+          "q": "Comment se rendre à Ouidah depuis Cotonou ?",
+          "a": "Ouidah est à environ 40 km de Cotonou, soit ~1h en voiture. Vous pouvez utiliser votre véhicule ou un service de VTC."
+        },
+        {
+          "q": "Faut-il un visa pour venir au Bénin ?",
+          "a": "Le Bénin propose un e-Visa en quelques heures sur evisa.bj. Tarifs : 50€ (30j simple), 75€ (30j multiple), 100€ (90j multiple)."
+        },
+        {
+          "q": "Quel aéroport utiliser ?",
+          "a": "L'aéroport Bernardin Gantin de Cotonou, situé à ~40 km d'Ouidah, est recommandé pour les participants internationaux."
+        },
+        {
+          "q": "Y a-t-il un camping sur place ?",
+          "a": "Oui ! L'espace camping est proche de l'Arène, de la scène et de la plage. 7 000 FCFA/nuit avec votre tente, 20 000 FCFA/nuit avec tente louée sur place."
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Confidentialité",
+      "sessionActive": "Session anonyme active",
+      "sessionDesc": "Votre session est identifiée par un UUID temporaire, généré aléatoirement. Il est supprimé à la fermeture de l'app et ne permet pas de vous identifier.",
+      "legalNote": "Politique de confidentialité de Bénin Tourisme, organisateur des Vodun Days. Fondée sur l'article 415 du Code du numérique de la République du Bénin.",
+      "fullPolicy": "Politique complète sur le site",
+      "sections": [
+        {
+          "title": "Aucune donnée personnelle retenue",
+          "highlight": true,
+          "content": "Cette application ne collecte, ne stocke et ne transmet aucune donnée personnelle. Votre identité reste entièrement anonyme."
+        },
+        {
+          "title": "Identification par UUID de session",
+          "highlight": true,
+          "content": "L'app utilise un identifiant UUID généré aléatoirement à chaque session. Cet identifiant est temporaire, non-nominatif et supprimé automatiquement à la fermeture de l'application. Il ne permet pas de vous identifier."
+        },
+        {
+          "title": "Données collectées sur le site web",
+          "highlight": false,
+          "content": "La politique ci-dessous concerne le site vodundays.bj. Bénin Tourisme peut y collecter nom, prénom et coordonnées (email, téléphone) uniquement si vous remplissez un formulaire."
+        },
+        {
+          "title": "Finalité du traitement (site web)",
+          "highlight": false,
+          "content": "Les données du site sont utilisées pour le marketing, les promotions et la gestion des plaintes, dans le respect du Code du numérique de la République du Bénin."
+        },
+        {
+          "title": "Vos droits",
+          "highlight": false,
+          "content": "Vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation, de portabilité et d'opposition. Contactez contact@vodundays.bj pour exercer vos droits."
+        },
+        {
+          "title": "Contact DPO",
+          "highlight": false,
+          "content": "Email : contact@vodundays.bj\nAdresse : Immeuble SAINTE CECILE, Rue Sylvère Alexandre R.7.15, Quartier Gbèdomidji, Cotonou, Bénin."
+        }
+      ]
+    },
+    "contact": {
+      "title": "Contact",
+      "email": "Email officiel",
+      "address": "Adresse",
+      "addressValue": "Immeuble SAINTE CECILE,\nRue Sylvère Alexandre R.7.15,\nQuartier Gbèdomidji, Cotonou, Bénin",
+      "social": "Réseaux sociaux",
+      "form": "Formulaire de contact"
+    },
+    "footer": {
+      "name": "Vodun Days 2026",
+      "location": "Ouidah, Bénin"
+    }
+  },
+  "programme": {
+    "empty": "Aucun événement pour ce jour.",
+    "dayLabel": "Jour {day}"
+  },
+  "pedagogie": {
+    "heritage": "Patrimoine Vivant",
+    "intro": "Les Vodun Days célèbrent le 10 janvier, fête nationale du Vodun au Bénin. Cette célébration honore les divinités et ancêtres à travers des rituels, processions et cérémonies millénaires, héritiers des traditions de la côte des esclaves.",
+    "sites": {
+      "placeMaro": {
+        "name": "Place Maro",
+        "description": "La Place Maro est un lieu emblématique de Ouidah où se déroulent les cérémonies Egungun. Ces masques ancestraux représentent les esprits des ancêtres revenus pour guider et bénir les vivants lors de rituels millénaires."
+      },
+      "esplanade": {
+        "name": "Esplanade du Fort Français",
+        "description": "L'Esplanade du Fort Français accueille les cérémonies Zangbeto, gardiens nocturnes de la tradition Yoruba. Les Terreiros du Brésil témoignent des liens historiques entre le Bénin et le Brésil à travers la diaspora."
+      },
+      "placeNinsouxwe": {
+        "name": "Place Ninsouxwé",
+        "description": "Place sacrée dédiée aux divinités Zomadonou et Ninsouxwé, protectrices de la ville. Les cérémonies qui s'y déroulent perpétuent des traditions ancestrales transmises de génération en génération."
+      },
+      "foretSacree": {
+        "name": "Forêt sacrée de Kpassè",
+        "description": "La Forêt sacrée de Kpassè abrite les divinités Thron, Hounvè, Kabada et Koku. Ce sanctuaire naturel est un lieu de recueillement et de communion avec les forces spirituelles de la nature et des ancêtres."
+      },
+      "templeMami": {
+        "name": "Temple Mami Plage",
+        "description": "Le Temple Mami Plage est consacré à Mami Wata, la déesse des eaux. Les cérémonies honorent cette divinité puissante qui règne sur les océans et apporte prospérité à ceux qui la vénèrent."
+      },
+      "couventSakpata": {
+        "name": "Couvent Sakpata",
+        "description": "Le Couvent Sakpata est dédié au vodun de la terre et de la variole. Sakpata est une divinité redoutée et respectée, garante de la justice divine et de l'équilibre entre le monde visible et invisible."
+      }
+    }
+  },
+  "carte": {
+    "header": "Navigation",
+    "filters": {
+      "all": "Tous",
+      "sites": "Sites",
+      "toilettes": "Toilettes",
+      "urgences": "Urgences",
+      "transport": "Transport",
+      "assistance": "Assistance",
+      "ar": "AR"
+    }
+  },
+  "avis": {
+    "title": "Votre Avis",
+    "category": "Satisfaction",
+    "subtitle": "Votre avis améliore les prochaines éditions.",
+    "loading": "Chargement du questionnaire...",
+    "empty": "Aucun questionnaire disponible pour le moment.",
+    "error": "Impossible de charger les questions.",
+    "validationError": "Veuillez répondre à au moins une question",
+    "success": "Merci pour votre retour !",
+    "sendError": "Erreur lors de l'envoi. Réessayez.",
+    "next": "Suivant",
+    "placeholder": "Votre message... (optionnel)",
+    "noOptions": "Aucune option configurée pour cette question.",
+    "step": "Question {current} / {total}",
+    "confirmation": {
+      "title": "Merci !",
+      "subtitle": "Votre avis contribue à améliorer les prochaines éditions des Vodun Days.",
+      "backToProgramme": "Retour au programme"
+    }
+  },
+  "weather": {
+    "city": "Ouidah, Bénin",
+    "conditions": {
+      "sunny": "Ensoleillé",
+      "rainy": "Pluvieux",
+      "cloudy": "Nuageux",
+      "stormy": "Orageux"
+    },
+    "metrics": {
+      "wind": "Vent",
+      "humidity": "Humidité",
+      "uv": "Index UV",
+      "pressure": "Pression"
+    },
+    "forecast": "Prévisions du jour",
+    "views": {
+      "weather": "Météo",
+      "notifications": "Notifications",
+      "notificationsLoading": "Chargement…",
+      "notificationsCount": "{count} notification(s)",
+      "search": "Rechercher",
+      "urgence": "Urgence",
+      "tracking": "Suivi {ref}"
+    },
+    "notifications": {
+      "empty": "Aucune notification",
+      "tags": {
+        "live": "Live",
+        "alert": "Alerte",
+        "ritual": "Rituel",
+        "info": "Info"
+      }
+    },
+    "search": {
+      "placeholder": "Lieu, événement, cérémonie…",
+      "empty": "Aucun résultat pour « {query} »",
+      "results": "{count} résultat(s)",
+      "suggestions": "Suggestions"
+    },
+    "emergency": {
+      "services": {
+        "medical": "Soins Médicaux",
+        "police": "Police",
+        "security": "Sécurité Festival"
+      },
+      "types": {
+        "malaise": "Malaise médical",
+        "injury": "Blessure",
+        "unconscious": "Personne inconsciente",
+        "birth": "Accouchement",
+        "altercation": "Altercation",
+        "theft": "Vol",
+        "assault": "Agression",
+        "missing": "Personne disparue",
+        "crush": "Bousculade",
+        "intrusion": "Intrusion",
+        "suspicious": "Objet suspect",
+        "fire": "Incendie"
+      },
+      "form": {
+        "serviceLabel": "Service à contacter",
+        "typeLabel": "Nature de l'urgence",
+        "selectServiceFirst": "Sélectionnez d'abord un service",
+        "continue": "Continuer",
+        "infoTitle": "Informations requises",
+        "nameLabel": "Nom complet *",
+        "namePlaceholder": "Votre nom complet",
+        "descLabel": "Description de la situation *",
+        "descPlaceholder": "Décrivez brièvement la situation (lieu, état de la personne…)",
+        "back": "Retour",
+        "check": "Vérifier",
+        "recap": "Récapitulatif",
+        "service": "Service",
+        "urgence": "Urgence",
+        "name": "Nom",
+        "situation": "Situation"
+      },
+      "send": {
+        "countdown": "Envoi dans {countdown}s…",
+        "cancel": "Annuler",
+        "send": "Envoyer l'alerte"
+      },
+      "geo": {
+        "fetching": "Position en cours de récupération...",
+        "obtained": "Position obtenue",
+        "unavailable": "Position non disponible"
+      }
+    },
+    "tracking": {
+      "title": "Suivi en temps réel",
+      "waiting": "En attente de mise à jour…",
+      "close": "Fermer",
+      "footer": "Vous serez notifié à chaque mise à jour. Restez en sécurité.",
+      "status": {
+        "sent": "Alerte envoyée",
+        "received": "Alerte reçue",
+        "assigned": "Intervenant assigné",
+        "resolved": "Situation résolue"
+      },
+      "statusDesc": {
+        "received": "Un opérateur a pris connaissance de votre demande",
+        "assigned": "Un intervenant est en route vers votre position",
+        "resolved": "L'intervention est terminée. Merci de votre vigilance"
+      }
+    }
+  },
+  "urgences": {
+    "title": "Signaler une urgence",
+    "subtitle": "Quel type d'urgence souhaitez-vous signaler ?",
+    "nameLabel": "Votre nom ou pseudo *",
+    "namePlaceholder": "Pour qu'on puisse vous retrouver facilement",
+    "descLabel": "Décrivez la situation *",
+    "descPlaceholder": "Donnez le maximum de détails : lieu précis, nombre de personnes concernées…",
+    "submit": "Envoyer le signalement",
+    "disclaimer": "Votre signalement sera transmis immédiatement aux équipes de sécurité du festival.",
+    "success": {
+      "title": "Signalement envoyé",
+      "message": "Votre alerte a été transmise aux équipes de sécurité du festival Vodun Days. Restez visible et accessible.",
+      "emergency": "Urgences nationales : 117 / 118",
+      "newReport": "Faire un autre signalement",
+      "home": "Retour à l'accueil"
+    },
+    "types": {
+      "MEDICAL": { "label": "Urgence médicale", "desc": "Malaise, blessure, besoin de soins" },
+      "SECURITY": { "label": "Sécurité", "desc": "Agression, vol, comportement suspect" },
+      "FIRE": { "label": "Incendie", "desc": "Fumée, flammes, danger immédiat" },
+      "LOST": { "label": "Personne perdue", "desc": "Enfant ou personne égarée" },
+      "TECHNICAL": { "label": "Problème technique", "desc": "Panne, infrastructure, équipement" },
+      "OTHER": { "label": "Autre", "desc": "Autre type de signalement" }
+    }
+  },
+  "admin": {
+    "quizTemplates": {
+      "festival": { "title": "Festival général", "description": "Satisfaction globale du festival" },
+      "allEvents": { "title": "Tous les événements", "description": "Feedback artistique général" },
+      "allSites": { "title": "Tous les sites", "description": "Feedback sur les espaces du festival" },
+      "event": { "title": "Événement spécifique", "description": "Feedback sur un événement précis" }
+    }
+  },
+  "enums": {
+    "markerCategory": {
+      "SITE": "Sites Culturels",
+      "TOILETTES": "Toilettes",
+      "URGENCES": "Urgences",
+      "TRANSPORT": "Transport",
+      "ASSISTANCE": "Assistance",
+      "PRA": "Réalité Augm."
+    },
+    "eventStatus": {
+      "DRAFT": "Brouillon",
+      "PUBLISHED": "Publié",
+      "CANCELLED": "Annulé",
+      "ARCHIVED": "Archivé"
+    },
+    "alertType": {
+      "MEDICAL": "Urgence médicale",
+      "SECURITY": "Sécurité",
+      "FIRE": "Incendie",
+      "LOST": "Personne perdue",
+      "TECHNICAL": "Problème technique",
+      "OTHER": "Autre"
+    },
+    "alertStatus": {
+      "OPEN": "Ouvert",
+      "IN_PROGRESS": "En cours",
+      "RESOLVED": "Résolu",
+      "CLOSED": "Fermé"
+    },
+    "quizScope": {
+      "FESTIVAL": "Festival",
+      "ALL_EVENTS": "Tous les événements",
+      "ALL_SITES": "Tous les sites",
+      "EVENT": "Événement spécifique"
+    },
+    "questionKind": {
+      "RATING": "Note",
+      "SINGLE": "Choix unique",
+      "MULTIPLE": "Choix multiple",
+      "TEXT": "Texte libre"
+    },
+    "notificationTarget": {
+      "ALL": "Tous",
+      "SITE": "Site",
+      "EVENT_TYPE": "Type d'événement"
+    },
+    "notificationStatus": {
+      "PENDING": "En attente",
+      "SENT": "Envoyée",
+      "FAILED": "Échec"
+    }
+  }
+}

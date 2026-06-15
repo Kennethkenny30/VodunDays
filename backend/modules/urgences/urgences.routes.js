@@ -37,7 +37,7 @@ router.patch(
   auditLog("urgences", "UPDATE", (req) => `Alerte ${req.params.id.slice(0, 8)} → ${req.body.status}`),
   updateStatus
 );
-// Public — festivalier suit son alerte via son uuid
+// Public - festivalier suit son alerte via son uuid
 router.get("/track/:uuid", getByUuid);
 
 export default router;

@@ -313,7 +313,7 @@ export function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const { user, logout } = useSession()
 
-  // Rôle lu depuis la session — pas depuis le pathname
+  // Rôle lu depuis la session - pas depuis le pathname
   const role: UserRole = user?.role === "SUPER_ADMIN" ? "SUPER_ADMIN" : "ADMIN"
 
   return (

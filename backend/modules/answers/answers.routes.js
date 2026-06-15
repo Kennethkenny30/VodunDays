@@ -2,6 +2,7 @@ import { Router } from "express";
 import Joi from "joi";
 import { validate } from "../../middlewares/validate.middleware.js";
 import { authenticate, authorize } from "../../middlewares/auth.middleware.js";
+import { auditLog } from "../../middlewares/audit.middleware.js";
 import { create, getAll, getById, remove, update } from "./answers.controller.js";
 
 const router = Router();
@@ -21,8 +22,8 @@ const updateSchema = Joi.object({
 router.get("/", authenticate, authorize("ADMIN", "SUPER_ADMIN"), getAll);
 router.get("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), getById);
 router.post("/", validate(createSchema), create);
-router.patch("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(updateSchema), update);
-router.put("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(updateSchema), update);
-router.delete("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), remove);
+router.patch("/:id",  authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(updateSchema), auditLog("answers", "UPDATE"), update);
+router.put("/:id",    authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(updateSchema), auditLog("answers", "UPDATE"), update);
+router.delete("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), auditLog("answers", "DELETE"), remove);
 
 export default router;

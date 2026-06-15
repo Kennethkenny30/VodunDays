@@ -9,7 +9,7 @@ import type { EventCreatePayload } from "@/lib/types/api"
 export const OFFLINE_DRAFTS_KEY = "vd_offline_drafts"
 
 export interface OfflineDraft {
-  /** ID local préfixé "local-" — jamais envoyé au backend tel quel */
+  /** ID local préfixé "local-" - jamais envoyé au backend tel quel */
   id:          string
   /** Toujours DRAFT tant qu'il n'est pas synchronisé */
   status:      "DRAFT"
@@ -83,7 +83,7 @@ export function offlineDraftToEvent(
       startTime: s.startTime,
       endTime:   s.endTime,
     })),
-  } as import("@/lib/types/api").Event
+  } as unknown as import("@/lib/types/api").Event
 }
 
 // ── Mise à jour partielle ──────────────────────────────────────────────────────
