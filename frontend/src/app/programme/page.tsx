@@ -222,7 +222,10 @@ function ProgrammeContent() {
 
       <WeatherWidget weather={weather ?? undefined} />
 
-      <div className="relative z-10 max-w-md mx-auto px-4 pt-6 pb-32">
+      <div
+        className="relative z-10 max-w-md mx-auto px-4 pb-32"
+        style={{ paddingTop: "max(24px, env(safe-area-inset-top))" }}
+      >
 
         <motion.div variants={itemVariants} className="mb-6">
           <Image

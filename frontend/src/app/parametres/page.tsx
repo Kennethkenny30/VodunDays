@@ -41,8 +41,8 @@ function Toggle({ enabled, onChange }: { enabled: boolean; onChange: (v: boolean
         layout
         transition={{ type: 'spring', stiffness: 700, damping: 35 }}
         className={cn(
-          'absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow',
-          enabled ? 'left-[22px]' : 'left-[3px]'
+          'absolute top-0.75 w-4.5 h-4.5 rounded-full bg-white shadow',
+          enabled ? 'left-5.5' : 'left-0.75'
         )}
       />
     </button>
@@ -60,11 +60,11 @@ function SettingsRow({
       onClick={onClick}
       className={cn(
         'w-full flex items-center gap-3 px-3 py-3',
-        onClick && 'hover:bg-white/[0.04] active:bg-white/[0.06]',
+        onClick && 'hover:bg-white/4 active:bg-white/6',
         'transition-colors rounded-xl group'
       )}
     >
-      <div className="w-9 h-9 rounded-full bg-white/[0.06] flex items-center justify-center shrink-0 group-hover:bg-white/[0.09] transition-colors">
+      <div className="w-9 h-9 rounded-full bg-white/6 flex items-center justify-center shrink-0 group-hover:bg-white/9 transition-colors">
         <Icon className="w-4 h-4 text-[#878787]" />
       </div>
       <p className="flex-1 text-left text-[14px] font-medium text-white">{label}</p>
@@ -87,7 +87,7 @@ function Sheet({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-60 bg-black/70 backdrop-blur-sm"
           />
           <motion.div
             initial={{ y: '100%' }}
@@ -95,16 +95,16 @@ function Sheet({
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 350, damping: 36 }}
             className={cn(
-              'fixed bottom-0 left-0 right-0 z-[70]',
+              'fixed bottom-0 left-0 right-0 z-70',
               'bg-[#1B1B1E] rounded-t-[28px]',
-              'border-t border-white/[0.06]',
+              'border-t border-white/6',
               'px-5 pb-10 pt-5 max-h-[88vh] overflow-y-auto'
             )}
           >
             <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-6" />
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-[18px] font-bold text-white">{title}</h3>
-              <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center">
+              <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/6 flex items-center justify-center">
                 <X className="w-4 h-4 text-[#878787]" />
               </button>
             </div>
@@ -156,7 +156,7 @@ function LanguagePicker() {
         ref={btnRef}
         onClick={() => setOpen((v) => !v)}
         disabled={isPending}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.10] transition-colors text-[13px] text-[#878787] disabled:opacity-50"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/6 hover:bg-white/10 transition-colors text-[13px] text-[#878787] disabled:opacity-50"
       >
         <Globe className="w-3.5 h-3.5" />
         <span>{selected.label}</span>
@@ -173,7 +173,7 @@ function LanguagePicker() {
             exit={{ opacity: 0, y: -6, scale: 0.96 }}
             transition={{ duration: 0.18 }}
             style={{ position: 'fixed', top: pos.top, right: pos.right }}
-            className="z-[80] w-36 rounded-2xl overflow-hidden bg-[#222226] border border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.5)]"
+            className="z-80 w-36 rounded-2xl overflow-hidden bg-[#222226] border border-white/8 shadow-[0_12px_40px_rgba(0,0,0,0.5)]"
           >
             {LANGUAGES.map((lang) => (
               <button
@@ -182,8 +182,8 @@ function LanguagePicker() {
                 className={cn(
                   'w-full flex items-center justify-between gap-2 px-3 py-2.5 text-[13px] transition-colors',
                   lang.code === locale
-                    ? 'text-white bg-white/[0.06]'
-                    : 'text-[#878787] hover:bg-white/[0.04] hover:text-white'
+                    ? 'text-white bg-white/6'
+                    : 'text-[#878787] hover:bg-white/4 hover:text-white'
                 )}
               >
                 <span>{lang.label}</span>
@@ -201,9 +201,9 @@ function NotifModal({ open, onClose, on, setOn }: { open: boolean; onClose: () =
   const t = useTranslations('params');
   return (
     <Sheet open={open} onClose={onClose} title={t('rows.notifications')}>
-      <div className={cn('flex items-center justify-between p-4 rounded-2xl mb-4', 'bg-white/[0.04] border border-white/[0.06]')}>
+      <div className={cn('flex items-center justify-between p-4 rounded-2xl mb-4', 'bg-white/4 border border-white/6')}>
         <div className="flex items-center gap-3">
-          <div className={cn('w-10 h-10 rounded-full flex items-center justify-center', on ? 'bg-[#F56E0F]/20' : 'bg-white/[0.06]')}>
+          <div className={cn('w-10 h-10 rounded-full flex items-center justify-center', on ? 'bg-[#F56E0F]/20' : 'bg-white/6')}>
             {on ? <Bell className="w-5 h-5 text-[#F56E0F]" /> : <BellOff className="w-5 h-5 text-[#878787]" />}
           </div>
           <div>
@@ -214,7 +214,7 @@ function NotifModal({ open, onClose, on, setOn }: { open: boolean; onClose: () =
         <Toggle enabled={on} onChange={setOn} />
       </div>
       {[t('notifications.newEvents'), t('notifications.reminders'), t('notifications.updates')].map((label) => (
-        <div key={label} className={cn('flex items-center justify-between px-4 py-3.5 rounded-xl mb-2 bg-white/[0.03] border border-white/[0.04]', !on && 'opacity-30 pointer-events-none')}>
+        <div key={label} className={cn('flex items-center justify-between px-4 py-3.5 rounded-xl mb-2 bg-white/3 border border-white/4', !on && 'opacity-30 pointer-events-none')}>
           <p className="text-[13px] text-white">{label}</p>
           <Toggle enabled={on} onChange={() => {}} />
         </div>
@@ -233,10 +233,10 @@ function VersionModal({ open, onClose }: { open: boolean; onClose: () => void })
   };
   return (
     <Sheet open={open} onClose={onClose} title={t('version.title')}>
-      <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-5 mb-4 text-center">
+      <div className="bg-white/4 border border-white/6 rounded-2xl p-5 mb-4 text-center">
         <p className="text-[42px] font-black text-white tracking-tight">1.0.0</p>
         <p className="text-[12px] text-[#878787] mt-1">{t('version.current')}</p>
-        <button onClick={copy} className={cn('mt-4 flex items-center gap-2 mx-auto px-4 py-2 rounded-xl text-[13px] transition-colors', copied ? 'bg-green-500/20 text-green-400' : 'bg-white/[0.06] text-[#878787] hover:bg-white/[0.10]')}>
+        <button onClick={copy} className={cn('mt-4 flex items-center gap-2 mx-auto px-4 py-2 rounded-xl text-[13px] transition-colors', copied ? 'bg-green-500/20 text-green-400' : 'bg-white/6 text-[#878787] hover:bg-white/10')}>
           {copied
             ? <><CheckCheck className="w-4 h-4" /> {t('version.copied')}</>
             : <><Copy className="w-4 h-4" /> {t('version.copy')}</>}
@@ -247,7 +247,7 @@ function VersionModal({ open, onClose }: { open: boolean; onClose: () => void })
         { label: t('version.platform'), value: t('version.platformValue') },
         { label: t('version.developer'), value: t('version.developerValue') },
       ].map(({ label, value }) => (
-        <div key={label} className="flex items-center justify-between px-1 py-2.5 border-b border-white/[0.05]">
+        <div key={label} className="flex items-center justify-between px-1 py-2.5 border-b border-white/5">
           <span className="text-[13px] text-[#878787]">{label}</span>
           <span className="text-[13px] text-white">{value}</span>
         </div>
@@ -271,7 +271,7 @@ function AboutModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           { label: t('about.duration'), value: t('about.durationValue') },
           { label: t('about.entry'), value: t('about.entryValue') },
         ].map(({ label, value }) => (
-          <div key={label} className="bg-white/[0.04] rounded-xl p-3">
+          <div key={label} className="bg-white/4 rounded-xl p-3">
             <p className="text-[11px] text-[#878787] mb-1">{label}</p>
             <p className="text-[13px] font-semibold text-white">{value}</p>
           </div>
@@ -297,7 +297,7 @@ function HelpModal({ open, onClose }: { open: boolean; onClose: () => void }) {
       <p className="text-[13px] text-[#878787] mb-5">{t('help.subtitle')}</p>
       <div className="space-y-2 mb-6">
         {faq.map((item, i) => (
-          <div key={i} className="rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.05]">
+          <div key={i} className="rounded-xl overflow-hidden bg-white/4 border border-white/5">
             <button onClick={() => setExpanded(expanded === i ? null : i)} className="w-full flex items-center justify-between px-4 py-3.5 text-left">
               <span className="text-[13px] font-medium text-white pr-3">{item.q}</span>
               <motion.span animate={{ rotate: expanded === i ? 180 : 0 }} transition={{ duration: 0.2 }} className="shrink-0">
@@ -314,7 +314,7 @@ function HelpModal({ open, onClose }: { open: boolean; onClose: () => void }) {
           </div>
         ))}
       </div>
-      <a href="https://vodundays.bj/infos-pratiques/" target="_blank" rel="noreferrer" className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/[0.06] text-[#878787] text-[13px] hover:bg-white/[0.10] transition-colors">
+      <a href="https://vodundays.bj/infos-pratiques/" target="_blank" rel="noreferrer" className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/6 text-[#878787] text-[13px] hover:bg-white/10 transition-colors">
         <ExternalLink className="w-4 h-4" /> {t('help.moreInfo')}
       </a>
     </Sheet>
@@ -350,7 +350,7 @@ function PrivacyModal({ open, onClose }: { open: boolean; onClose: () => void })
             key={s.title}
             className={cn(
               'border rounded-xl p-4',
-              s.highlight ? 'bg-green-500/[0.05] border-green-500/20' : 'bg-white/[0.04] border-white/[0.05]'
+              s.highlight ? 'bg-green-500/5 border-green-500/20' : 'bg-white/4 border-white/5'
             )}
           >
             <p className={cn('text-[12px] font-semibold mb-1.5', s.highlight ? 'text-green-400' : 'text-[#F56E0F]')}>
@@ -361,7 +361,7 @@ function PrivacyModal({ open, onClose }: { open: boolean; onClose: () => void })
         ))}
       </div>
 
-      <a href="https://vodundays.bj/politique-de-confidentialite/" target="_blank" rel="noreferrer" className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/[0.06] text-[#878787] text-[13px] hover:bg-white/[0.10] transition-colors">
+      <a href="https://vodundays.bj/politique-de-confidentialite/" target="_blank" rel="noreferrer" className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/6 text-[#878787] text-[13px] hover:bg-white/10 transition-colors">
         <ExternalLink className="w-4 h-4" /> {t('privacy.fullPolicy')}
       </a>
     </Sheet>
@@ -378,7 +378,7 @@ function ContactModal({ open, onClose }: { open: boolean; onClose: () => void })
   ];
   return (
     <Sheet open={open} onClose={onClose} title={t('contact.title')}>
-      <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4 mb-4 flex items-center gap-3">
+      <div className="bg-white/4 border border-white/6 rounded-2xl p-4 mb-4 flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-[#F56E0F]/15 flex items-center justify-center">
           <Mail className="w-5 h-5 text-[#F56E0F]" />
         </div>
@@ -387,8 +387,8 @@ function ContactModal({ open, onClose }: { open: boolean; onClose: () => void })
           <p className="text-[14px] font-semibold text-white">contact@vodundays.bj</p>
         </div>
       </div>
-      <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4 mb-5 flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full bg-white/[0.06] flex items-center justify-center mt-0.5">
+      <div className="bg-white/4 border border-white/6 rounded-2xl p-4 mb-5 flex items-start gap-3">
+        <div className="w-10 h-10 rounded-full bg-white/6 flex items-center justify-center mt-0.5">
           <MapPin className="w-5 h-5 text-[#878787]" />
         </div>
         <div>
@@ -399,7 +399,7 @@ function ContactModal({ open, onClose }: { open: boolean; onClose: () => void })
       <p className="text-[11px] uppercase tracking-widest text-[#878787] mb-3 px-1">{t('contact.social')}</p>
       <div className="grid grid-cols-2 gap-2 mb-5">
         {socials.map(({ icon: Icon, label, handle, url }) => (
-          <a key={label} href={url} target="_blank" rel="noreferrer" className="flex items-center gap-2.5 p-3 rounded-xl bg-white/[0.04] border border-white/[0.04] hover:bg-white/[0.08] transition-colors">
+          <a key={label} href={url} target="_blank" rel="noreferrer" className="flex items-center gap-2.5 p-3 rounded-xl bg-white/4 border border-white/4 hover:bg-white/8 transition-colors">
             <Icon className="w-4 h-4 text-[#878787]" />
             <div>
               <p className="text-[11px] font-semibold text-white">{label}</p>
@@ -425,13 +425,16 @@ export default function ParametresPage() {
     <div className="min-h-screen bg-[#151419]">
       <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at top, rgba(245,110,15,0.08), transparent 60%)' }} />
 
-      <header className="relative z-10 px-4 pt-6 pb-4">
+      <header
+        className="relative z-10 px-4 pb-4"
+        style={{ paddingTop: "max(24px, env(safe-area-inset-top))" }}
+      >
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex items-center gap-3">
           <div className="relative w-12 h-12 shrink-0">
             <Image src="/images/logo.png" alt="Vodun Days Logo" fill className="object-contain" priority />
           </div>
           <div>
-            <p className="text-[11px] uppercase tracking-[0.1em] text-[#878787] mb-1">{t('appLabel')}</p>
+            <p className="text-[11px] uppercase tracking-widest text-[#878787] mb-1">{t('appLabel')}</p>
             <h1 className="text-[22px] font-black text-white tracking-[-0.02em]">{t('title')}</h1>
           </div>
         </motion.div>
@@ -440,14 +443,14 @@ export default function ParametresPage() {
       <main className="px-4 pb-28 space-y-5">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.05 }}>
           <h2 className="text-[11px] uppercase tracking-widest text-[#878787] mb-2 px-1">{t('sections.preferences')}</h2>
-          <div className="rounded-[16px] overflow-visible bg-[#1B1B1E] border border-white/[0.06]">
+          <div className="rounded-[16px] overflow-visible bg-[#1B1B1E] border border-white/6">
             <SettingsRow icon={notifOn ? Bell : BellOff} label={t('rows.notifications')} onClick={() => setModal('notif')}>
-              <span className={cn('text-[12px] font-medium px-2 py-0.5 rounded-full', notifOn ? 'bg-[#F56E0F]/15 text-[#F56E0F]' : 'bg-white/[0.06] text-[#878787]')}>
+              <span className={cn('text-[12px] font-medium px-2 py-0.5 rounded-full', notifOn ? 'bg-[#F56E0F]/15 text-[#F56E0F]' : 'bg-white/6 text-[#878787]')}>
                 {notifOn ? t('notifications.enabled') : t('notifications.disabled')}
               </span>
               <ChevronRight className="w-4 h-4 text-[#878787]/50" />
             </SettingsRow>
-            <div className="mx-3 h-px bg-white/[0.05]" />
+            <div className="mx-3 h-px bg-white/5" />
             <SettingsRow icon={Globe} label={t('rows.language')}>
               <LanguagePicker />
             </SettingsRow>
@@ -456,16 +459,16 @@ export default function ParametresPage() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.15 }}>
           <h2 className="text-[11px] uppercase tracking-widest text-[#878787] mb-2 px-1">{t('sections.application')}</h2>
-          <div className="rounded-[16px] overflow-hidden bg-[#1B1B1E] border border-white/[0.06]">
+          <div className="rounded-[16px] overflow-hidden bg-[#1B1B1E] border border-white/6">
             <SettingsRow icon={Smartphone} label={t('rows.version')} onClick={() => setModal('version')}>
               <span className="text-[13px] text-[#878787]">1.0.0</span>
               <ChevronRight className="w-4 h-4 text-[#878787]/50" />
             </SettingsRow>
-            <div className="mx-3 h-px bg-white/[0.05]" />
+            <div className="mx-3 h-px bg-white/5" />
             <SettingsRow icon={Info} label={t('rows.about')} onClick={() => setModal('about')}>
               <ChevronRight className="w-4 h-4 text-[#878787]/50" />
             </SettingsRow>
-            <div className="mx-3 h-px bg-white/[0.05]" />
+            <div className="mx-3 h-px bg-white/5" />
             <SettingsRow icon={HelpCircle} label={t('rows.help')} onClick={() => setModal('help')}>
               <ChevronRight className="w-4 h-4 text-[#878787]/50" />
             </SettingsRow>
@@ -474,11 +477,11 @@ export default function ParametresPage() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.25 }}>
           <h2 className="text-[11px] uppercase tracking-widest text-[#878787] mb-2 px-1">{t('sections.legal')}</h2>
-          <div className="rounded-[16px] overflow-hidden bg-[#1B1B1E] border border-white/[0.06]">
+          <div className="rounded-[16px] overflow-hidden bg-[#1B1B1E] border border-white/6">
             <SettingsRow icon={Shield} label={t('rows.privacy')} onClick={() => setModal('privacy')}>
               <ChevronRight className="w-4 h-4 text-[#878787]/50" />
             </SettingsRow>
-            <div className="mx-3 h-px bg-white/[0.05]" />
+            <div className="mx-3 h-px bg-white/5" />
             <SettingsRow icon={Mail} label={t('rows.contact')} onClick={() => setModal('contact')}>
               <ChevronRight className="w-4 h-4 text-[#878787]/50" />
             </SettingsRow>

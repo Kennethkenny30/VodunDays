@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Analytics } from '@vercel/analytics/next';
@@ -70,7 +70,19 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-icon.png',
   },
+  appleWebApp: {
+    capable:         true,
+    statusBarStyle:  'black-translucent',
+    title:           'Vodun Days',
+  },
   manifest: '/manifest.webmanifest',
+};
+
+export const viewport: Viewport = {
+  width:        'device-width',
+  initialScale: 1,
+  viewportFit:  'cover',
+  themeColor:   '#F5A623',
 };
 
 export default async function RootLayout({

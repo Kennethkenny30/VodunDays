@@ -69,7 +69,10 @@ export default function PedagogiePage() {
         }}
       />
 
-      <div className="fixed top-0 left-0 right-0 z-70 flex justify-center pt-4 pb-2 pointer-events-none">
+      <div
+        className="fixed left-0 right-0 z-70 flex justify-center pb-2 pointer-events-none"
+        style={{ top: 0, paddingTop: "max(16px, env(safe-area-inset-top))" }}
+      >
         <div className="pointer-events-auto">
           <ARModeSwitcher mode={mode} onChange={setMode} />
         </div>

@@ -37,6 +37,7 @@ export function PwaInstallPrompt() {
   const [visible, setVisible] = useState(false);
   const [ios, setIos] = useState(false);
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showGuide, setShowGuide] = useState(false);
 
   useEffect(() => {
     if (isStandalone() || wasRecentlyDismissed()) return;
@@ -84,13 +85,86 @@ export function PwaInstallPrompt() {
 
   return (
     <AnimatePresence>
+      {visible && showGuide && (
+        <motion.div
+          key="ios-guide"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ type: "spring", damping: 28, stiffness: 300 }}
+          className="fixed left-0 right-0 z-60 flex justify-center px-4 pointer-events-none"
+          style={{ bottom: "calc(80px + env(safe-area-inset-bottom, 0px))" }}
+        >
+          <div
+            className="w-full max-w-md pointer-events-auto rounded-2xl p-4 shadow-2xl"
+            style={{
+              background: "linear-gradient(135deg, #252433 0%, #1e1d2e 100%)",
+              border: "1px solid oklch(0.82 0.14 85 / 0.3)",
+              boxShadow: "0 0 40px oklch(0.82 0.14 85 / 0.12), 0 20px 60px #00000080",
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-semibold text-white">Ajouter a l'écran d'accueil</p>
+              <button
+                onClick={() => setShowGuide(false)}
+                className="text-white/30 hover:text-white/60 transition-colors p-1 -mr-0.5"
+                aria-label="Fermer le guide"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+                  style={{ background: "oklch(0.82 0.14 85 / 0.15)", color: "oklch(0.82 0.14 85)" }}
+                >
+                  1
+                </div>
+                <div className="flex items-center gap-2 text-sm text-white/70">
+                  <span>Appuie sur</span>
+                  <span className="inline-flex items-center gap-1 text-white font-medium px-2 py-0.5 rounded-lg bg-white/8">
+                    <Share2 size={13} />
+                    Partager
+                  </span>
+                </div>
+              </div>
+
+              <div
+                className="ml-4 w-px h-3"
+                style={{ background: "oklch(0.82 0.14 85 / 0.2)" }}
+              />
+
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+                  style={{ background: "oklch(0.82 0.14 85 / 0.15)", color: "oklch(0.82 0.14 85)" }}
+                >
+                  2
+                </div>
+                <div className="flex items-center gap-2 text-sm text-white/70">
+                  <span>Selectionne</span>
+                  <span className="inline-flex items-center gap-1 text-white font-medium px-2 py-0.5 rounded-lg bg-white/8">
+                    <SquarePlus size={13} />
+                    Sur l'écran d'accueil
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {visible && (
         <motion.div
+          key="install-card"
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", damping: 26, stiffness: 280 }}
-          className="fixed bottom-[80px] left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
+          className="fixed left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
+          style={{ bottom: "calc(80px + env(safe-area-inset-bottom, 0px))" }}
         >
           <div
             className="w-full max-w-md pointer-events-auto rounded-2xl p-4 shadow-2xl"
@@ -103,7 +177,7 @@ export function PwaInstallPrompt() {
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div
-                  className="rounded-xl overflow-hidden flex-shrink-0"
+                  className="rounded-xl overflow-hidden shrink-0"
                   style={{ boxShadow: "0 0 12px oklch(0.82 0.14 85 / 0.2)" }}
                 >
                   <Image
@@ -123,7 +197,7 @@ export function PwaInstallPrompt() {
 
               <button
                 onClick={dismiss}
-                className="text-white/30 hover:text-white/60 transition-colors p-1 -mt-0.5 -mr-0.5 flex-shrink-0"
+                className="text-white/30 hover:text-white/60 transition-colors p-1 -mt-0.5 -mr-0.5 shrink-0"
                 aria-label="Fermer"
               >
                 <X size={15} />
@@ -136,24 +210,20 @@ export function PwaInstallPrompt() {
             />
 
             {ios ? (
-              <div className="flex items-start gap-2.5 rounded-xl bg-white/[0.04] px-3 py-2.5">
-                <Share2 size={14} className="flex-shrink-0 mt-0.5" style={{ color: "oklch(0.82 0.14 85)" }} />
-                <p className="text-xs text-white/65 leading-relaxed">
-                  Appuie sur{" "}
-                  <span className="text-white/90 font-medium">Partager</span>
-                  {" "}puis{" "}
-                  <span className="inline-flex items-center gap-0.5 text-white/90 font-medium">
-                    <SquarePlus size={11} />
-                    Sur l'écran d'accueil
-                  </span>
-                </p>
-              </div>
+              <button
+                onClick={() => setShowGuide(true)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all active:scale-95"
+                style={{ background: "oklch(0.82 0.14 85)", color: "#0a0a0a" }}
+              >
+                <Share2 size={14} />
+                Voir comment installer
+              </button>
             ) : (
               <div className="flex items-center justify-between gap-2">
-                <p className="text-[11px] text-white/35 leading-tight max-w-[160px]">
+                <p className="text-[11px] text-white/35 leading-tight max-w-40">
                   Installe l'app pour une meilleure expérience
                 </p>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={dismiss}
                     className="px-3 py-1.5 text-xs text-white/40 hover:text-white/70 transition-colors"

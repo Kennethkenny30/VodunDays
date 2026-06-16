@@ -67,7 +67,7 @@ function SegmentedProgressBar({ currentStep, totalSteps }: { currentStep: number
       {Array.from({ length: totalSteps }).map((_, i) => (
         <div
           key={i}
-          className="flex-1 h-[3px] rounded-full transition-colors duration-300"
+          className="flex-1 h-0.75 rounded-full transition-colors duration-300"
           style={{ background: i <= currentStep ? "#F56E0F" : "rgba(255,255,255,0.10)" }}
         />
       ))}
@@ -388,7 +388,10 @@ export default function AvisPage() {
       }}
     >
       {/* Header */}
-      <header className="sticky top-0 z-20 px-4 pt-4 pb-3 bg-[#0E0D12]/90 backdrop-blur-md">
+      <header
+        className="sticky top-0 z-20 px-4 pb-3 bg-[#0E0D12]/90 backdrop-blur-md"
+        style={{ paddingTop: "max(16px, env(safe-area-inset-top))" }}
+      >
         <div className="flex items-center justify-between mb-4">
           {currentStep > 0 ? (
             <button
@@ -483,7 +486,7 @@ export default function AvisPage() {
             <button
               type="button"
               onClick={() => { loadedRef.current = false; setIsSubmitted(false); loadQuiz(); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1] text-[13px] text-white/70 hover:bg-white/[0.1] transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/6 border border-white/10 text-[13px] text-white/70 hover:bg-white/10 transition-all"
             >
               <RefreshCw className="size-4" />
               {tc("retry")}

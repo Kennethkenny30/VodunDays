@@ -5,13 +5,13 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* ── Vodun Days - Palette de marque ── */
+  /* Vodun Days - Palette de marque */
   --vd-gold: oklch(0.78 0.15 85);
   --vd-earth: oklch(0.45 0.08 55);
   --vd-deep: oklch(0.18 0.05 260);
   --vd-surface: oklch(0.97 0.01 85);
 
-  /* ── Tokens shadcn (site principal) ── */
+  /* Tokens shadcn (site principal) */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -48,13 +48,13 @@
 }
 
 .dark {
-  /* ── Vodun Days - Palette dark ── */
+  /* Vodun Days - Palette dark */
   --vd-gold: oklch(0.82 0.14 85);
   --vd-earth: oklch(0.60 0.09 55);
   --vd-deep: oklch(0.10 0.03 260);
   --vd-surface: oklch(0.14 0.02 260);
 
-  /* ── Tokens shadcn dark ── */
+  /* Tokens shadcn dark */
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.14 0.02 260);
@@ -134,7 +134,7 @@
   --font-heading: var(--font-geist-sans);
 }
 
-/* ── Utilitaires globaux ── */
+/* Utilitaires globaux */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -143,12 +143,26 @@
   display: none;
 }
 
+/* Désactive le menu contextuel natif (callout) au appui long sur l'UI de
+   navigation. Volontairement pas appliqué au contenu éditorial (images des
+   sites culturels) pour ne pas bloquer leur sauvegarde par les festivaliers. */
+.touch-callout-none {
+  -webkit-touch-callout: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    @apply font-sans;
+    /* Supprime le rebond de scroll en haut/bas de page pour un rendu moins "web" */
+    overscroll-behavior-y: none;
+  }
   body {
     @apply bg-background text-foreground;
+    /* Supprime le flash de surbrillance gris/bleu au tap sur mobile */
+    -webkit-tap-highlight-color: transparent;
   }
   .maplibregl-popup-content {
     @apply bg-transparent! shadow-none! p-0! rounded-none!;
@@ -156,12 +170,9 @@
   .maplibregl-popup-tip {
     @apply hidden!;
   }
-  html {
-    @apply font-sans;
-  }
 }
 
-/* ── Dashboard - Glass card ── */
+/* Dashboard - Glass card */
 .glass-card {
   background: oklch(1 0 0 / 0.06);
   backdrop-filter: blur(20px) saturate(180%);
@@ -194,7 +205,7 @@
   border-color: oklch(0.65 0.20 25 / 0.60);
 }
 
-/* ── Dashboard - Status pulse ── */
+/* Dashboard - Status pulse */
 @keyframes status-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(1.1); }
@@ -208,7 +219,7 @@
   .status-pulse { animation: none; }
 }
 
-/* ── Dashboard - Border beam ── */
+/* Dashboard - Border beam */
 @keyframes border-beam {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }

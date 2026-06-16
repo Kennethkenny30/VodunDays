@@ -7,15 +7,16 @@ export default function manifest(): MetadataRoute.Manifest {
     description:      "Plateforme numérique officielle des Vodun Days. Programme, carte interactive, contenus culturels et réalité augmentée.",
     start_url:        "/transition/programme",
     display:          "standalone",
-    background_color: "#0a0a0a",
+    background_color: "#F56E0F",
     theme_color:      "#F5A623",
     orientation:      "portrait",
     lang:             "fr",
     categories:       ["education", "entertainment", "travel"],
     icons: [
-      { src: "/icon.png",            sizes: "any",    type: "image/png" },
-      { src: "/icon-light-32x32.png", sizes: "32x32", type: "image/png" },
-      { src: "/apple-icon.png",       sizes: "180x180", type: "image/png", purpose: "any" },
+      { src: "/icon-192.png",          sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icon.png",              sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icon-512-maskable.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/apple-icon.png",        sizes: "180x180", type: "image/png", purpose: "any" },
     ],
   }
 }

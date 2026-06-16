@@ -60,13 +60,15 @@ export function BottomNav() {
   return (
     <nav
       className={cn(
-        "fixed bottom-6 left-1/2 -translate-x-1/2 z-50",
+        "fixed left-1/2 -translate-x-1/2 z-50",
         "rounded-full",
         "bg-[linear-gradient(135deg,rgba(255,255,255,0.15)_0%,rgba(0,0,0,0)_100%)]",
         "shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
         "p-px",
+        "touch-callout-none",
         "lg:hidden"
       )}
+      style={{ bottom: "max(24px, calc(env(safe-area-inset-bottom, 0px) + 12px))" }}
     >
       <div
         className={cn(

@@ -89,7 +89,10 @@ export default function UrgencesPage() {
 
   return (
     <div className="min-h-screen bg-[#151419] pb-28">
-      <div className="sticky top-0 z-20 bg-[#151419]/95 backdrop-blur border-b border-white/[0.06] px-4 py-4">
+      <div
+        className="sticky top-0 z-20 bg-[#151419]/95 backdrop-blur border-b border-white/6 px-4 pb-4"
+        style={{ paddingTop: "max(16px, env(safe-area-inset-top))" }}
+      >
         <div className="flex items-center justify-between max-w-md mx-auto">
           <button onClick={() => router.back()} className="text-white/60 hover:text-white transition-colors p-1">
             <ArrowLeft className="size-5" />
@@ -117,7 +120,7 @@ export default function UrgencesPage() {
                   <button
                     key={type}
                     onClick={() => { setSelectedType(type); setStep("details"); }}
-                    className="relative flex flex-col items-center gap-2 p-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] active:scale-95 transition-all text-left"
+                    className="relative flex flex-col items-center gap-2 p-4 rounded-2xl border border-white/8 bg-white/3 hover:bg-white/[0.07] active:scale-95 transition-all text-left"
                     style={{ borderColor: `${color}30` }}
                   >
                     <Icon className="size-6" style={{ color }} />
@@ -169,7 +172,7 @@ export default function UrgencesPage() {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder={t("namePlaceholder")}
-                  className="w-full bg-white/[0.05] border border-white/[0.10] rounded-xl px-4 py-3 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30 transition-colors"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30 transition-colors"
                   maxLength={100}
                 />
               </div>
@@ -181,7 +184,7 @@ export default function UrgencesPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder={t("descPlaceholder")}
                   rows={4}
-                  className="w-full bg-white/[0.05] border border-white/[0.10] rounded-xl px-4 py-3 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30 transition-colors resize-none"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30 transition-colors resize-none"
                   maxLength={500}
                 />
                 <p className="text-white/30 text-xs text-right">{description.length}/500</p>
@@ -231,7 +234,7 @@ export default function UrgencesPage() {
               </div>
 
               {selectedConfig && (
-                <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4 text-left space-y-2">
+                <div className="bg-white/4 border border-white/8 rounded-2xl p-4 text-left space-y-2">
                   <div className="flex items-center gap-2 text-white/70 text-sm">
                     <selectedConfig.Icon className="size-4" style={{ color: selectedConfig.color }} />
                     <span>{t(`types.${selectedConfig.key}.label`)}</span>
@@ -247,14 +250,14 @@ export default function UrgencesPage() {
                 </div>
                 <button
                   onClick={resetForm}
-                  className="w-full py-3 rounded-2xl border border-white/[0.10] text-white/70 text-sm hover:bg-white/[0.05] transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-2xl border border-white/10 text-white/70 text-sm hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
                 >
                   <RotateCcw className="size-4" />
                   {t("success.newReport")}
                 </button>
                 <button
                   onClick={() => router.push("/")}
-                  className="w-full py-3 rounded-2xl bg-white/[0.08] text-white text-sm font-medium hover:bg-white/[0.12] transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-2xl bg-white/8 text-white text-sm font-medium hover:bg-white/12 transition-colors flex items-center justify-center gap-2"
                 >
                   <Home className="size-4" />
                   {t("success.home")}
