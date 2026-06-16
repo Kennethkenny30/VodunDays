@@ -21,10 +21,16 @@ const PRECACHE = [
   '/apple-icon.png',
 ];
 
-// Préchargement des routes festivaliers à l'installation
+// Préchargement des routes festivaliers à l'installation.
+// On met en cache chaque URL individuellement : une seule réponse en échec
+// ne doit pas empêcher la mise en cache des autres (contrairement à addAll).
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE))
+    caches.open(CACHE).then((cache) =>
+      Promise.allSettled(
+        PRECACHE.map((url) => cache.add(url))
+      )
+    )
   );
   self.skipWaiting();
 });

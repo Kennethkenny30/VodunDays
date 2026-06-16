@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useNotifPrefs } from "@/hooks/useNotifPrefs";
 import { cn } from "@/lib/utils";
+import { getApiBase } from "@/lib/api/client";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { WeatherData } from "@/lib/types";
 import { useTranslations } from "next-intl";
@@ -76,7 +77,7 @@ export interface DynamicIslandProps {
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE = getApiBase();
 
 // ─── UUID festivalier persisté ────────────────────────────────────────────────
 

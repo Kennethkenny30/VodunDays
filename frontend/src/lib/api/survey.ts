@@ -1,4 +1,4 @@
-import { api } from "./client"
+import { api, getApiBase } from "./client"
 
 export type SurveyStats = {
   averageRating: number
@@ -40,7 +40,7 @@ export async function getSurveyComments(params?: {
 }
 
 export async function exportSurveyCsv(eventId?: string): Promise<void> {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"
+  const API_BASE = getApiBase()
   const q = eventId ? `?eventId=${eventId}` : ""
   const res = await fetch(`${API_BASE}/survey/export${q}`, {
     credentials: "include",

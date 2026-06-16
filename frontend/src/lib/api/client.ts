@@ -8,8 +8,13 @@
  */
 import type { ApiResponse } from "@/lib/types/api"
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"
+// Normalise l'URL : ajoute https:// si le schéma est absent (variable d'env mal renseignée).
+export function getApiBase(): string {
+  const raw = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"
+  return raw.startsWith("http") ? raw : `https://${raw}`
+}
+
+const API_BASE_URL = getApiBase()
 
 type RequestOptions = {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE"

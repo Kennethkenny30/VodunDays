@@ -1,3 +1,4 @@
+import { getApiBase } from "@/lib/api/client";
 
 export const MARKER_CATEGORIES = {
   sites: {
@@ -84,7 +85,7 @@ type BackendSite = {
  * sont stockées en BDD - il n'y a plus de données statiques de fallback.
  */
 export async function loadPOIs(): Promise<POI[]> {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const API_BASE = getApiBase();
 
   const res  = await fetch(`${API_BASE}/sites`, { credentials: "include" });
   const json = await res.json();

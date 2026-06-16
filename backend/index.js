@@ -36,9 +36,19 @@ const PORT = process.env.PORT || 3000;
 
 // ─── Middlewares globaux ──────────────────────────────────────────────────────
 app.use(helmet());
+
+// Autorise le domaine de production configuré ET tous les déploiements
+// Preview Vercel (URL unique générée à chaque déploiement, ex. vodun-days-xxxx.vercel.app).
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3001";
 app.use(
   cors({
-    origin:      process.env.FRONTEND_URL || "http://localhost:3001",
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (origin === FRONTEND_URL || /\.vercel\.app$/.test(new URL(origin).hostname)) {
+        return callback(null, true);
+      }
+      callback(new Error("Not allowed by CORS"));
+    },
     credentials: true, // indispensable pour les cookies HttpOnly
   })
 );

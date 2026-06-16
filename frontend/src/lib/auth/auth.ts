@@ -6,8 +6,9 @@
 
 import type { User, UpdateMePayload } from "@/lib/types/api"
 import type { SessionUser } from "./session"
+import { getApiBase } from "@/lib/api/client"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"
+const API_BASE = getApiBase()
 
 type AuthResponse<T> = {
   success: boolean

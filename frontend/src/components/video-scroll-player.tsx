@@ -8,7 +8,7 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const VODUN_VIDEO_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AQO_Qq2IkI961XZ59FGvcqRJcBDvoo2dbpJ43ly9mU-oPg74flcTIPWXDOQ4fm3QGOb-7GGjtq2PCwj1anz1EgfalgXbCGXF8b7jajDboQ-PDHrhfkSChoG6kD5UUMM1G9EEXzGBi.mp4";
+const VODUN_VIDEO_URL = "/videos/vodun-days-bg.mp4";
 
 interface VideoScrollPlayerProps {
   className?: string;

@@ -13,10 +13,11 @@ import { FestivalPlannerProvider } from "@/providers/FestivalPlannerProvider";
 import { useWeather }              from "@/hooks/useWeather";
 import type { Program, ProgramType } from "@/lib/types";
 import { PwaInstallPrompt }        from "@/components/pwa-install-prompt";
+import { getApiBase }              from "@/lib/api/client";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE = getApiBase();
 
 const TYPE_IMAGES: Record<string, string> = {
   RITUAL:      "/images/vodundays-3.jpg",

@@ -1,4 +1,4 @@
-import { api } from "./client"
+import { api, getApiBase } from "./client"
 import type { Alert, AlertCreatePayload } from "@/lib/types/api"
 
 type AlertsResult = {
@@ -21,7 +21,7 @@ type AlertQueryParams = {
 }
 
 export async function createAlert(payload: AlertCreatePayload) {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"
+  const API_BASE = getApiBase()
   const res = await fetch(`${API_BASE}/urgences`, {
     method:      "POST",
     credentials: "include",

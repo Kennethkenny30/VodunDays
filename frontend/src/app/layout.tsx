@@ -12,8 +12,9 @@ import { LOCALES, DEFAULT_LOCALE, type Locale } from '@/i18n/locale';
 import { IntlClientProvider } from '@/i18n/IntlClientProvider';
 import { SWRegister } from '@/components/sw-register';
 
-const SITE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3001'
-const OG_IMAGE = '/arene-ouidah.JPG'
+const RAW_SITE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3001'
+const SITE_URL = RAW_SITE_URL.startsWith('http') ? RAW_SITE_URL : `https://${RAW_SITE_URL}`
+const OG_IMAGE = '/arene-ouidah.jpg'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
