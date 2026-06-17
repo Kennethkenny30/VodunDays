@@ -1,18 +1,22 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Download } from "lucide-react";
 import { MobileGateModal } from "@/components/mobile-gate-modal";
 import { useMobileGate } from "@/hooks/use-mobile-gate";
+import { useInstallPrompt } from "@/hooks/use-install-prompt";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function CTASection() {
   const sectionRef = useRef<HTMLElement>(null);
   const { gateState, intercept, closeGate } = useMobileGate();
+  const { canInstall, isIOS, install } = useInstallPrompt();
+  const [showIOSHint, setShowIOSHint] = useState(false);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -54,25 +58,44 @@ export function CTASection() {
             </span>
           </h2>
           <p className="mx-auto mb-10 max-w-xl text-muted-foreground">
-            Téléchargez notre application et accédez à toutes les informations 
+            Téléchargez notre application et accédez à toutes les informations
             pour profiter pleinement du festival.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button
-              size="lg"
-              className="group bg-primary px-8 py-6 text-lg font-semibold text-primary-foreground transition-all hover:scale-105 hover:bg-primary/90"
-                onClick={(e) => intercept(e as unknown as React.MouseEvent, "/programme", "le Programme")}
+            <Link
+              href="/transition/programme"
+              onClick={(e) => intercept(e, "/transition/programme", "le Programme")}
             >
-              Commencer
-              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-foreground/20 bg-transparent px-8 py-6 text-lg font-semibold text-foreground hover:bg-foreground/10"
-            >
-              En savoir plus
-            </Button>
+              <Button
+                size="lg"
+                className="group bg-primary px-8 py-6 text-lg font-semibold text-primary-foreground transition-all hover:scale-105 hover:bg-primary/90"
+              >
+                Commencer
+                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+
+            {canInstall && (
+              <div className="relative">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-foreground/20 bg-transparent px-8 py-6 text-lg font-semibold text-foreground hover:bg-foreground/10"
+                  onClick={isIOS ? () => setShowIOSHint((v) => !v) : install}
+                >
+                  <Download className="mr-2 h-5 w-5" />
+                  Installer
+                </Button>
+                {isIOS && showIOSHint && (
+                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-64 rounded-xl border border-border/60 bg-card/95 backdrop-blur px-4 py-3 text-sm text-muted-foreground text-center shadow-lg">
+                    Sur Safari : appuyer sur{" "}
+                    <span className="font-medium text-foreground">Partager</span>{" "}
+                    puis{" "}
+                    <span className="font-medium text-foreground">Sur l{"'"}écran d{"'"}accueil</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
