@@ -15,7 +15,7 @@ import type { Program, ProgramType } from "@/lib/types";
 import { PwaInstallPrompt }        from "@/components/pwa-install-prompt";
 import { getApiBase }              from "@/lib/api/client";
 
-// ─── Config ───────────────────────────────────────────────────────────────────
+// Config
 
 const API_BASE = getApiBase();
 
@@ -35,7 +35,7 @@ const TYPE_MAP: Record<string, ProgramType> = {
   CONFERENCE: "CONFERENCE",
 };
 
-// ─── Types backend ────────────────────────────────────────────────────────────
+// Types backend
 
 type BackendProgram = {
   id:        string;
@@ -64,7 +64,7 @@ type BackendEvent = {
   programs?:   BackendProgram[];
 };
 
-// ─── Dates du festival ────────────────────────────────────────────────────────
+// Dates du festival
 
 function getFestivalYear(): number {
   const now = new Date();
@@ -76,7 +76,7 @@ function getFestivalStartDate(): Date {
   return new Date(getFestivalYear(), 0, 8);
 }
 
-// ─── Mapper ───────────────────────────────────────────────────────────────────
+// Mapper
 // Transporte maintenant siteId + siteLat + siteLng pour le deep-link carte.
 
 function mapEventToPrograms(event: BackendEvent): Program[] {
@@ -155,7 +155,7 @@ function mapEventToPrograms(event: BackendEvent): Program[] {
   });
 }
 
-// ─── Animations ───────────────────────────────────────────────────────────────
+// Animations
 
 const pageVariants = {
   hidden:  {},
@@ -175,7 +175,7 @@ const glowVariants: Variants = {
   visible: { opacity: 1, transition: { duration: 1.2, ease: "easeOut" } },
 };
 
-// ─── Contenu ──────────────────────────────────────────────────────────────────
+// Contenu
 
 function ProgrammeContent() {
   const t = useTranslations("programme");

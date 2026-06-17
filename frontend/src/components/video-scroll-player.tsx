@@ -28,6 +28,10 @@ export function VideoScrollPlayer({
 
     if (!video || !container) return;
 
+    // Coupe l'autoplay immediatement pour laisser le scroll controller seul maitre
+    video.pause();
+    video.currentTime = 0;
+
     let videoScrollTrigger: ScrollTrigger | null = null;
     let fadeOutTrigger: ScrollTrigger | null = null;
 
@@ -36,7 +40,7 @@ export function VideoScrollPlayer({
       
       const duration = video.duration;
 
-      // Video scrubbing based on scroll - higher scrub value = slower/smoother
+      // Valeur scrub elevee = mouvement plus fluide
       videoScrollTrigger = ScrollTrigger.create({
         trigger: document.body,
         start: "top top",
@@ -49,7 +53,7 @@ export function VideoScrollPlayer({
         },
       });
 
-      // Fade out the video container at the end
+      // Fondu sortant du conteneur video en fin de zone de scroll
       fadeOutTrigger = ScrollTrigger.create({
         trigger: document.body,
         start: "450vh top",
@@ -79,9 +83,11 @@ export function VideoScrollPlayer({
       <video
         ref={videoRef}
         className="h-full w-full object-cover"
+        autoPlay
         muted
         playsInline
         preload="auto"
+        poster="/images/vodundays-1.jpg"
       >
         <source src={VODUN_VIDEO_URL} type="video/mp4" />
       </video>

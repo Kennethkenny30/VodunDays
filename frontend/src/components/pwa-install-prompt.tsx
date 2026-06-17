@@ -104,7 +104,7 @@ export function PwaInstallPrompt() {
             }}
           >
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-semibold text-white">Ajouter a l'écran d'accueil</p>
+              <p className="text-sm font-semibold text-white">Ajouter à l'écran d'accueil</p>
               <button
                 onClick={() => setShowGuide(false)}
                 className="text-white/30 hover:text-white/60 transition-colors p-1 -mr-0.5"
@@ -144,7 +144,7 @@ export function PwaInstallPrompt() {
                   2
                 </div>
                 <div className="flex items-center gap-2 text-sm text-white/70">
-                  <span>Selectionne</span>
+                  <span>Sélectionne</span>
                   <span className="inline-flex items-center gap-1 text-white font-medium px-2 py-0.5 rounded-lg bg-white/8">
                     <SquarePlus size={13} />
                     Sur l'écran d'accueil

@@ -2,17 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { GlassSurface } from "@/components/glass-surface";
 import { ArrowDown, MapPin, Calendar } from "lucide-react";
 import { MobileGateModal } from "@/components/mobile-gate-modal";
 import { useMobileGate } from "@/hooks/use-mobile-gate";
-
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
 
 export function HeroSection() {
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -46,17 +41,6 @@ export function HeroSection() {
         { opacity: 1, duration: 0.8, ease: "power2.out", delay: 1.2 }
       );
 
-      if (desktopBgRef.current) {
-        ScrollTrigger.create({
-          trigger: document.body,
-          start: "450vh top",
-          end: "200vh top",
-          scrub: true,
-          onUpdate: (self) => {
-            gsap.set(desktopBgRef.current, { opacity: 1 - self.progress });
-          },
-        });
-      }
     });
 
     return () => ctx.revert();

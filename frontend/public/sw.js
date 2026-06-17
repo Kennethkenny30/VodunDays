@@ -1,4 +1,4 @@
-const CACHE = 'vodundays-v1';
+const CACHE = 'vodundays-v2';
 
 const PRECACHE = [
   '/',
@@ -18,6 +18,8 @@ const PRECACHE = [
   '/transition/programme',
   '/images/logo.png',
   '/icon.png',
+  '/icon-192.png',
+  '/icon-512-maskable.png',
   '/apple-icon.png',
 ];
 
