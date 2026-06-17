@@ -99,6 +99,11 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} className={cn(GeistSans.variable, GeistMono.variable)} suppressHydrationWarning>
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Vodun Days" />
+      </head>
       <body className="font-sans antialiased">
         <IntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider
