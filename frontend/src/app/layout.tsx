@@ -14,7 +14,7 @@ import { SWRegister } from '@/components/sw-register';
 
 const RAW_SITE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3001'
 const SITE_URL = RAW_SITE_URL.startsWith('http') ? RAW_SITE_URL : `https://${RAW_SITE_URL}`
-const OG_IMAGE = '/arene-ouidah.jpg'
+const OG_IMAGE = '/arene-ouidah.JPG'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

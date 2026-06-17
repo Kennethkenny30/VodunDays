@@ -81,7 +81,7 @@ export function HeroSection() {
           className="fixed inset-0 z-0 hidden md:block"
         >
           <img
-            src="/arene-ouidah.jpg"
+            src="/arene-ouidah.JPG"
             alt="Arène de Ouidah"
             className="h-full w-full object-cover"
           />
