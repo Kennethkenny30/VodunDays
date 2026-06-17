@@ -70,11 +70,6 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-icon.png',
   },
-  appleWebApp: {
-    capable:         true,
-    statusBarStyle:  'black-translucent',
-    title:           'Vodun Days',
-  },
   manifest: '/manifest.webmanifest',
 };
 
@@ -99,11 +94,11 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} className={cn(GeistSans.variable, GeistMono.variable)} suppressHydrationWarning>
-      <head>
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Vodun Days" />
-      </head>
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      <meta name="apple-mobile-web-app-title" content="Vodun Days" />
+      <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon.png" />
+      <link rel="manifest" href="/manifest.webmanifest" />
       <body className="font-sans antialiased">
         <IntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider

@@ -5,6 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name:             "Vodun Days - Festival Culturel du Bénin",
     short_name:       "Vodun Days",
     description:      "Plateforme numérique officielle des Vodun Days. Programme, carte interactive, contenus culturels et réalité augmentée.",
+    scope:            "/",
     start_url:        "/transition/programme",
     display:          "standalone",
     background_color: "#F56E0F",

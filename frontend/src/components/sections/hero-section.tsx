@@ -2,6 +2,11 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { GlassSurface } from "@/components/glass-surface";
@@ -40,6 +45,19 @@ export function HeroSection() {
         { opacity: 0 },
         { opacity: 1, duration: 0.8, ease: "power2.out", delay: 1.2 }
       );
+
+      // Fondu du fond desktop vers la fin de la zone de scroll video
+      if (desktopBgRef.current) {
+        ScrollTrigger.create({
+          trigger: document.body,
+          start: "150vh top",
+          end: "200vh top",
+          scrub: true,
+          onUpdate: (self) => {
+            gsap.set(desktopBgRef.current, { opacity: 1 - self.progress });
+          },
+        });
+      }
 
     });
 

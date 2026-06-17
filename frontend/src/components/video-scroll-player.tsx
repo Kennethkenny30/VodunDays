@@ -33,6 +33,7 @@ export function VideoScrollPlayer({
     video.currentTime = 0;
 
     let videoScrollTrigger: ScrollTrigger | null = null;
+    let fadeOutTrigger: ScrollTrigger | null = null;
 
     const initScrollTrigger = () => {
       if (!video.duration || Number.isNaN(video.duration)) return;
@@ -51,6 +52,19 @@ export function VideoScrollPlayer({
           }
         },
       });
+
+      // Fondu du container a partir de 75% du scroll
+      const scrollVh = parseInt(scrollHeight);
+      const fadeStart = Math.floor(scrollVh * 0.75);
+      fadeOutTrigger = ScrollTrigger.create({
+        trigger: document.body,
+        start: `${fadeStart}vh top`,
+        end: scrollHeight + " top",
+        scrub: true,
+        onUpdate: (self) => {
+          gsap.set(container, { opacity: 1 - self.progress });
+        },
+      });
     };
 
     video.addEventListener("loadedmetadata", initScrollTrigger);
@@ -62,6 +76,7 @@ export function VideoScrollPlayer({
     return () => {
       video.removeEventListener("loadedmetadata", initScrollTrigger);
       videoScrollTrigger?.kill();
+      fadeOutTrigger?.kill();
     };
   }, [scrollHeight]);
 
