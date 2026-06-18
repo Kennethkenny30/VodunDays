@@ -9,7 +9,9 @@ import {
   useMap,
 } from "@/components/ui/map";
 import { Landmark, Toilet, Siren, Bus, LifeBuoy, Navigation, Scan } from "lucide-react";
+import { useLocale } from "next-intl";
 import { MARKER_CATEGORIES, type POI, type MarkerCategory } from "@/lib/markers";
+import { localize } from "@/lib/i18n/localize";
 
 function hexToRgbParts(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -102,9 +104,10 @@ function MarkerTooltipContent({
 }
 
 export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerProps) {
-  const cat  = MARKER_CATEGORIES[poi.category];
-  const Icon = CATEGORY_ICONS[poi.category];
-  const ref  = useRef<HTMLDivElement>(null);
+  const cat    = MARKER_CATEGORIES[poi.category];
+  const Icon   = CATEGORY_ICONS[poi.category];
+  const ref    = useRef<HTMLDivElement>(null);
+  const locale = useLocale();
 
   const LABEL_MIN_ZOOM = 14;
   const { map } = useMap();
@@ -383,7 +386,7 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
             {poi.amenities && poi.amenities.length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 14 }}>
                 {poi.amenities.map((a) => (
-                  <span key={a} style={{
+                  <span key={a.name} style={{
                     background: "rgba(255,255,255,0.05)",
                     color: "#868696",
                     border: "1px solid rgba(255,255,255,0.09)",
@@ -392,7 +395,7 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
                     fontSize: 10,
                     fontWeight: 600,
                   }}>
-                    {a}
+                    {localize(a, "name", locale)}
                   </span>
                 ))}
               </div>
