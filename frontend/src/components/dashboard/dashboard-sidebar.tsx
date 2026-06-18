@@ -311,9 +311,19 @@ export function DashboardSidebar() {
   const pathname = usePathname()
   const { isOpen, close } = useSidebarStore()
   const [collapsed, setCollapsed] = useState(false)
-  const { user, logout } = useSession()
+  const { user, loading, logout } = useSession()
 
-  // Rôle lu depuis la session - pas depuis le pathname
+  // Placeholder invisible pendant le chargement - évite le flash ADMIN sur un compte SUPER_ADMIN
+  if (loading) {
+    return (
+      <div
+        className="hidden md:flex shrink-0 border-r border-white/8 bg-[oklch(0.13_0.02_260/0.95)]"
+        style={{ width: collapsed ? 64 : 240 }}
+      />
+    )
+  }
+
+  // Rôle lu depuis la session - jamais depuis le pathname
   const role: UserRole = user?.role === "SUPER_ADMIN" ? "SUPER_ADMIN" : "ADMIN"
 
   return (

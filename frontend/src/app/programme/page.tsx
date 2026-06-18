@@ -46,6 +46,7 @@ type BackendProgram = {
 type BackendSite = {
   id:          string;
   name:        string;
+  nameEn?:     string | null;
   latitude:    number;
   longitude:   number;
   description?: string | null;
@@ -53,15 +54,17 @@ type BackendSite = {
 };
 
 type BackendEvent = {
-  id:          string;
-  name:        string;
-  description: string;
-  status:      string;
-  imageUrl?:   string | null;
+  id:            string;
+  name:          string;
+  nameEn?:       string | null;
+  description:   string;
+  descriptionEn?: string | null;
+  status:        string;
+  imageUrl?:     string | null;
   // site complet - le backend fait include: { site: true }
-  site?:       BackendSite;
-  eventType?:  { name: string };
-  programs?:   BackendProgram[];
+  site?:         BackendSite;
+  eventType?:    { name: string };
+  programs?:     BackendProgram[];
 };
 
 // Dates du festival
@@ -98,18 +101,21 @@ function mapEventToPrograms(event: BackendEvent): Program[] {
 
   if (!event.programs?.length) {
     return [{
-      id:          event.id,
-      eventId:     event.id,
-      title:       event.name,
-      description: event.description,
+      id:            event.id,
+      eventId:       event.id,
+      title:         event.name,
+      titleEn:       event.nameEn ?? null,
+      description:   event.description,
+      descriptionEn: event.descriptionEn ?? null,
       type,
-      startTime:   "09:00",
-      endTime:     "11:00",
-      location:    event.site?.name ?? "Ouidah",
-      rating:      4.8,
+      startTime:     "09:00",
+      endTime:       "11:00",
+      location:      event.site?.name ?? "Ouidah",
+      locationEn:    event.site?.nameEn ?? null,
+      rating:        4.8,
       image,
-      isLive:      false,
-      day:         1,
+      isLive:        false,
+      day:           1,
       // Deep-link carte
       siteId,
       siteLat,
@@ -135,17 +141,20 @@ function mapEventToPrograms(event: BackendEvent): Program[] {
     const day = diffDays >= 0 && diffDays <= 2 ? diffDays + 1 : 1;
 
     return {
-      id:          `${event.id}__${program.id}`,
-      eventId:     event.id,
-      title:       event.name,
-      description: event.description,
+      id:            `${event.id}__${program.id}`,
+      eventId:       event.id,
+      title:         event.name,
+      titleEn:       event.nameEn ?? null,
+      description:   event.description,
+      descriptionEn: event.descriptionEn ?? null,
       type,
       startTime,
       endTime,
-      location:    event.site?.name ?? "Ouidah",
-      rating:      4.8,
+      location:      event.site?.name ?? "Ouidah",
+      locationEn:    event.site?.nameEn ?? null,
+      rating:        4.8,
       image,
-      isLive:      false,
+      isLive:        false,
       day,
       // Deep-link carte
       siteId,
@@ -207,7 +216,7 @@ function ProgrammeContent() {
 
   return (
     <motion.div
-      className="min-h-screen bg-[#151419]"
+      className="min-h-screen bg-vd-page-bg"
       variants={pageVariants}
       initial="hidden"
       animate="visible"
@@ -249,7 +258,7 @@ function ProgrammeContent() {
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-28 rounded-2xl bg-white/5 animate-pulse" />
+                <div key={i} className="h-28 rounded-2xl bg-vd-skeleton animate-pulse" />
               ))}
             </div>
           ) : filteredPrograms.length === 0 ? (

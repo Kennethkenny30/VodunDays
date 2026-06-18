@@ -617,9 +617,6 @@ export function EventCreateModal({
   const dragStartRef = useRef<{ mx: number; my: number; ox: number; oy: number } | null>(null)
 
   const [publicDesc,    setPublicDesc]    = useState("")
-  const [publicDescEn, setPublicDescEn]  = useState("")
-  const [nameTab,      setNameTab]       = useState<"fr" | "en">("fr")
-  const [descTab,      setDescTab]       = useState<"fr" | "en">("fr")
   const [slots,         setSlots]         = useState<Program[]>([])
   const [loadingSlots,  setLoadingSlots]  = useState(false)
   const [slotDraft,     setSlotDraft]     = useState<SlotDraft>({ startTime: "", endTime: "" })
@@ -684,10 +681,8 @@ export function EventCreateModal({
         status:      editingEvent.status,
         siteId:      editingEvent.siteId,
         eventTypeId: editingEvent.eventTypeId,
-        nameEn:      editingEvent.nameEn || undefined,
       })
       setPublicDesc(editingEvent.description || "")
-      setPublicDescEn(editingEvent.descriptionEn || "")
       if (editingEvent.imageUrl) setImagePreview(editingEvent.imageUrl)
       if (isOffline) {
         // Brouillon offline - créneaux déjà dans programs, pas d'appel API
@@ -736,7 +731,6 @@ export function EventCreateModal({
         status:        "DRAFT",
         siteId:        formData.siteId!,
         eventTypeId:   formData.eventTypeId!,
-        ...(formData.nameEn?.trim() ? { nameEn: formData.nameEn.trim() } : {}),
       }
       const res = await createEvent(payload)
       if (res.success && res.data?.id) {
@@ -1060,8 +1054,6 @@ export function EventCreateModal({
           siteId:        formData.siteId!,
           eventTypeId:   formData.eventTypeId!,
           ...(imageDataUrl ? { imageUrl: imageDataUrl } : {}),
-          ...(formData.nameEn?.trim()   ? { nameEn: formData.nameEn.trim() }           : {}),
-          ...(publicDescEn.trim()       ? { descriptionEn: publicDescEn.trim() }       : {}),
         }
         const res = await createEvent(payload)
         if (res.success && res.data?.id) {
@@ -1108,11 +1100,9 @@ export function EventCreateModal({
         return
       }
       const patches: Partial<EventCreatePayload> & Record<string, unknown> = {}
-      if (publish)              patches.status        = "PUBLISHED"
-      if (publicDesc.trim())    patches.description   = publicDesc.trim()
-      if (imageDataUrl)         patches.imageUrl      = imageDataUrl
-      if (formData.nameEn?.trim()) patches.nameEn     = formData.nameEn.trim()
-      if (publicDescEn.trim())  patches.descriptionEn = publicDescEn.trim()
+      if (publish)           patches.status      = "PUBLISHED"
+      if (publicDesc.trim()) patches.description = publicDesc.trim()
+      if (imageDataUrl)      patches.imageUrl    = imageDataUrl
       if (Object.keys(patches).length > 0) {
         const res = await updateEvent(activeEventId, patches as Partial<EventCreatePayload>)
         if (!res.success) { toast.error(res.message); return }
@@ -1240,55 +1230,26 @@ export function EventCreateModal({
             {step === 1 && !isEdit && (
               <div className="space-y-5">
 
-                {/* Nom avec onglets FR/EN */}
+                {/* Nom de l'événement */}
                 <FormField
                   label="Nom de l'événement"
                   required
                   tooltip="Titre affiché dans le programme et sur la carte festivalière"
                   error={errors.name}
                 >
-                  <div className="flex rounded-lg overflow-hidden border border-white/[0.08] mb-2 w-fit">
-                    {(["fr", "en"] as const).map((tab) => (
-                      <button
-                        key={tab}
-                        type="button"
-                        onClick={() => setNameTab(tab)}
-                        className={cn(
-                          "px-3 py-1 text-[10px] font-bold uppercase transition-colors",
-                          nameTab === tab
-                            ? "bg-[var(--vd-gold)]/20 text-[var(--vd-gold)]"
-                            : "text-muted-foreground/50 hover:text-foreground"
-                        )}
-                      >{tab}</button>
-                    ))}
-                  </div>
-                  {nameTab === "fr" ? (
-                    <Input
-                      value={formData.name || ""}
-                      onChange={(e) => set("name", e.target.value)}
-                      placeholder="ex : Cérémonie d'ouverture"
-                      className={cn(
-                        "h-10 text-[13px] bg-white/[0.04] border-white/[0.1] rounded-xl",
-                        "placeholder:text-muted-foreground/30",
-                        "focus:border-[var(--vd-gold)]/40 focus:bg-white/[0.06]",
-                        "transition-all duration-200",
-                        errors.name && "border-destructive/60 focus:border-destructive/60"
-                      )}
-                      autoFocus
-                    />
-                  ) : (
-                    <Input
-                      value={formData.nameEn || ""}
-                      onChange={(e) => set("nameEn", e.target.value)}
-                      placeholder="ex : Opening Ceremony (optional)"
-                      className={cn(
-                        "h-10 text-[13px] bg-white/[0.04] border-white/[0.1] rounded-xl",
-                        "placeholder:text-muted-foreground/30",
-                        "focus:border-[var(--vd-gold)]/40 focus:bg-white/[0.06]",
-                        "transition-all duration-200"
-                      )}
-                    />
-                  )}
+                  <Input
+                    value={formData.name || ""}
+                    onChange={(e) => set("name", e.target.value)}
+                    placeholder="ex : Cérémonie d'ouverture"
+                    className={cn(
+                      "h-10 text-[13px] bg-white/[0.04] border-white/[0.1] rounded-xl",
+                      "placeholder:text-muted-foreground/30",
+                      "focus:border-[var(--vd-gold)]/40 focus:bg-white/[0.06]",
+                      "transition-all duration-200",
+                      errors.name && "border-destructive/60 focus:border-destructive/60"
+                    )}
+                    autoFocus
+                  />
                 </FormField>
 
                 {/* Type d'événement */}
@@ -1566,54 +1527,24 @@ export function EventCreateModal({
                   )}
                 </div>
 
-                {/* ── Description publique avec onglets FR/EN ──────── */}
+                {/* Description festivaliers */}
                 <FormField
                   label="Description festivaliers"
                   tooltip="Texte affiché sur la fiche de l'événement dans l'app mobile - visible par tous les festivaliers"
-                  hint={descTab === "fr" ? `${publicDesc.length} / 500 caractères recommandés` : "Version anglaise optionnelle"}
+                  hint={`${publicDesc.length} / 500 caractères recommandés`}
                 >
-                  <div className="flex rounded-lg overflow-hidden border border-white/[0.08] mb-2 w-fit">
-                    {(["fr", "en"] as const).map((tab) => (
-                      <button
-                        key={tab}
-                        type="button"
-                        onClick={() => setDescTab(tab)}
-                        className={cn(
-                          "px-3 py-1 text-[10px] font-bold uppercase transition-colors",
-                          descTab === tab
-                            ? "bg-[var(--vd-gold)]/20 text-[var(--vd-gold)]"
-                            : "text-muted-foreground/50 hover:text-foreground"
-                        )}
-                      >{tab}</button>
-                    ))}
-                  </div>
-                  {descTab === "fr" ? (
-                    <Textarea
-                      value={publicDesc}
-                      onChange={(e) => setPublicDesc(e.target.value)}
-                      placeholder="Ambiance, accès, tenue recommandée…"
-                      rows={3}
-                      className={cn(
-                        "text-[13px] bg-white/[0.04] border-white/[0.1] rounded-xl resize-none",
-                        "placeholder:text-muted-foreground/30",
-                        "focus:border-[var(--vd-gold)]/40 focus:bg-white/[0.06]",
-                        "transition-all duration-200"
-                      )}
-                    />
-                  ) : (
-                    <Textarea
-                      value={publicDescEn}
-                      onChange={(e) => setPublicDescEn(e.target.value)}
-                      placeholder="Atmosphere, access, recommended attire… (optional)"
-                      rows={3}
-                      className={cn(
-                        "text-[13px] bg-white/[0.04] border-white/[0.1] rounded-xl resize-none",
-                        "placeholder:text-muted-foreground/30",
-                        "focus:border-[var(--vd-gold)]/40 focus:bg-white/[0.06]",
-                        "transition-all duration-200"
-                      )}
-                    />
-                  )}
+                  <Textarea
+                    value={publicDesc}
+                    onChange={(e) => setPublicDesc(e.target.value)}
+                    placeholder="Ambiance, accès, tenue recommandée…"
+                    rows={3}
+                    className={cn(
+                      "text-[13px] bg-white/[0.04] border-white/[0.1] rounded-xl resize-none",
+                      "placeholder:text-muted-foreground/30",
+                      "focus:border-[var(--vd-gold)]/40 focus:bg-white/[0.06]",
+                      "transition-all duration-200"
+                    )}
+                  />
                 </FormField>
 
                 {/* ── Créneaux horaires ─────────────────────────────── */}

@@ -109,14 +109,14 @@ export function GlassSurface({
             background: `
               radial-gradient(
                 ellipse at var(--mouse-x) var(--mouse-y),
-                rgba(255, 255, 255, 0.15) 0%,
-                rgba(255, 255, 255, 0.05) 40%,
+                var(--vd-glass-radial-outer) 0%,
+                var(--vd-glass-radial-inner) 40%,
                 transparent 70%
               )
             `,
           }}
         />
-        
+
         {/* Main glass layer */}
         <div
           className="pointer-events-none absolute inset-0"
@@ -124,9 +124,9 @@ export function GlassSurface({
             borderRadius: `${borderRadius}px`,
             background: `linear-gradient(
               135deg,
-              rgba(255, 255, 255, 0.1) 0%,
-              rgba(255, 255, 255, 0.05) 50%,
-              rgba(255, 255, 255, 0.02) 100%
+              var(--vd-glass-grad-start) 0%,
+              var(--vd-glass-grad-mid) 50%,
+              var(--vd-glass-grad-end) 100%
             )`,
             backdropFilter: `blur(12px) brightness(${100 + brightness}%)`,
             WebkitBackdropFilter: `blur(12px) brightness(${100 + brightness}%)`,
@@ -138,9 +138,9 @@ export function GlassSurface({
           className="pointer-events-none absolute inset-0"
           style={{
             borderRadius: `${borderRadius}px`,
-            border: "1px solid rgba(255, 255, 255, 0.18)",
+            border: "1px solid var(--vd-glass-border-color)",
             boxShadow: `
-              inset 0 1px 1px rgba(255, 255, 255, 0.1),
+              inset 0 1px 1px var(--vd-glass-inset-shadow),
               0 4px 30px rgba(0, 0, 0, 0.1)
             `,
           }}

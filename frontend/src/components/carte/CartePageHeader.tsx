@@ -29,7 +29,7 @@ export function CartePageHeader() {
           <p
             className="text-[11px] uppercase"
             style={{
-              color: "#878787",
+              color: "var(--muted-foreground)",
               letterSpacing: "0.1em",
             }}
           >

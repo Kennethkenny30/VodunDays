@@ -45,11 +45,13 @@ export type MarkerCategory = keyof typeof MARKER_CATEGORIES;
 export interface POI {
   id:           string;
   name:         string;
+  nameEn?:      string | null;
   longitude:    number;
   latitude:     number;
   category:     MarkerCategory;
-  amenities?:   string[];
+  amenities?:   { name: string; nameEn?: string | null }[];
   description?: string;
+  descriptionEn?: string | null;
   // Champs PRA - présents uniquement si category === "pra"
   arLabel?:     string;
   arContent?:   string;
@@ -67,16 +69,18 @@ const CATEGORY_MAP: Record<string, MarkerCategory> = {
 };
 
 type BackendSite = {
-  id:          string;
-  name:        string;
-  description: string | null;
-  latitude:    number;
-  longitude:   number;
-  category:    string;
-  arLabel?:    string | null;
-  arContent?:  string | null;
-  arRadius?:   number | null;
-  amenities?:  { name: string }[];
+  id:            string;
+  name:          string;
+  nameEn?:       string | null;
+  description:   string | null;
+  descriptionEn?: string | null;
+  latitude:      number;
+  longitude:     number;
+  category:      string;
+  arLabel?:      string | null;
+  arContent?:    string | null;
+  arRadius?:     number | null;
+  amenities?:    { name: string; nameEn?: string | null }[];
 };
 
 /**
@@ -96,16 +100,18 @@ export async function loadPOIs(): Promise<POI[]> {
   }
 
   return json.data.map((site: BackendSite): POI => ({
-    id:          site.id,
-    name:        site.name,
-    latitude:    site.latitude,
-    longitude:   site.longitude,
+    id:             site.id,
+    name:           site.name,
+    nameEn:         site.nameEn ?? null,
+    latitude:       site.latitude,
+    longitude:      site.longitude,
     // Fallback sur "sites" si une valeur inconnue arrive
-    category:    CATEGORY_MAP[site.category] ?? "sites",
-    description: site.description ?? undefined,
-    amenities:   site.amenities?.map((a) => a.name) ?? [],
-    arLabel:     site.arLabel   ?? undefined,
-    arContent:   site.arContent ?? undefined,
-    arRadius:    site.arRadius  ?? undefined,
+    category:       CATEGORY_MAP[site.category] ?? "sites",
+    description:    site.description ?? undefined,
+    descriptionEn:  site.descriptionEn ?? null,
+    amenities:      site.amenities?.map((a) => ({ name: a.name, nameEn: a.nameEn ?? null })) ?? [],
+    arLabel:        site.arLabel   ?? undefined,
+    arContent:      site.arContent ?? undefined,
+    arRadius:       site.arRadius  ?? undefined,
   }));
 }

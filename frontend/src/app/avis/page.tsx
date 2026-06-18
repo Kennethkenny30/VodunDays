@@ -68,7 +68,7 @@ function SegmentedProgressBar({ currentStep, totalSteps }: { currentStep: number
         <div
           key={i}
           className="flex-1 h-0.75 rounded-full transition-colors duration-300"
-          style={{ background: i <= currentStep ? "#F56E0F" : "rgba(255,255,255,0.10)" }}
+          style={{ background: i <= currentStep ? "#F56E0F" : "var(--vd-border-soft)" }}
         />
       ))}
     </div>
@@ -135,15 +135,15 @@ function QuestionStep({
       <div
         className="rounded-2xl p-5"
         style={{
-          background: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "linear-gradient(135deg, var(--vd-glass-grad-start) 0%, var(--vd-glass-grad-end) 100%)",
+          border: "1px solid var(--vd-glass-border-color)",
           backdropFilter: "blur(12px)",
         }}
       >
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#878787] text-center mb-2">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground text-center mb-2">
           {t("step", { current: stepIndex + 1, total: totalSteps })}
         </p>
-        <h3 className="text-[18px] font-black text-white text-center mb-6 leading-snug">
+        <h3 className="text-[18px] font-black text-foreground text-center mb-6 leading-snug">
           {question.wording}
         </h3>
 
@@ -155,14 +155,14 @@ function QuestionStep({
             rows={4}
             className={cn(
               "w-full px-3 py-2.5 rounded-xl resize-none",
-              "bg-black/30 border border-white/10",
-              "text-white text-[13px] placeholder:text-[#878787]",
+              "bg-foreground/5 border border-foreground/10",
+              "text-foreground text-[13px] placeholder:text-muted-foreground",
               "focus:outline-none focus:border-[#F56E0F]/40",
               "transition-colors duration-200 box-border"
             )}
           />
         ) : noChoicesAvailable ? (
-          <p className="text-center text-[13px] text-[#878787] py-4">
+          <p className="text-center text-[13px] text-muted-foreground py-4">
             {t("noOptions")}
           </p>
         ) : (
@@ -189,8 +189,8 @@ function QuestionStep({
                   className={cn(
                     "w-full text-left px-4 py-3 rounded-xl border text-[13px] transition-all",
                     selected
-                      ? "bg-[#F56E0F]/15 border-[#F56E0F]/60 text-white"
-                      : "bg-white/4 border-white/10 text-[#878787] hover:border-white/20"
+                      ? "bg-[#F56E0F]/15 border-[#F56E0F]/60 text-foreground"
+                      : "bg-foreground/4 border-foreground/10 text-muted-foreground hover:border-foreground/20"
                   )}
                 >
                   {choice.wording}
@@ -210,7 +210,7 @@ function QuestionStep({
             "transition-all duration-200 active:scale-[0.98]",
             canProceed
               ? "bg-[#F56E0F] text-white shadow-[0_4px_24px_rgba(245,110,15,0.4)]"
-              : "bg-white/10 text-[#878787] cursor-not-allowed"
+              : "bg-foreground/10 text-muted-foreground cursor-not-allowed"
           )}
         >
           {t("next")}
@@ -368,7 +368,7 @@ export default function AvisPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-[#0E0D12]">
+      <div className="min-h-screen bg-vd-page-bg-alt">
         <ConfirmationScreen />
         <BottomNav />
       </div>
@@ -381,15 +381,14 @@ export default function AvisPage() {
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen bg-vd-page-bg-alt"
       style={{
-        background:
-          "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(245,110,15,0.08) 0%, transparent 60%), #0E0D12",
+        backgroundImage: "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(245,110,15,0.08) 0%, transparent 60%)",
       }}
     >
       {/* Header */}
       <header
-        className="sticky top-0 z-20 px-4 pb-3 bg-[#0E0D12]/90 backdrop-blur-md"
+        className="sticky top-0 z-20 px-4 pb-3 bg-vd-page-bg-alt/90 backdrop-blur-md"
         style={{ paddingTop: "max(16px, env(safe-area-inset-top))" }}
       >
         <div className="flex items-center justify-between mb-4">
@@ -397,16 +396,16 @@ export default function AvisPage() {
             <button
               type="button"
               onClick={handleBack}
-              className="w-10 h-10 rounded-full bg-white/8 flex items-center justify-center hover:bg-white/12 transition-colors"
+              className="w-10 h-10 rounded-full bg-foreground/8 flex items-center justify-center hover:bg-foreground/12 transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-white" />
+              <ArrowLeft className="w-5 h-5 text-foreground" />
             </button>
           ) : (
             <Link
               href="/programme"
-              className="w-10 h-10 rounded-full bg-white/8 flex items-center justify-center hover:bg-white/12 transition-colors"
+              className="w-10 h-10 rounded-full bg-foreground/8 flex items-center justify-center hover:bg-foreground/12 transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-white" />
+              <ArrowLeft className="w-5 h-5 text-foreground" />
             </Link>
           )}
           <div />
@@ -434,8 +433,8 @@ export default function AvisPage() {
                   isActive
                     ? "bg-[#F56E0F] text-white border-[#F56E0F]"
                     : submitted
-                    ? "bg-white/4 text-[#878787] border-white/10"
-                    : "bg-white/8 text-white/70 border-white/15 hover:border-white/30"
+                    ? "bg-foreground/4 text-muted-foreground border-foreground/10"
+                    : "bg-foreground/8 text-foreground/70 border-foreground/15 hover:border-foreground/30"
                 )}
               >
                 {submitted && <Check className="size-3" />}
@@ -448,13 +447,13 @@ export default function AvisPage() {
 
       {/* En-tête page */}
       <div className="px-4 pt-6 pb-2">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#878787] mb-1">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">
           {t("category")}
         </p>
-        <h1 className="text-[22px] font-black text-white leading-tight mb-1">
+        <h1 className="text-[22px] font-black text-foreground leading-tight mb-1">
           {quiz?.title ?? t("title")}
         </h1>
-        <p className="text-[13px] text-[#878787]">
+        <p className="text-[13px] text-muted-foreground">
           {t("subtitle")}
         </p>
       </div>
@@ -462,14 +461,14 @@ export default function AvisPage() {
       {/* Contenu selon la phase */}
       <main className="px-4 pt-6 pb-36">
         {phase === "loading" && (
-          <div className="flex flex-col items-center justify-center gap-3 pt-20 text-white/40">
+          <div className="flex flex-col items-center justify-center gap-3 pt-20 text-foreground/40">
             <Loader2 className="size-6 animate-spin" />
             <p className="text-[13px]">{t("loading")}</p>
           </div>
         )}
 
         {phase === "no-quiz" && (
-          <div className="flex flex-col items-center justify-center gap-3 pt-20 text-white/40">
+          <div className="flex flex-col items-center justify-center gap-3 pt-20 text-foreground/40">
             <p className="text-[14px]">{t("empty")}</p>
           </div>
         )}
@@ -480,13 +479,13 @@ export default function AvisPage() {
 
         {phase === "load-error" && (
           <div className="flex flex-col items-center justify-center gap-4 pt-20">
-            <p className="text-[14px] text-[#878787] text-center">
+            <p className="text-[14px] text-muted-foreground text-center">
               {t("error")}
             </p>
             <button
               type="button"
               onClick={() => { loadedRef.current = false; setIsSubmitted(false); loadQuiz(); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/6 border border-white/10 text-[13px] text-white/70 hover:bg-white/10 transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-foreground/6 border border-foreground/10 text-[13px] text-foreground/70 hover:bg-foreground/10 transition-all"
             >
               <RefreshCw className="size-4" />
               {tc("retry")}

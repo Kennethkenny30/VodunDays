@@ -28,10 +28,10 @@ export function ProgramList({ programs, isLoading = false, error = null, activeD
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-        <div className="w-12 h-12 rounded-full bg-[#262626] flex items-center justify-center mb-4">
-          <Calendar className="w-6 h-6 text-[#878787]" />
+        <div className="w-12 h-12 rounded-full bg-vd-skeleton flex items-center justify-center mb-4">
+          <Calendar className="w-6 h-6 text-muted-foreground" />
         </div>
-        <p className="text-[#878787] text-sm mb-4">
+        <p className="text-muted-foreground text-sm mb-4">
           Erreur de chargement. Vérifiez votre connexion.
         </p>
         <button
@@ -55,10 +55,10 @@ export function ProgramList({ programs, isLoading = false, error = null, activeD
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col items-center justify-center py-16 px-4 text-center"
       >
-        <div className="w-16 h-16 rounded-full bg-[#262626] flex items-center justify-center mb-4">
-          <Calendar className="w-8 h-8 text-[#878787]" />
+        <div className="w-16 h-16 rounded-full bg-vd-skeleton flex items-center justify-center mb-4">
+          <Calendar className="w-8 h-8 text-muted-foreground" />
         </div>
-        <p className="text-[#878787] text-sm">Aucun événement pour ce jour.</p>
+        <p className="text-muted-foreground text-sm">Aucun événement pour ce jour.</p>
       </motion.div>
     );
   }

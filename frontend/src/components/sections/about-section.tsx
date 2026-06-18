@@ -2,20 +2,22 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const stats = [
-  { value: "740K+", label: "Festivaliers" },
-  { value: "7", label: "Sites Culturels" },
-  { value: "20+", label: "Animations" },
-  { value: "3", label: "Jours de Fête" },
-];
-
 export function AboutSection() {
+  const t = useTranslations("home");
   const sectionRef = useRef<HTMLElement>(null);
+
+  const stats = [
+    { value: "740K+", label: t("about.stats.festivaliers") },
+    { value: "7",     label: t("about.stats.sites") },
+    { value: "20+",   label: t("about.stats.animations") },
+    { value: "3",     label: t("about.stats.jours") },
+  ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -59,18 +61,16 @@ export function AboutSection() {
   return (
     <section ref={sectionRef} className="relative min-h-screen px-4 py-16 md:px-6 md:py-32">
       <div className="relative z-10 mx-auto max-w-7xl">
-        {/* Big editorial title */}
         <div className="about-title mb-12 md:mb-20" style={{ perspective: "800px" }}>
           <h2 className="text-3xl font-serif font-bold leading-none tracking-tight text-foreground md:text-6xl lg:text-8xl">
-            <span className="about-title-word inline-block">Un </span>{" "}
-            <span className="about-title-word inline-block">Héritage</span>
+            <span className="about-title-word inline-block">{t("about.title.word1")} </span>{" "}
+            <span className="about-title-word inline-block">{t("about.title.word2")}</span>
             <br />
-            <span className="about-title-word inline-block text-primary">Spirituel</span>{" "}
-            <span className="about-title-word inline-block italic font-light">Millénaire</span>
+            <span className="about-title-word inline-block text-primary">{t("about.title.word3")}</span>{" "}
+            <span className="about-title-word inline-block italic font-light">{t("about.title.word4")}</span>
           </h2>
         </div>
 
-        {/* Editorial two-column: image + text */}
         <div className="mb-16 md:mb-24 grid gap-8 lg:grid-cols-5 lg:gap-12 items-center">
           <div className="about-image lg:col-span-3 relative overflow-hidden rounded-2xl aspect-4/3 lg:aspect-16/10">
             <Image
@@ -90,22 +90,17 @@ export function AboutSection() {
 
           <div className="about-text lg:col-span-2 flex flex-col justify-center">
             <p className="mb-4 text-xs font-medium uppercase tracking-[0.2em] text-primary md:text-sm">
-              Depuis 1996
+              {t("about.since")}
             </p>
             <p className="mb-6 text-base leading-relaxed text-foreground/80 md:text-lg lg:text-xl lg:leading-relaxed">
-              Les Vodun Days célèbrent la religion traditionnelle du Bénin. 
-              Chaque année, le 10 janvier, Ouidah devient le centre mondial 
-              de la spiritualité Vodun.
+              {t("about.para1")}
             </p>
             <p className="text-sm leading-relaxed text-muted-foreground md:text-base lg:text-lg">
-              Découvrez les cérémonies sacrées, les danses rituelles, et 
-              l{"'"}artisanat traditionnel dans une atmosphère de communion 
-              et de partage culturel unique au monde.
+              {t("about.para2")}
             </p>
           </div>
         </div>
 
-        {/* Stats row */}
         <div className="stat-grid grid grid-cols-2 gap-px md:grid-cols-4 overflow-hidden rounded-2xl border border-border">
           {stats.map((stat) => (
             <div

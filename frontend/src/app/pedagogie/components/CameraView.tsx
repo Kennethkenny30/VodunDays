@@ -90,7 +90,7 @@ export function CameraView({ onBack }: CameraViewProps) {
 
       {/* Ecrans d'état (chargement, erreur) */}
       {cameraState !== "active" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#151419] gap-5 px-8 text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-vd-page-bg gap-5 px-8 text-center">
           {isLoading && (
             <>
               <Camera

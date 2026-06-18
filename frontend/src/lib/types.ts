@@ -59,7 +59,9 @@ export interface Program {
   eventId?: string;
   siteId?: string | null;
   title: string;
+  titleEn?: string | null;
   description?: string;
+  descriptionEn?: string | null;
   type: ProgramType;
   startTime: string;
   endTime: string;
@@ -72,6 +74,7 @@ export interface Program {
   event?: Event;
   // UI-specific fields
   location: string;
+  locationEn?: string | null;
   rating: number;
   image: string;
   isLive?: boolean;

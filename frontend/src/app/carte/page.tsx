@@ -28,7 +28,7 @@ export default function CartePage() {
   return (
     <div
       className="relative overflow-hidden"
-      style={{ background: "#151419", height: "100dvh" }}
+      style={{ background: "var(--vd-page-bg)", height: "100dvh" }}
     >
       {/* Lueur ambiante */}
       <div
@@ -54,7 +54,7 @@ export default function CartePage() {
         <div
           className="pointer-events-auto"
           style={{
-            background: "linear-gradient(to bottom, rgba(21,20,25,0.90) 65%, transparent 100%)",
+            background: "linear-gradient(to bottom, var(--vd-page-bg) 65%, transparent 100%)",
             paddingTop: "env(safe-area-inset-top, 0px)",
           }}
         >

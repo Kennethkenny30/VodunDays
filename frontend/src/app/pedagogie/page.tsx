@@ -16,7 +16,7 @@ const DynamicCameraView = dynamic(
   () => import("./components/CameraView").then((m) => m.CameraView),
   {
     ssr: false,
-    loading: () => <div className="absolute inset-0 bg-[#151419]" />,
+    loading: () => <div className="absolute inset-0 bg-vd-page-bg" />,
   }
 );
 
@@ -61,7 +61,7 @@ export default function PedagogiePage() {
   }));
 
   return (
-    <div className="min-h-screen bg-[#151419]">
+    <div className="min-h-screen bg-vd-page-bg">
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
@@ -121,7 +121,7 @@ export default function PedagogiePage() {
                   />
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase tracking-widest text-[#878787]">
+                  <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
                     {t("heritage")}
                   </p>
                 </div>
@@ -134,7 +134,7 @@ export default function PedagogiePage() {
               transition={{ duration: 0.4, delay: 0.1 }}
               className="px-4 pt-2 pb-5"
             >
-              <p className="text-[13px] text-[#878787] leading-relaxed">
+              <p className="text-[13px] text-muted-foreground leading-relaxed">
                 {t("intro")}
               </p>
             </motion.div>

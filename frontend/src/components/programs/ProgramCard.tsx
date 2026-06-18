@@ -4,24 +4,21 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, CalendarPlus, CalendarCheck, AlertTriangle } from "lucide-react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
+import { useLocale, useTranslations } from "next-intl";
 import type { Program, ProgramType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { usePlanner } from "@/providers/FestivalPlannerProvider";
+import { localize } from "@/lib/i18n/localize";
 
-// ── Badge styles ──────────────────────────────────────────────────────────────
-
-const programTypeBadgeStyles: Record<ProgramType, { bg: string; text: string; border: string }> = {
-  RITUAL:     { bg: "rgba(245, 110, 15, 0.30)", text: "#F56E0F",  border: "rgba(245, 110, 15, 0.40)" },
-  ANIMATION:  { bg: "rgba(245, 110, 15, 0.22)", text: "#FFA060",  border: "rgba(245, 110, 15, 0.32)" },
-  CONCERT:    { bg: "rgba(245, 110, 15, 0.16)", text: "#FFC090",  border: "rgba(245, 110, 15, 0.26)" },
-  EXHIBITION: { bg: "rgba(245, 110, 15, 0.10)", text: "#FFD0A0",  border: "rgba(245, 110, 15, 0.20)" },
-  CONFERENCE: { bg: "rgba(245, 110, 15, 0.07)", text: "#FFE0C0",  border: "rgba(245, 110, 15, 0.15)" },
+// Couleurs de badge (text via CSS vars pour adaptation clair/sombre)
+const programTypeBadgeStyles: Record<ProgramType, { bg: string; textVar: string; border: string }> = {
+  RITUAL:     { bg: "rgba(245, 110, 15, 0.25)", textVar: "--vd-badge-ritual",     border: "rgba(245, 110, 15, 0.40)" },
+  ANIMATION:  { bg: "rgba(245, 110, 15, 0.18)", textVar: "--vd-badge-animation",  border: "rgba(245, 110, 15, 0.32)" },
+  CONCERT:    { bg: "rgba(245, 110, 15, 0.13)", textVar: "--vd-badge-concert",    border: "rgba(245, 110, 15, 0.26)" },
+  EXHIBITION: { bg: "rgba(245, 110, 15, 0.09)", textVar: "--vd-badge-exhibition", border: "rgba(245, 110, 15, 0.20)" },
+  CONFERENCE: { bg: "rgba(245, 110, 15, 0.06)", textVar: "--vd-badge-conference", border: "rgba(245, 110, 15, 0.15)" },
 };
 
-const programTypeLabels: Record<ProgramType, string> = {
-  RITUAL: "RITUEL", ANIMATION: "ANIMATION", CONCERT: "CONCERT",
-  EXHIBITION: "EXPOSITION", CONFERENCE: "CONFÉRENCE",
-};
 
 // ── Ripple ────────────────────────────────────────────────────────────────────
 
@@ -51,6 +48,9 @@ interface ProgramCardProps {
 
 export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
   const router = useRouter();
+  const locale = useLocale();
+  const tEnum = useTranslations("enums");
+  const t = useTranslations("programme");
   const { addToAgenda, removeFromAgenda, isInAgenda, conflicts } = usePlanner();
 
   const inAgenda    = isInAgenda(program.id);
@@ -117,11 +117,11 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
       whileTap={{ scale: 0.98 }}
       className={cn(
         "group relative rounded-[20px] overflow-hidden",
-        "bg-[#1B1B1E] backdrop-blur-md cursor-pointer",
+        "bg-vd-card-surface backdrop-blur-md cursor-pointer",
         "border",
         hasConflict
           ? "border-amber-500/40 shadow-[0_4px_24px_rgba(245,158,11,0.15)]"
-          : "border-white/8 shadow-[0_4px_24px_rgba(0,0,0,0.4)]",
+          : "border-vd-border-soft shadow-[0_4px_24px_rgba(0,0,0,0.25)]",
       )}
     >
       {/* Conflict banner */}
@@ -129,7 +129,7 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
         <div className="absolute top-0 left-0 right-0 z-20 flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border-b border-amber-500/20">
           <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
           <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wide">
-            Conflit horaire détecté
+            {t("card.conflict")}
           </span>
         </div>
       )}
@@ -158,11 +158,11 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
             className="absolute top-3 left-3 px-3 py-1.5 rounded-full bg-[#F56E0F] text-[#FBFBFB] text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 shadow-[0_2px_12px_rgba(245,110,15,0.5)]"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-[#FBFBFB] animate-pulse" />
-            En Direct
+            {t("card.live")}
           </motion.div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#1B1B1E] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-vd-card-surface via-transparent to-transparent" />
       </div>
 
       {/* Content */}
@@ -172,24 +172,24 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
             className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.08em]"
             style={{
               backgroundColor: badgeStyle.bg,
-              color: badgeStyle.text,
+              color: `var(${badgeStyle.textVar})`,
               border: `1px solid ${badgeStyle.border}`,
             }}
           >
-            {programTypeLabels[program.type]}
+            {tEnum(`programType.${program.type}` as "programType.RITUAL")}
           </span>
           <span className="text-[13px] font-bold text-[#F56E0F]">
             {program.startTime} – {program.endTime}
           </span>
         </div>
 
-        <h3 className="text-[16px] font-extrabold text-[#FBFBFB] leading-tight mb-1">
-          {program.title}
+        <h3 className="text-[16px] font-extrabold text-foreground leading-tight mb-1">
+          {localize(program, "title", locale)}
         </h3>
 
-        <p className="flex items-center gap-1.5 text-[12px] text-[#878787] mb-3">
+        <p className="flex items-center gap-1.5 text-[12px] text-muted-foreground mb-3">
           <MapPin className="w-3.5 h-3.5" />
-          {program.location}
+          {localize(program, "location", locale)}
         </p>
 
         <div className="flex gap-2">
@@ -205,21 +205,21 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
             )}
           >
             <MapPin className="w-3 h-3" />
-            Voir sur la carte
+            {t("card.viewOnMap")}
           </button>
 
           {/* Agenda toggle */}
           <motion.button
             whileTap={{ scale: 0.86 }}
             onClick={handleAgendaToggle}
-            aria-label={inAgenda ? "Retirer de mon agenda" : "Ajouter à mon agenda"}
+            aria-label={inAgenda ? t("card.removeFromAgenda") : t("card.addToAgenda")}
             className={cn(
               "relative py-1.5 px-3 rounded-lg overflow-hidden",
               "flex items-center justify-center",
               "border transition-all duration-300",
               inAgenda
                 ? "bg-[rgba(245,110,15,0.18)] border-[rgba(245,110,15,0.45)] shadow-[0_0_12px_rgba(245,110,15,0.2)]"
-                : "bg-[rgba(255,255,255,0.06)] border-white/10",
+                : "bg-vd-inner-tint border-vd-border-soft",
             )}
           >
             <AddRipple active={ripple} />
@@ -242,7 +242,7 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
                   exit={{ scale: 0.5, opacity: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                 >
-                  <CalendarPlus className="w-4 h-4 text-[#878787] group-hover:text-white transition-colors" />
+                  <CalendarPlus className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                 </motion.span>
               )}
             </AnimatePresence>
@@ -257,18 +257,18 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
 
 export function ProgramCardSkeleton() {
   return (
-    <div className={cn("relative rounded-[20px] overflow-hidden", "bg-[#1B1B1E]", "border border-white/8")}>
-      <div className="aspect-16/10 bg-[#262626] animate-pulse" />
+    <div className={cn("relative rounded-[20px] overflow-hidden", "bg-vd-card-surface", "border border-vd-border-soft")}>
+      <div className="aspect-16/10 bg-vd-skeleton animate-pulse" />
       <div className="p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <div className="h-5 w-16 rounded-full bg-[#262626] animate-pulse" />
-          <div className="h-4 w-20 rounded bg-[#262626] animate-pulse" />
+          <div className="h-5 w-16 rounded-full bg-vd-skeleton animate-pulse" />
+          <div className="h-4 w-20 rounded bg-vd-skeleton animate-pulse" />
         </div>
-        <div className="h-5 w-3/4 rounded bg-[#262626] animate-pulse" />
-        <div className="h-4 w-1/2 rounded bg-[#262626] animate-pulse" />
+        <div className="h-5 w-3/4 rounded bg-vd-skeleton animate-pulse" />
+        <div className="h-4 w-1/2 rounded bg-vd-skeleton animate-pulse" />
         <div className="flex gap-2">
-          <div className="flex-1 h-8 rounded-lg bg-[#262626] animate-pulse" />
-          <div className="w-10 h-8 rounded-lg bg-[#262626] animate-pulse" />
+          <div className="flex-1 h-8 rounded-lg bg-vd-skeleton animate-pulse" />
+          <div className="w-10 h-8 rounded-lg bg-vd-skeleton animate-pulse" />
         </div>
       </div>
     </div>

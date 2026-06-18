@@ -226,6 +226,8 @@ function NotificationsBell() {
   const [pending, setPending]           = useState(0)
   const [notifications, setNotifications] = useState<{ id: string; title: string; message: string; createdAt: string }[]>([])
   const [open, setOpen] = useState(false)
+  const { user } = useSession()
+  const notifHref = user?.role === "SUPER_ADMIN" ? "/superadmin" : "/admin/notifications"
 
   useEffect(() => {
     let mounted = true
@@ -278,8 +280,8 @@ function NotificationsBell() {
             )}
           </div>
           {pending > 0 && (
-            <Link href="/admin/notifications" onClick={() => setOpen(false)} className="block text-xs text-center text-primary hover:underline">
-              Voir toutes les notifications →
+            <Link href={notifHref} onClick={() => setOpen(false)} className="block text-xs text-center text-primary hover:underline">
+              Voir toutes les notifications
             </Link>
           )}
         </div>

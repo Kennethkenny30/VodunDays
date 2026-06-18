@@ -11,14 +11,16 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { FestivalPlannerProvider, usePlanner, type AgendaItem } from "@/providers/FestivalPlannerProvider";
 import type { ProgramType } from "@/lib/types";
+import { useLocale, useTranslations } from "next-intl";
+import { localize } from "@/lib/i18n/localize";
 
-// ── Tokens ────────────────────────────────────────────────────────────────────
+// Tokens
 
 const GLASS_CARD = [
-  "bg-[linear-gradient(145deg,rgba(255,255,255,0.07)_0%,rgba(255,255,255,0.02)_100%)]",
+  "bg-vd-card-surface",
   "[backdrop-filter:blur(20px)_saturate(180%)]",
-  "border border-white/[0.09]",
-  "shadow-[0_4px_24px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]",
+  "border border-vd-border-soft",
+  "shadow-[0_4px_24px_rgba(0,0,0,0.15)]",
 ].join(" ");
 
 const typeColors: Record<ProgramType, { dot: string; pill: string; text: string }> = {
@@ -29,10 +31,6 @@ const typeColors: Record<ProgramType, { dot: string; pill: string; text: string 
   CONFERENCE: { dot: "bg-violet-400", pill: "bg-[rgba(167,139,250,0.10)] border-[rgba(167,139,250,0.22)]",text: "text-violet-400" },
 };
 
-const typeLabels: Record<ProgramType, string> = {
-  RITUAL: "Rituel", ANIMATION: "Animation", CONCERT: "Concert",
-  EXHIBITION: "Exposition", CONFERENCE: "Conférence",
-};
 
 const DAY_NAMES: Record<number, string> = { 1: "Jour 1 - Vendredi", 2: "Jour 2 - Samedi", 3: "Jour 3 - Dimanche" };
 const DAY_DATES: Record<number, string> = { 1: "10 Janv.", 2: "11 Janv.", 3: "12 Janv." };
@@ -59,13 +57,12 @@ function EmptyState({ onBack }: { onBack: () => void }) {
         className={cn(
           "w-20 h-20 rounded-3xl flex items-center justify-center mb-6",
           "bg-[rgba(245,110,15,0.10)] border border-[rgba(245,110,15,0.20)]",
-          "shadow-[0_8px_32px_rgba(245,110,15,0.10),inset_0_1px_0_rgba(255,255,255,0.08)]",
         )}
       >
         <Calendar className="w-9 h-9 text-[#F56E0F]/70" strokeWidth={1.4} />
       </motion.div>
-      <h3 className="text-[20px] font-black text-white/80 mb-2 tracking-tight">Agenda vide</h3>
-      <p className="text-[14px] text-white/35 leading-relaxed mb-8 max-w-xs">
+      <h3 className="text-[20px] font-black text-foreground/80 mb-2 tracking-tight">Agenda vide</h3>
+      <p className="text-[14px] text-foreground/35 leading-relaxed mb-8 max-w-xs">
         Ajoutez des événements depuis la page Programme pour construire votre expérience Vodun Days.
       </p>
       <motion.button
@@ -75,7 +72,7 @@ function EmptyState({ onBack }: { onBack: () => void }) {
           "px-6 py-3 rounded-2xl",
           "bg-[rgba(245,110,15,0.20)] border border-[rgba(245,110,15,0.35)]",
           "text-[#F56E0F] text-[14px] font-bold",
-          "shadow-[0_4px_16px_rgba(245,110,15,0.18),inset_0_1px_0_rgba(255,255,255,0.10)]",
+          "shadow-[0_4px_16px_rgba(245,110,15,0.18)]",
           "active:scale-[0.97] transition-all duration-150",
         )}
       >
@@ -98,7 +95,7 @@ function StatsBar({ agenda, conflicts }: { agenda: AgendaItem[]; conflicts: stri
     { icon: CalendarCheck, value: String(agenda.length),                   label: "Événements", color: "text-[#F56E0F]"  },
     { icon: Clock,         value: `${totalH}h${totalM > 0 ? totalM : ""}`, label: "Durée",      color: "text-amber-400"  },
     { icon: Calendar,      value: String(totalDays),                        label: `Jour${totalDays > 1 ? "s" : ""}`, color: "text-sky-400" },
-    { icon: AlertTriangle, value: String(conflictCount),                    label: "Conflits",   color: conflictCount > 0 ? "text-amber-400" : "text-white/20" },
+    { icon: AlertTriangle, value: String(conflictCount),                    label: "Conflits",   color: conflictCount > 0 ? "text-amber-400" : "text-foreground/20" },
   ];
 
   return (
@@ -107,7 +104,7 @@ function StatsBar({ agenda, conflicts }: { agenda: AgendaItem[]; conflicts: stri
         <div key={label} className="flex flex-col items-center gap-1">
           <Icon className={cn("w-3.5 h-3.5 mb-0.5", color)} strokeWidth={1.8} />
           <span className={cn("text-[16px] font-black tabular-nums", color)}>{value}</span>
-          <span className="text-[9px] text-white/25 text-center leading-tight">{label}</span>
+          <span className="text-[9px] text-foreground/25 text-center leading-tight">{label}</span>
         </div>
       ))}
     </div>
@@ -122,6 +119,8 @@ function TimelineItem({
   item: AgendaItem; index: number; isLast: boolean; hasConflict: boolean; onRemove: (id: string) => void;
 }) {
   const router   = useRouter();
+  const locale   = useLocale();
+  const tEnum    = useTranslations("enums");
   const [expanded, setExpanded] = useState(false);
   const colors   = typeColors[item.type];
   const duration = getDurationMin(item.startTime, item.endTime);
@@ -173,7 +172,7 @@ function TimelineItem({
         )}>
           <div className={cn("w-2 h-2 rounded-full", hasConflict ? "bg-amber-400" : colors.dot)} />
         </div>
-        {!isLast && <div className="flex-1 w-px mt-1 bg-gradient-to-b from-white/10 to-transparent min-h-[20px]" />}
+        {!isLast && <div className="flex-1 w-px mt-1 bg-linear-to-b from-foreground/10 to-transparent min-h-[20px]" />}
       </div>
 
       {/* Card */}
@@ -193,7 +192,7 @@ function TimelineItem({
         <div className="flex items-start gap-3 p-3">
           <div className="shrink-0 flex flex-col items-start gap-0.5">
             <span className="text-[13px] font-black text-[#F56E0F] tabular-nums leading-none">{item.startTime}</span>
-            <span className="text-[10px] text-white/25 tabular-nums">{item.endTime}</span>
+            <span className="text-[10px] text-foreground/25 tabular-nums">{item.endTime}</span>
           </div>
 
           <div className={cn("w-0.5 self-stretch rounded-full mt-0.5 opacity-60", colors.dot)} />
@@ -203,12 +202,12 @@ function TimelineItem({
               "inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide mb-1 border",
               colors.pill, colors.text,
             )}>
-              {typeLabels[item.type]}
+              {tEnum(`programType.${item.type}` as "programType.RITUAL")}
             </span>
-            <h4 className="text-[14px] font-extrabold text-white/90 leading-tight truncate mb-0.5">{item.title}</h4>
-            <div className="flex items-center gap-1 text-[11px] text-white/35">
+            <h4 className="text-[14px] font-extrabold text-foreground/90 leading-tight truncate mb-0.5">{localize(item, "title", locale)}</h4>
+            <div className="flex items-center gap-1 text-[11px] text-foreground/35">
               <MapPin className="w-3 h-3 shrink-0" strokeWidth={1.5} />
-              <span className="truncate">{item.location}</span>
+              <span className="truncate">{localize(item, "location", locale)}</span>
             </div>
           </div>
 
@@ -216,12 +215,12 @@ function TimelineItem({
             <motion.button
               whileTap={{ scale: 0.8 }}
               onClick={(e) => { e.stopPropagation(); onRemove(item.id); }}
-              className="w-6 h-6 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center hover:bg-red-500/15 hover:border-red-500/25 transition-colors"
+              className="w-6 h-6 rounded-lg bg-foreground/[0.05] border border-foreground/[0.08] flex items-center justify-center hover:bg-red-500/15 hover:border-red-500/25 transition-colors"
             >
-              <Trash2 className="w-3 h-3 text-white/30 hover:text-red-400 transition-colors" />
+              <Trash2 className="w-3 h-3 text-foreground/30 hover:text-red-400 transition-colors" />
             </motion.button>
-            <span className="text-[9px] text-white/20 tabular-nums">{duration}min</span>
-            {expanded ? <ChevronUp className="w-3.5 h-3.5 text-white/20" /> : <ChevronDown className="w-3.5 h-3.5 text-white/20" />}
+            <span className="text-[9px] text-foreground/20 tabular-nums">{duration}min</span>
+            {expanded ? <ChevronUp className="w-3.5 h-3.5 text-foreground/20" /> : <ChevronDown className="w-3.5 h-3.5 text-foreground/20" />}
           </div>
         </div>
 
@@ -234,8 +233,8 @@ function TimelineItem({
               transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="overflow-hidden"
             >
-              <div className="px-3 pb-3 pt-0 border-t border-white/[0.05]">
-                <p className="text-[12px] text-white/40 leading-relaxed mt-2 mb-3">{item.description}</p>
+              <div className="px-3 pb-3 pt-0 border-t border-foreground/[0.05]">
+                <p className="text-[12px] text-foreground/40 leading-relaxed mt-2 mb-3">{localize(item, "description", locale)}</p>
                 <div className="flex gap-2">
                   {/* Bouton itinéraire - deep-link /carte?siteId= */}
                   <button
@@ -252,7 +251,7 @@ function TimelineItem({
                     onClick={(e) => e.stopPropagation()}
                     className={cn(
                       "flex-1 py-2 rounded-xl text-[11px] font-bold",
-                      "bg-white/[0.05] border border-white/[0.08] text-white/50",
+                      "bg-foreground/[0.05] border border-foreground/[0.08] text-foreground/50",
                       "active:scale-[0.97] transition-all",
                     )}
                   >
@@ -278,9 +277,9 @@ function DaySection({ day, items, conflicts, onRemove }: { day: number; items: A
           <div className={cn("px-2.5 py-1 rounded-xl", "bg-[rgba(245,110,15,0.15)] border border-[rgba(245,110,15,0.25)]", "shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]")}>
             <span className="text-[11px] font-black text-[#F56E0F] uppercase tracking-wider">{DAY_NAMES[day]}</span>
           </div>
-          <span className="text-[11px] text-white/25">{DAY_DATES[day]}</span>
+          <span className="text-[11px] text-foreground/25">{DAY_DATES[day]}</span>
         </div>
-        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white/[0.05] text-white/30">
+        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-foreground/[0.05] text-foreground/30">
           {items.length} événement{items.length > 1 ? "s" : ""}
         </span>
       </div>
@@ -306,13 +305,13 @@ function PlannerContent() {
   const days = Object.keys(agendaByDay).map(Number).sort();
 
   return (
-    <div className="min-h-screen bg-[#0E0D12] flex flex-col">
+    <div className="min-h-screen bg-vd-page-bg-alt flex flex-col">
 
       {/* Ambient */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-[rgba(245,110,15,0.06)] blur-[80px]" />
-        <div className="absolute top-1/2 -right-24 w-64 h-64 rounded-full bg-[rgba(245,110,15,0.04)] blur-[60px]" />
-        <div className="absolute bottom-0 left-1/3 w-72 h-72 rounded-full bg-[rgba(120,80,20,0.04)] blur-[90px]" />
+        <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-[rgba(245,110,15,0.04)] blur-[80px]" />
+        <div className="absolute top-1/2 -right-24 w-64 h-64 rounded-full bg-[rgba(245,110,15,0.03)] blur-[60px]" />
+        <div className="absolute bottom-0 left-1/3 w-72 h-72 rounded-full bg-[rgba(120,80,20,0.03)] blur-[90px]" />
       </div>
 
       {/* Header */}
@@ -326,15 +325,15 @@ function PlannerContent() {
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => router.back()}
-          className={cn("flex items-center gap-2 px-3 py-2 rounded-2xl", "bg-[rgba(255,255,255,0.06)] border border-white/[0.09]", "[backdrop-filter:blur(12px)]", "active:scale-[0.95] transition-all duration-150")}
+          className={cn("flex items-center gap-2 px-3 py-2 rounded-2xl", "bg-foreground/[0.06] border border-foreground/[0.09]", "[backdrop-filter:blur(12px)]", "active:scale-[0.95] transition-all duration-150")}
         >
-          <ArrowLeft className="w-4 h-4 text-white/60" strokeWidth={2} />
-          <span className="text-[13px] font-semibold text-white/60">Programme</span>
+          <ArrowLeft className="w-4 h-4 text-foreground/60" strokeWidth={2} />
+          <span className="text-[13px] font-semibold text-foreground/60">Programme</span>
         </motion.button>
 
         <div className="flex flex-col items-center">
-          <h1 className="text-[16px] font-black text-white tracking-tight leading-none">Mon Festival</h1>
-          <span className="text-[11px] text-white/30 mt-0.5">Agenda personnel</span>
+          <h1 className="text-[16px] font-black text-foreground tracking-tight leading-none">Mon Festival</h1>
+          <span className="text-[11px] text-foreground/30 mt-0.5">Agenda personnel</span>
         </div>
 
         {totalCount > 0 ? (
@@ -350,7 +349,7 @@ function PlannerContent() {
         )}
       </motion.header>
 
-      <div className="mx-4 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent mb-4" />
+      <div className="mx-4 h-px bg-linear-to-r from-transparent via-foreground/6 to-transparent mb-4" />
 
       {/* Content */}
       <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
@@ -365,7 +364,7 @@ function PlannerContent() {
             <AnimatePresence>
               {conflicts.length > 0 && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mx-4 mb-4 overflow-hidden">
-                  <div className="flex items-start gap-3 p-3 rounded-2xl bg-amber-500/[0.08] border border-amber-500/[0.20]">
+                  <div className="flex items-start gap-3 p-3 rounded-2xl bg-amber-500/8 border border-amber-500/20">
                     <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                     <div>
                       <p className="text-[12px] font-bold text-amber-400 mb-0.5">Conflits horaires détectés</p>
@@ -383,9 +382,9 @@ function PlannerContent() {
             </AnimatePresence>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="mx-4 mt-2">
-              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
+              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-foreground/3 border border-vd-border-soft">
                 <Sparkles className="w-4 h-4 text-[#F56E0F]/40 shrink-0" strokeWidth={1.5} />
-                <p className="text-[11px] text-white/20 leading-relaxed">Appuyez sur un événement pour voir les détails, planifier un itinéraire ou activer un rappel.</p>
+                <p className="text-[11px] text-foreground/20 leading-relaxed">Appuyez sur un événement pour voir les détails, planifier un itinéraire ou activer un rappel.</p>
               </div>
             </motion.div>
           </div>
@@ -398,17 +397,17 @@ function PlannerContent() {
           <>
             <motion.div key="backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setConfirmClear(false)} className="fixed inset-0 z-50 bg-black/60 [backdrop-filter:blur(6px)]" />
             <motion.div key="sheet" initial={{ opacity: 0, y: 40, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 24, scale: 0.95 }} transition={{ type: "spring", stiffness: 360, damping: 28 }} className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-[max(24px,env(safe-area-inset-bottom))]">
-              <div className={cn("rounded-3xl overflow-hidden p-6", "bg-[linear-gradient(145deg,rgba(30,28,36,0.98),rgba(20,18,24,0.98))]", "border border-white/[0.10]", "shadow-[0_-8px_48px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.07)]", "[backdrop-filter:blur(32px)]")}>
-                <div className="w-9 h-1 rounded-full bg-white/10 mx-auto mb-5" />
+              <div className={cn("rounded-3xl overflow-hidden p-6", "bg-vd-card-surface", "border border-vd-border-soft", "shadow-[0_-8px_48px_rgba(0,0,0,0.3)]", "[backdrop-filter:blur(32px)]")}>
+                <div className="w-9 h-1 rounded-full bg-foreground/10 mx-auto mb-5" />
                 <div className="flex flex-col items-center text-center mb-6">
                   <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
                     <Trash2 className="w-6 h-6 text-red-400" strokeWidth={1.6} />
                   </div>
-                  <h3 className="text-[18px] font-black text-white mb-1">Vider l&apos;agenda ?</h3>
-                  <p className="text-[13px] text-white/40 leading-relaxed max-w-xs">Tous vos {totalCount} événements planifiés seront supprimés. Cette action est irréversible.</p>
+                  <h3 className="text-[18px] font-black text-foreground mb-1">Vider l&apos;agenda ?</h3>
+                  <p className="text-[13px] text-foreground/40 leading-relaxed max-w-xs">Tous vos {totalCount} événements planifiés seront supprimés. Cette action est irréversible.</p>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={() => setConfirmClear(false)} className={cn("flex-1 py-3.5 rounded-2xl bg-white/[0.07] border border-white/[0.09] text-[14px] font-bold text-white/60 active:scale-[0.97] transition-all")}>Annuler</button>
+                  <button onClick={() => setConfirmClear(false)} className={cn("flex-1 py-3.5 rounded-2xl bg-foreground/7 border border-foreground/9 text-[14px] font-bold text-foreground/60 active:scale-[0.97] transition-all")}>Annuler</button>
                   <button onClick={() => { clearAgenda(); setConfirmClear(false); }} className={cn("flex-1 py-3.5 rounded-2xl bg-red-500/20 border border-red-500/30 text-[14px] font-bold text-red-400 active:scale-[0.97] transition-all")}>Vider l&apos;agenda</button>
                 </div>
               </div>

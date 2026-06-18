@@ -1,4 +1,5 @@
 import prisma from "../../prisma/prisma.client.js";
+import { translateFields } from "../../utils/translate.js";
 
 export const findAll = async (siteId) => {
   const where = siteId ? { siteId } : {};
@@ -21,10 +22,12 @@ export const findById = async (id) => {
 };
 
 export const create = async (data) => {
+  const translated = data.name ? await translateFields([{ field: "name", text: data.name }]) : {};
   return prisma.amenities.create({
     data: {
-      name: data.name,
+      name:   data.name,
       siteId: data.siteId,
+      nameEn: translated.nameEn ?? null,
     },
     include: { site: true },
   });
@@ -32,11 +35,15 @@ export const create = async (data) => {
 
 export const update = async (id, data) => {
   await findById(id);
+  const translated = data.name !== undefined
+    ? await translateFields([{ field: "name", text: data.name }])
+    : {};
   return prisma.amenities.update({
     where: { id },
     data: {
-      ...(data.name !== undefined && { name: data.name }),
-      ...(data.siteId !== undefined && { siteId: data.siteId }),
+      ...(data.name        !== undefined && { name: data.name }),
+      ...(data.siteId      !== undefined && { siteId: data.siteId }),
+      ...(translated.nameEn !== undefined && { nameEn: translated.nameEn }),
     },
     include: { site: true },
   });

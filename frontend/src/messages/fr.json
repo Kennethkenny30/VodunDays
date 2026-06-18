@@ -158,7 +158,15 @@
   },
   "programme": {
     "empty": "Aucun événement pour ce jour.",
-    "dayLabel": "Jour {day}"
+    "dayLabel": "Jour {day}",
+    "dayFilter": "Sélection du jour",
+    "card": {
+      "conflict": "Conflit horaire détecté",
+      "live": "En Direct",
+      "viewOnMap": "Voir sur la carte",
+      "addToAgenda": "Ajouter à mon agenda",
+      "removeFromAgenda": "Retirer de mon agenda"
+    }
   },
   "pedagogie": {
     "heritage": "Patrimoine Vivant",
@@ -200,6 +208,18 @@
       "transport": "Transport",
       "assistance": "Assistance",
       "ar": "AR"
+    },
+    "itinerary": {
+      "title": "Définir l'itinéraire",
+      "from": "Départ",
+      "to": "Arrivée",
+      "cancel": "Annuler",
+      "start": "Lancer",
+      "cta": "Itinéraire",
+      "fromYou": "depuis vous",
+      "fromMyPosition": "depuis ma position",
+      "myPosition": "Ma position",
+      "choosePoi": "Choisir un point..."
     }
   },
   "avis": {
@@ -248,6 +268,12 @@
     },
     "notifications": {
       "empty": "Aucune notification",
+      "unread": "Non lues",
+      "read": "Lues",
+      "markAll": "Tout marquer comme lu",
+      "showLess": "Voir moins",
+      "showMore": "Voir plus",
+      "emptyRead": "Aucune notification lue pour l'instant",
       "tags": {
         "live": "Live",
         "alert": "Alerte",
@@ -411,6 +437,41 @@
       "PENDING": "En attente",
       "SENT": "Envoyée",
       "FAILED": "Échec"
+    },
+    "programType": {
+      "RITUAL": "Rituel",
+      "ANIMATION": "Animation",
+      "CONCERT": "Concert",
+      "EXHIBITION": "Exposition",
+      "CONFERENCE": "Conférence"
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "Célébrez la Tradition",
+      "subtitle": "Trois jours où Ouidah s'éveille au rythme des tambours. Rituels, danses sacrées et traditions ancestrales, l'âme vivante du Bénin.",
+      "ctaProgramme": "Explorer le Programme",
+      "ctaCarte": "Voir la Carte",
+      "dates": "08-10 Janvier 2027",
+      "location": "Ouidah, Bénin",
+      "attendees": "Festivaliers attendus"
+    },
+    "about": {
+      "title": {
+        "word1": "Un",
+        "word2": "Héritage",
+        "word3": "Spirituel",
+        "word4": "Millénaire"
+      },
+      "since": "Depuis 1996",
+      "para1": "Les Vodun Days célèbrent la religion traditionnelle du Bénin. Chaque année, le 10 janvier, Ouidah devient le centre mondial de la spiritualité Vodun.",
+      "para2": "Découvrez les cérémonies sacrées, les danses rituelles, et l'artisanat traditionnel dans une atmosphère de communion et de partage culturel unique au monde.",
+      "stats": {
+        "festivaliers": "Festivaliers",
+        "sites": "Sites Culturels",
+        "animations": "Animations",
+        "jours": "Jours de Fête"
+      }
     }
   }
 }

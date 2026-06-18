@@ -38,16 +38,14 @@ export function CultureCard({ site, index }: CultureCardProps) {
       whileTap={{ scale: 0.98 }}
       className={cn(
         "relative overflow-hidden rounded-[20px]",
-        // Glass card styling like ProgramCard
-        "bg-[#1B1B1E] border border-white/6",
-        "shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
-        // Hover glow effect
+        "bg-vd-card-surface border border-vd-border-soft",
+        "shadow-[0_8px_32px_rgba(0,0,0,0.2)]",
         "hover:shadow-[0_8px_32px_rgba(245,110,15,0.15)]",
         "transition-shadow duration-300"
       )}
     >
       {/* Hero image zone */}
-      <div className="relative aspect-[16/10] overflow-hidden">
+      <div className="relative aspect-16/10 overflow-hidden">
         {site.image ? (
           <Image
             src={site.image}
@@ -57,23 +55,20 @@ export function CultureCard({ site, index }: CultureCardProps) {
             sizes="(max-width: 768px) 100vw, 50vw"
           />
         ) : (
-          // Gradient placeholder
           <div
             className="absolute inset-0"
             style={{
               background: site.thematicColor
-                ? `linear-gradient(135deg, ${site.thematicColor}, rgba(21,20,25,0.9))`
-                : "linear-gradient(135deg, #F56E0F, #151419)",
+                ? `linear-gradient(135deg, ${site.thematicColor}, var(--vd-page-bg))`
+                : "linear-gradient(135deg, #F56E0F, var(--vd-page-bg))",
             }}
           />
         )}
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#151419] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-vd-card-surface via-transparent to-transparent" />
       </div>
 
       {/* Content */}
       <div className="p-4 space-y-3">
-        {/* Entity tags */}
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
           {site.entities.map((entity) => (
             <span
@@ -90,24 +85,20 @@ export function CultureCard({ site, index }: CultureCardProps) {
           ))}
         </div>
 
-        {/* Site name */}
-        <h3 className="text-[15px] font-extrabold text-white leading-tight">
+        <h3 className="text-[15px] font-extrabold text-foreground leading-tight">
           {site.name}
         </h3>
 
-        {/* Description */}
-        <p className="text-[12px] text-[#878787] leading-relaxed line-clamp-3">
+        <p className="text-[12px] text-muted-foreground leading-relaxed line-clamp-3">
           {site.description}
         </p>
 
-        {/* Action row */}
         <div className="flex items-center gap-2 pt-1">
-          {/* Primary button */}
           <Link
             href={`/culture/${site.slug}`}
             className={cn(
               "flex-1 flex items-center justify-center gap-1.5",
-              "px-4 py-[7px] rounded-lg",
+              "px-4 py-1.75 rounded-lg",
               "bg-[#F56E0F] text-white",
               "text-[11px] font-bold",
               "hover:bg-[#E65D00] active:scale-[0.98]",
@@ -118,14 +109,13 @@ export function CultureCard({ site, index }: CultureCardProps) {
             <ArrowRight className="w-3 h-3" strokeWidth={2} />
           </Link>
 
-          {/* Map button */}
           <Link
             href={`/carte?site=${site.slug}`}
             className={cn(
               "flex items-center justify-center",
-              "px-3 py-[7px] rounded-lg",
-              "bg-white/6 border border-white/10",
-              "text-white/70 hover:text-white hover:bg-white/10",
+              "px-3 py-1.75 rounded-lg",
+              "bg-vd-inner-tint border border-vd-border-soft",
+              "text-muted-foreground hover:text-foreground hover:bg-foreground/8",
               "active:scale-[0.98] transition-all duration-150"
             )}
           >

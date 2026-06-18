@@ -11,6 +11,42 @@
   --vd-deep: oklch(0.18 0.05 260);
   --vd-surface: oklch(0.97 0.01 85);
 
+  /* Tokens interface festivaliers (mode clair - ivoire chaud) */
+  --vd-page-bg:      oklch(0.97 0.01 85);
+  --vd-page-bg-alt:  oklch(0.95 0.015 85);
+  --vd-card-surface: oklch(1 0.005 85);
+  --vd-skeleton:     oklch(0.92 0.01 85);
+  --vd-border-soft:  oklch(0.88 0.02 85);
+  --vd-inner-tint:   oklch(0 0 0 / 4%);
+
+  /* Tokens GlassSurface (mode clair) */
+  --vd-glass-radial-outer: rgba(255, 255, 255, 0.12);
+  --vd-glass-radial-inner: rgba(255, 255, 255, 0.04);
+  --vd-glass-grad-start:   rgba(0, 0, 0, 0.04);
+  --vd-glass-grad-mid:     rgba(0, 0, 0, 0.02);
+  --vd-glass-grad-end:     rgba(0, 0, 0, 0.01);
+  --vd-glass-border-color: rgba(0, 0, 0, 0.12);
+  --vd-glass-inset-shadow: rgba(0, 0, 0, 0.05);
+
+  /* Tokens BottomNav (mode clair) */
+  --vd-nav-bg:             rgba(255, 255, 255, 0.85);
+  --vd-nav-border-grad:    linear-gradient(135deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0) 100%);
+  --vd-nav-active-bg:      rgba(0, 0, 0, 0.08);
+  --vd-nav-inset-shadow:   rgba(0, 0, 0, 0.04);
+
+  /* Tokens BottomSheet / CarteFilterBar (mode clair) */
+  --vd-sheet-body:             rgba(252, 251, 248, 0.98);
+  --vd-filter-bg-inactive:     rgba(0, 0, 0, 0.04);
+  --vd-filter-border-inactive: rgba(0, 0, 0, 0.09);
+  --vd-dropdown-bg:            rgba(248, 247, 244, 0.99);
+
+  /* Couleurs badges type événement (mode clair - oranges lisibles sur fond ivoire) */
+  --vd-badge-ritual:     #C05010;
+  --vd-badge-animation:  #D06020;
+  --vd-badge-concert:    #E07030;
+  --vd-badge-exhibition: #E57828;
+  --vd-badge-conference: #F56E0F;
+
   /* Tokens shadcn (site principal) */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -53,6 +89,42 @@
   --vd-earth: oklch(0.60 0.09 55);
   --vd-deep: oklch(0.10 0.03 260);
   --vd-surface: oklch(0.14 0.02 260);
+
+  /* Tokens interface festivaliers (mode sombre) */
+  --vd-page-bg:      oklch(0.11 0 0);
+  --vd-page-bg-alt:  oklch(0.08 0 0);
+  --vd-card-surface: oklch(0.14 0.02 260);
+  --vd-skeleton:     oklch(0.18 0 0);
+  --vd-border-soft:  oklch(1 0 0 / 8%);
+  --vd-inner-tint:   oklch(1 0 0 / 4%);
+
+  /* Tokens GlassSurface (mode sombre) */
+  --vd-glass-radial-outer: rgba(255, 255, 255, 0.15);
+  --vd-glass-radial-inner: rgba(255, 255, 255, 0.05);
+  --vd-glass-grad-start:   rgba(255, 255, 255, 0.10);
+  --vd-glass-grad-mid:     rgba(255, 255, 255, 0.05);
+  --vd-glass-grad-end:     rgba(255, 255, 255, 0.02);
+  --vd-glass-border-color: rgba(255, 255, 255, 0.18);
+  --vd-glass-inset-shadow: rgba(255, 255, 255, 0.10);
+
+  /* Tokens BottomNav (mode sombre) */
+  --vd-nav-bg:             rgba(30, 30, 30, 0.55);
+  --vd-nav-border-grad:    linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(0, 0, 0, 0) 100%);
+  --vd-nav-active-bg:      rgba(255, 255, 255, 0.15);
+  --vd-nav-inset-shadow:   rgba(255, 255, 255, 0.10);
+
+  /* Tokens BottomSheet / CarteFilterBar (mode sombre) */
+  --vd-sheet-body:             rgba(18, 18, 22, 0.98);
+  --vd-filter-bg-inactive:     rgba(255, 255, 255, 0.04);
+  --vd-filter-border-inactive: rgba(255, 255, 255, 0.07);
+  --vd-dropdown-bg:            rgba(20, 20, 24, 0.99);
+
+  /* Couleurs badges type événement (mode sombre - dégradé orangé lisible sur fond sombre) */
+  --vd-badge-ritual:     #F56E0F;
+  --vd-badge-animation:  #FFA060;
+  --vd-badge-concert:    #FFC090;
+  --vd-badge-exhibition: #FFD0A0;
+  --vd-badge-conference: #FFE0C0;
 
   /* Tokens shadcn dark */
   --background: oklch(0.145 0 0);
@@ -132,6 +204,14 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --font-heading: var(--font-geist-sans);
+
+  /* Couleurs interface festivaliers */
+  --color-vd-page-bg:      var(--vd-page-bg);
+  --color-vd-page-bg-alt:  var(--vd-page-bg-alt);
+  --color-vd-card-surface: var(--vd-card-surface);
+  --color-vd-skeleton:     var(--vd-skeleton);
+  --color-vd-border-soft:  var(--vd-border-soft);
+  --color-vd-inner-tint:   var(--vd-inner-tint);
 }
 
 /* Utilitaires globaux */
@@ -163,6 +243,8 @@
     @apply bg-background text-foreground;
     /* Supprime le flash de surbrillance gris/bleu au tap sur mobile */
     -webkit-tap-highlight-color: transparent;
+    /* Transition douce au changement de thème */
+    transition: background-color 0.25s ease, color 0.15s ease;
   }
   .maplibregl-popup-content {
     @apply bg-transparent! shadow-none! p-0! rounded-none!;

@@ -9,7 +9,9 @@ import {
   useReducedMotion,
   animate,
 } from "framer-motion";
+import { useLocale, useTranslations } from "next-intl";
 import { MARKER_CATEGORIES, type POI } from "@/lib/markers";
+import { localize } from "@/lib/i18n/localize";
 import { X, Navigation, MapPin, ChevronDown, ArrowRight, ChevronUp } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -90,9 +92,11 @@ function RoutePointSelector({
   label, dotColor, value, userLocation, allPois, readOnly = false, onChange,
 }: RoutePointSelectorProps) {
   const [open, setOpen] = useState(false);
+  const locale = useLocale();
+  const tCarte = useTranslations("carte");
   const displayLabel = !value
-    ? "Choisir un point..."
-    : value.type === "gps" ? "Ma position" : value.poi.name;
+    ? tCarte("itinerary.choosePoi")
+    : value.type === "gps" ? tCarte("itinerary.myPosition") : localize(value.poi, "name", locale);
 
   return (
     <div style={{ position: "relative" }}>
@@ -102,28 +106,28 @@ function RoutePointSelector({
       </div>
       <button
         onClick={() => { if (!readOnly) setOpen(o => !o); }}
-        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "10px 14px", borderRadius: 12, background: readOnly ? "rgba(68,136,255,0.08)" : open ? `rgba(${hexToRgb(dotColor)}, 0.10)` : "rgba(255,255,255,0.04)", border: `1px solid ${readOnly ? "rgba(68,136,255,0.22)" : open ? `rgba(${hexToRgb(dotColor)}, 0.40)` : "rgba(255,255,255,0.08)"}`, color: value ? "#FBFBFB" : "#55556a", fontSize: 13, fontWeight: 600, cursor: readOnly ? "default" : "pointer", transition: "background 160ms, border-color 160ms", textAlign: "left" }}
+        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "10px 14px", borderRadius: 12, background: readOnly ? "rgba(68,136,255,0.08)" : open ? `rgba(${hexToRgb(dotColor)}, 0.10)` : "var(--vd-filter-bg-inactive)", border: `1px solid ${readOnly ? "rgba(68,136,255,0.22)" : open ? `rgba(${hexToRgb(dotColor)}, 0.40)` : "var(--vd-filter-border-inactive)"}`, color: value ? "var(--foreground)" : "var(--muted-foreground)", fontSize: 13, fontWeight: 600, cursor: readOnly ? "default" : "pointer", transition: "background 160ms, border-color 160ms", textAlign: "left" }}
       >
         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayLabel}</span>
         {readOnly
           ? <MapPin size={13} style={{ flexShrink: 0, color: "#4488FF", opacity: 0.7 }} />
-          : <ChevronDown size={14} style={{ flexShrink: 0, color: "#55556a", transform: open ? "rotate(180deg)" : "none", transition: "transform 160ms ease" }} />
+          : <ChevronDown size={14} style={{ flexShrink: 0, color: "var(--muted-foreground)", transform: open ? "rotate(180deg)" : "none", transition: "transform 160ms ease" }} />
         }
       </button>
       {open && !readOnly && (
-        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "rgba(20,20,24,0.99)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 14, zIndex: 200, maxHeight: 220, overflowY: "auto", boxShadow: "0 12px 36px rgba(0,0,0,0.7)" }}>
+        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "var(--vd-dropdown-bg)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid var(--vd-glass-border-color)", borderRadius: 14, zIndex: 200, maxHeight: 220, overflowY: "auto", boxShadow: "0 12px 36px rgba(0,0,0,0.4)" }}>
           {userLocation && (
-            <button onClick={() => { onChange({ type: "gps", label: "Ma position" }); setOpen(false); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.06)", color: "#4488FF", fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "left" }}>
+            <button onClick={() => { onChange({ type: "gps", label: tCarte("itinerary.myPosition") }); setOpen(false); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "transparent", border: "none", borderBottom: "1px solid var(--vd-glass-border-color)", color: "#4488FF", fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "left" }}>
               <MapPin size={14} style={{ flexShrink: 0 }} />
-              Ma position
+              {tCarte("itinerary.myPosition")}
             </button>
           )}
           {allPois.map(poi => {
             const cat = MARKER_CATEGORIES[poi.category];
             return (
-              <button key={poi.id} onClick={() => { onChange({ type: "poi", poi }); setOpen(false); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.04)", color: "#FBFBFB", fontSize: 12, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
+              <button key={poi.id} onClick={() => { onChange({ type: "poi", poi }); setOpen(false); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "transparent", border: "none", borderBottom: "1px solid var(--vd-inner-tint)", color: "var(--foreground)", fontSize: 12, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
                 <span style={{ width: 7, height: 7, borderRadius: "50%", background: cat.color, flexShrink: 0 }} />
-                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{poi.name}</span>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{localize(poi, "name", locale)}</span>
               </button>
             );
           })}
@@ -144,6 +148,8 @@ interface BottomSheetProps {
 }
 
 export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, allPois }: BottomSheetProps) {
+  const locale = useLocale();
+  const tCarte = useTranslations("carte");
   const [showRoutePanel, setShowRoutePanel] = useState(false);
   const [fromPoint, setFromPoint] = useState<RoutePoint | null>(null);
   const [toPoint,   setToPoint]   = useState<RoutePoint | null>(null);
@@ -251,13 +257,13 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
           y,
           zIndex: 60,
           // Fond glass renforcé
-          background: `linear-gradient(180deg, rgba(${rgb}, 0.06) 0%, rgba(18,18,22,0.98) 60px)`,
+          background: `linear-gradient(180deg, rgba(${rgb}, 0.06) 0%, var(--vd-sheet-body) 60px)`,
           backdropFilter: "blur(32px)",
           WebkitBackdropFilter: "blur(32px)",
           // Bordure catégorie en haut + coins arrondis
           borderTop: `2px solid rgba(${rgb}, 0.55)`,
-          borderLeft: "1px solid rgba(255,255,255,0.08)",
-          borderRight: "1px solid rgba(255,255,255,0.08)",
+          borderLeft: "1px solid var(--vd-glass-border-color)",
+          borderRight: "1px solid var(--vd-glass-border-color)",
           borderRadius: "24px 24px 0 0",
           touchAction: "none",
           willChange: "transform",
@@ -305,13 +311,13 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
                 <span style={{ color: cat.color, fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em" }}>{cat.label}</span>
               </div>
               {/* Nom du site */}
-              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#FBFBFB", lineHeight: 1.2, letterSpacing: "-0.02em", margin: 0, paddingRight: 40 }}>
-                {site.name}
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--foreground)", lineHeight: 1.2, letterSpacing: "-0.02em", margin: 0, paddingRight: 40 }}>
+                {localize(site, "name", locale)}
               </h2>
             </div>
 
             {/* Bouton fermer */}
-            <button onClick={onClose} style={{ flexShrink: 0, marginTop: 2, width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "#878787", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <button onClick={onClose} style={{ flexShrink: 0, marginTop: 2, width: 30, height: 30, borderRadius: "50%", background: "var(--vd-inner-tint)", border: "1px solid var(--vd-glass-border-color)", color: "var(--muted-foreground)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <X size={14} />
             </button>
           </div>
@@ -319,21 +325,21 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
           {/* Distance */}
           {userLocation && (
             <div style={{ padding: "0 20px", marginBottom: 14 }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, color: "#878787", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 99, padding: "4px 12px" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--muted-foreground)", background: "var(--vd-filter-bg-inactive)", border: "1px solid var(--vd-filter-border-inactive)", borderRadius: 99, padding: "4px 12px" }}>
                 <MapPin size={11} style={{ color: cat.color, flexShrink: 0 }} />
-                {formatDistance(userLocation, site)} - depuis vous
+                {formatDistance(userLocation, site)} - {tCarte("itinerary.fromYou")}
               </div>
             </div>
           )}
 
           {/* Séparateur */}
-          <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "0 20px 16px" }} />
+          <div style={{ height: 1, background: "var(--vd-glass-border-color)", margin: "0 20px 16px" }} />
 
           <div style={{ padding: "0 20px" }}>
             {/* Description */}
-            {site.description && (
-              <p style={{ fontSize: 14, color: "#a0a0a0", marginBottom: 16, lineHeight: 1.65, display: "-webkit-box", WebkitLineClamp: snapIdx === 2 ? 99 : 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                {site.description}
+            {(site.description || site.descriptionEn) && (
+              <p style={{ fontSize: 14, color: "var(--muted-foreground)", marginBottom: 16, lineHeight: 1.65, display: "-webkit-box", WebkitLineClamp: snapIdx === 2 ? 99 : 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                {localize(site, "description", locale)}
               </p>
             )}
 
@@ -341,8 +347,8 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
             {site.amenities && site.amenities.length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
                 {site.amenities.map(a => (
-                  <span key={a} style={{ background: "rgba(255,255,255,0.06)", color: "#878787", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 99, padding: "3px 10px", fontSize: 11, fontWeight: 500 }}>
-                    {a}
+                  <span key={a.name} style={{ background: "var(--vd-filter-bg-inactive)", color: "var(--muted-foreground)", border: "1px solid var(--vd-filter-border-inactive)", borderRadius: 99, padding: "3px 10px", fontSize: 11, fontWeight: 500 }}>
+                    {localize(a, "name", locale)}
                   </span>
                 ))}
               </div>
@@ -350,31 +356,31 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
 
             {/* Panneau itinéraire */}
             {showRoutePanel ? (
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "16px 14px" }}>
-                <p style={{ fontSize: 10, fontWeight: 800, color: "#878787", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>
-                  Définir l&apos;itinéraire
+              <div style={{ background: "var(--vd-inner-tint)", border: "1px solid var(--vd-glass-border-color)", borderRadius: 16, padding: "16px 14px" }}>
+                <p style={{ fontSize: 10, fontWeight: 800, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>
+                  {tCarte("itinerary.title")}
                 </p>
 
-                <RoutePointSelector label="Départ" dotColor="#4488FF" value={fromPoint} userLocation={userLocation} allPois={allPois} readOnly={fromLocked} onChange={setFromPoint} />
+                <RoutePointSelector label={tCarte("itinerary.from")} dotColor="#4488FF" value={fromPoint} userLocation={userLocation} allPois={allPois} readOnly={fromLocked} onChange={setFromPoint} />
 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", margin: "10px 0", gap: 4 }}>
                   <div style={{ width: 1, height: 18, background: "repeating-linear-gradient(to bottom, #55556a 0px, #55556a 3px, transparent 3px, transparent 6px)" }} />
                   <ArrowRight size={12} style={{ color: "#55556a" }} />
                 </div>
 
-                <RoutePointSelector label="Arrivée" dotColor="#F56E0F" value={toPoint} userLocation={userLocation} allPois={allPois} onChange={setToPoint} />
+                <RoutePointSelector label={tCarte("itinerary.to")} dotColor="#F56E0F" value={toPoint} userLocation={userLocation} allPois={allPois} onChange={setToPoint} />
 
                 <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-                  <button onClick={() => setShowRoutePanel(false)} style={{ flex: 1, padding: "11px 0", borderRadius: 12, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)", color: "#878787", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                    Annuler
+                  <button onClick={() => setShowRoutePanel(false)} style={{ flex: 1, padding: "11px 0", borderRadius: 12, background: "var(--vd-filter-bg-inactive)", border: "1px solid var(--vd-glass-border-color)", color: "var(--muted-foreground)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                    {tCarte("itinerary.cancel")}
                   </button>
                   <button
                     disabled={!canStart}
                     onClick={() => { if (fromPoint && toPoint) { onNavigateFromTo(fromPoint, toPoint); onClose(); } }}
-                    style={{ flex: 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "11px 0", borderRadius: 12, background: canStart ? `linear-gradient(135deg, ${cat.color}, ${cat.color}CC)` : "rgba(245,110,15,0.20)", border: "none", color: canStart ? "#fff" : "rgba(255,255,255,0.3)", fontSize: 14, fontWeight: 800, cursor: canStart ? "pointer" : "not-allowed", transition: "opacity 160ms", boxShadow: canStart ? `0 4px 16px rgba(${rgb}, 0.35)` : "none" }}
+                    style={{ flex: 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "11px 0", borderRadius: 12, background: canStart ? `linear-gradient(135deg, ${cat.color}, ${cat.color}CC)` : "rgba(245,110,15,0.20)", border: "none", color: canStart ? "#fff" : "var(--muted-foreground)", fontSize: 14, fontWeight: 800, cursor: canStart ? "pointer" : "not-allowed", transition: "opacity 160ms", boxShadow: canStart ? `0 4px 16px rgba(${rgb}, 0.35)` : "none" }}
                   >
                     <Navigation size={14} />
-                    Lancer
+                    {tCarte("itinerary.start")}
                   </button>
                 </div>
               </div>
@@ -387,10 +393,10 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.filter = ""; }}
               >
                 <Navigation size={16} />
-                Itinéraire
+                {tCarte("itinerary.cta")}
                 {userLocation && (
                   <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.70 }}>
-                    - depuis ma position
+                    - {tCarte("itinerary.fromMyPosition")}
                   </span>
                 )}
               </button>

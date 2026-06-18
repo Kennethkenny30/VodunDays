@@ -26,10 +26,10 @@ function DayDots({ agendaByDay }: { agendaByDay: Record<number, AgendaItem[]> })
               "h-1 rounded-full transition-all duration-300",
               count > 0
                 ? "bg-[#F56E0F] shadow-[0_0_6px_rgba(245,110,15,0.6)]"
-                : "bg-white/15",
+                : "bg-foreground/15",
               count >= 3 ? "w-5" : count === 2 ? "w-4" : count === 1 ? "w-3" : "w-2",
             )} />
-            <span className="text-[8px] text-white/25 tabular-nums">J{day}</span>
+            <span className="text-[8px] text-foreground/25 tabular-nums">J{day}</span>
           </div>
         );
       })}
@@ -84,16 +84,11 @@ export function PlannerCard() {
               "w-full rounded-2xl overflow-hidden",
               "relative flex items-center gap-3 px-4 py-3",
               // Fond semi-transparent pour que le blur soit visible
-              "bg-[rgba(21,20,25,0.55)]",
-              // Reflets glass
-              "shadow-[0_2px_32px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-1px_0_rgba(0,0,0,0.18)]",
-              "border border-white/[0.11]",
+              "bg-vd-card-surface/55",
+              "shadow-[0_2px_32px_rgba(0,0,0,0.2)]",
+              "border border-vd-border-soft",
             )}
           >
-            {/* Ligne spéculaire haut */}
-            <span className="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none" />
-            {/* Streak gauche */}
-            <span className="absolute left-0 inset-y-3 w-px bg-gradient-to-b from-white/25 via-white/08 to-transparent pointer-events-none rounded-full" />
             {/* Lueur orange subtile */}
             <span className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(245,110,15,0.06),transparent_55%)] pointer-events-none" />
 
@@ -118,7 +113,7 @@ export function PlannerCard() {
             {/* Texte */}
             <div className="flex-1 min-w-0 text-left">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[13px] font-bold text-white/90 leading-none">{t("planner.title")}</span>
+                <span className="text-[13px] font-bold text-foreground/90 leading-none">{t("planner.title")}</span>
                 {hasConflicts && (
                   <motion.div
                     initial={{ scale: 0 }}
@@ -132,7 +127,7 @@ export function PlannerCard() {
               </div>
 
               {nextEvent ? (
-                <div className="flex items-center gap-1 text-[11px] text-white/40 truncate">
+                <div className="flex items-center gap-1 text-[11px] text-foreground/40 truncate">
                   <Clock className="w-3 h-3 shrink-0 text-[#F56E0F]/60" strokeWidth={1.5} />
                   <span className="truncate">
                     <span className="text-[#F56E0F]/80 font-semibold">{nextEvent.startTime}</span>
@@ -141,7 +136,7 @@ export function PlannerCard() {
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1 text-[11px] text-white/30">
+                <div className="flex items-center gap-1 text-[11px] text-foreground/30">
                   <Sparkles className="w-3 h-3" strokeWidth={1.5} />
                   <span>{t("planner.empty")}</span>
                 </div>
@@ -151,8 +146,8 @@ export function PlannerCard() {
             {/* Dots + chevron */}
             <div className="flex items-center gap-3 shrink-0">
               <DayDots agendaByDay={agendaByDay} />
-              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-white/[0.07] border border-white/[0.08]">
-                <ChevronRight className="w-3.5 h-3.5 text-white/40" strokeWidth={2.5} />
+              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-foreground/7 border border-foreground/8">
+                <ChevronRight className="w-3.5 h-3.5 text-foreground/40" strokeWidth={2.5} />
               </div>
             </div>
           </motion.button>

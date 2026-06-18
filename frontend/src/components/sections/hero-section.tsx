@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -22,6 +23,7 @@ export function HeroSection() {
   const desktopBgRef = useRef<HTMLDivElement>(null);
 
   const { gateState, intercept, closeGate } = useMobileGate();
+  const t = useTranslations("home");
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -93,23 +95,16 @@ export function HeroSection() {
           ref={titleRef}
             className="mb-4 md:mb-6 text-5xl md:text-5xl lg:text-7xl xl:text-8xl font-bold leading-tight tracking-tight"
         >
-            <span className="text-balance bg-linear-to-b from-white to-slate-900/10 bg-clip-text text-transparent">
-              Célébrez la Tradition
+            <span className="text-balance bg-linear-to-b from-foreground to-foreground/70 bg-clip-text text-transparent md:from-white md:to-slate-900/10">
+              {t("hero.title")}
           </span>
         </h1>
 
         <p
           ref={subtitleRef}
-          className="mx-auto mb-6 md:mb-10 max-w-2xl text-pretty text-base md:text-lg lg:text-xl font-light leading-relaxed text-white/75"
+          className="mx-auto mb-6 md:mb-10 max-w-2xl text-pretty text-base md:text-lg lg:text-xl font-light leading-relaxed text-foreground/80 md:text-white/75"
         >
-          Trois jours où{" "}
-          <span className="font-medium text-white">Ouidah</span>{" "}
-          s{"'"}éveille au rythme des tambours. Rituels, danses sacrées et
-          traditions ancestrales,{" "}
-          <span className="font-normal text-primary">
-            l{"'"}âme vivante du Bénin
-          </span>
-          .
+          {t("hero.subtitle")}
         </p>
 
         <div ref={ctaRef} className="flex flex-col items-center justify-center gap-3 md:gap-4 sm:flex-row">
@@ -128,7 +123,7 @@ export function HeroSection() {
               className="px-5 py-3 md:px-8 md:py-4 transition-transform hover:scale-105"
             >
                 <span className="text-sm md:text-lg font-semibold text-foreground">
-                  Explorer le Programme
+                  {t("hero.ctaProgramme")}
                 </span>
             </GlassSurface>
           </Link>
@@ -138,7 +133,7 @@ export function HeroSection() {
               variant="outline"
               className="border-foreground/20 bg-transparent px-5 py-4 md:px-8 md:py-6 text-sm md:text-lg font-semibold text-foreground hover:bg-foreground/10"
             >
-              Voir la Carte
+              {t("hero.ctaCarte")}
             </Button>
           </Link>
         </div>
@@ -149,15 +144,15 @@ export function HeroSection() {
         >
           <div className="flex items-center gap-1.5 md:gap-2">
             <Calendar className="h-3 w-3 md:h-4 md:w-4 text-primary" />
-            <span>08-10 Janvier 2027</span>
+            <span>{t("hero.dates")}</span>
           </div>
           <div className="flex items-center gap-1.5 md:gap-2">
             <MapPin className="h-3 w-3 md:h-4 md:w-4 text-primary" />
-            <span>Ouidah, Bénin</span>
+            <span>{t("hero.location")}</span>
           </div>
           <div className="flex items-center gap-1.5 md:gap-2">
             <span className="text-primary">+800K</span>
-            <span>Festivaliers attendus</span>
+            <span>{t("hero.attendees")}</span>
           </div>
         </div>
       </div>

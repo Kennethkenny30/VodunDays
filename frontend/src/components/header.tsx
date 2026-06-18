@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 import { GlassSurface } from "@/components/glass-surface";
 import { MobileGateModal } from "@/components/mobile-gate-modal";
 import { useMobileGate } from "@/hooks/use-mobile-gate";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const LOGO_URL = "/images/logo.png";
 
@@ -77,6 +78,7 @@ export function Header() {
             </nav>
 
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <Link
                   href="/connexion"
                 className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"

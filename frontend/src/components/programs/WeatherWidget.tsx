@@ -18,7 +18,8 @@ import { cn } from "@/lib/utils";
 import { getApiBase } from "@/lib/api/client";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { WeatherData } from "@/lib/types";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { localize } from "@/lib/i18n/localize";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -59,12 +60,14 @@ interface EmergencyForm {
 }
 
 interface Notification {
-  id:    number;
-  _uid?: string; // uuid BDD - présent sur les notifs chargées depuis l'API
-  title: string;
-  body:  string;
-  time:  string;
-  type:  "ritual" | "alert" | "info" | "live";
+  id:      number;
+  _uid?:   string; // uuid BDD - présent sur les notifs chargées depuis l'API
+  title:   string;
+  titleEn?: string | null;
+  body:    string;
+  bodyEn?: string | null;
+  time:    string;
+  type:    "ritual" | "alert" | "info" | "live";
 }
 
 export interface DynamicIslandProps {
@@ -131,7 +134,9 @@ function formatRelativeTime(isoDate: string | null | undefined): string {
 interface BackendNotification {
   id:          string;
   title:       string;
+  titleEn?:    string | null;
   message:     string;
+  messageEn?:  string | null;
   status:      string;
   sentAt:      string | null;
   createdAt:   string;
@@ -140,12 +145,14 @@ interface BackendNotification {
 /** Mappe une notification BDD vers le type interne du widget */
 function mapNotification(n: BackendNotification, idx: number): Notification {
   return {
-    id:   idx,           // numérique interne pour AnimatePresence
-    _uid: n.id,          // uuid BDD pour identifier lors de la suppression
-    title: n.title,
-    body:  n.message,
-    time:  formatRelativeTime(n.sentAt ?? n.createdAt),
-    type:  inferNotifType(n.title),
+    id:      idx,
+    _uid:    n.id,
+    title:   n.title,
+    titleEn: n.titleEn ?? null,
+    body:    n.message,
+    bodyEn:  n.messageEn ?? null,
+    time:    formatRelativeTime(n.sentAt ?? n.createdAt),
+    type:    inferNotifType(n.title),
   };
 }
 
@@ -217,10 +224,10 @@ const SERVICE_TYPES: Record<EmergencyService, EmergencyType[]> = {
 // ─── Glass tokens ─────────────────────────────────────────────────────────────
 
 const GLASS = {
-  outer:  "bg-[linear-gradient(135deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.02)_100%)]",
-  inner:  "bg-[rgba(18,18,22,0.72)] [backdrop-filter:blur(24px)_saturate(200%)]",
-  shadow: "shadow-[0_8px_40px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.08)]",
-  border: "border border-white/[0.09]",
+  outer:  "[background:linear-gradient(135deg,var(--vd-glass-radial-outer)_0%,var(--vd-glass-radial-inner)_100%)]",
+  inner:  "bg-vd-card-surface/80 [backdrop-filter:blur(24px)_saturate(200%)]",
+  shadow: "shadow-[0_8px_40px_rgba(0,0,0,0.3)]",
+  border: "border border-vd-border-soft",
 };
 
 // Springs iOS-like : stiffness 300-420, damping 30-36, mass 0.7-0.9 - settle naturel, zéro overshoot
@@ -258,12 +265,12 @@ function WeatherView({ weather }: { weather: WeatherData }) {
       <div className="flex items-start justify-between mb-5">
         <div className="flex items-end gap-3">
           <div className="relative">
-            <span className="text-[64px] font-thin text-white leading-none tracking-[-0.04em]">{weather.temperature}</span>
-            <span className="absolute top-3 -right-4 text-[22px] font-light text-white/50">°</span>
+            <span className="text-[64px] font-thin text-foreground leading-none tracking-[-0.04em]">{weather.temperature}</span>
+            <span className="absolute top-3 -right-4 text-[22px] font-light text-foreground/50">°</span>
           </div>
           <div className="pb-2">
             <p className="text-[12px] font-medium uppercase tracking-[0.2em] text-[#F56E0F]/80 mb-0.5">{weather.condition}</p>
-            <div className="flex items-center gap-1 text-white/35 text-[11px]">
+            <div className="flex items-center gap-1 text-foreground/35 text-[11px]">
               <MapPin className="w-2.5 h-2.5 shrink-0" strokeWidth={1.5} />
               <span>{weather.location}</span>
             </div>
@@ -289,7 +296,7 @@ function WeatherView({ weather }: { weather: WeatherData }) {
               <WeatherIcon icon={weather.icon} className="w-6 h-6 text-amber-400" />
             </motion.div>
           </div>
-          <span className="text-[12px] text-white/50 font-mono">↑{weather.high}° ↓{weather.low}°</span>
+          <span className="text-[12px] text-foreground/50 font-mono">↑{weather.high}° ↓{weather.low}°</span>
         </div>
       </div>
       <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
@@ -305,18 +312,18 @@ function WeatherView({ weather }: { weather: WeatherData }) {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={reduce ? { duration: 0 } : { ...S_SOFT, delay: i * 0.07 }}
-            className="flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl bg-white/[0.04] border border-white/[0.06]"
+            className="flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl bg-foreground/4 border border-foreground/6"
           >
-            <Icon className="w-3.5 h-3.5 text-white/30" strokeWidth={1.5} />
+            <Icon className="w-3.5 h-3.5 text-foreground/30" strokeWidth={1.5} />
             <div className="text-center leading-none">
-              <span className="text-[13px] font-semibold text-white/80 tabular-nums">{val}</span>
-              <span className="text-[9px] text-white/30 ml-0.5">{unit}</span>
+              <span className="text-[13px] font-semibold text-foreground/80 tabular-nums">{val}</span>
+              <span className="text-[9px] text-foreground/30 ml-0.5">{unit}</span>
             </div>
-            <span className="text-[9px] text-white/25 text-center leading-tight">{label}</span>
+            <span className="text-[9px] text-foreground/25 text-center leading-tight">{label}</span>
           </motion.div>
         ))}
       </div>
-      <p className="text-[10px] uppercase tracking-[0.2em] text-white/20 mb-2.5 font-medium">{t("forecast")}</p>
+      <p className="text-[10px] uppercase tracking-[0.2em] text-foreground/20 mb-2.5 font-medium">{t("forecast")}</p>
       <div className="flex items-end gap-2">
         {hourlyData.map((h, i) => {
           const maxT = Math.max(...hourlyData.map(x => x.t));
@@ -324,8 +331,8 @@ function WeatherView({ weather }: { weather: WeatherData }) {
           const pct  = ((h.t - minT) / (maxT - minT)) * 100;
           return (
             <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-              <span className="text-[10px] text-white/40 font-mono">{h.t}°</span>
-              <div className="w-full h-10 rounded-full bg-white/[0.05] relative overflow-hidden">
+              <span className="text-[10px] text-foreground/40 font-mono">{h.t}°</span>
+              <div className="w-full h-10 rounded-full bg-foreground/5 relative overflow-hidden">
                 {/* scaleY depuis le bas : GPU, pas de reflow contrairement à height */}
                 <motion.div
                   initial={{ scaleY: 0, opacity: 0 }}
@@ -335,8 +342,8 @@ function WeatherView({ weather }: { weather: WeatherData }) {
                   style={{ transformOrigin: "bottom", background: `linear-gradient(to top, rgba(245,110,15,${0.3 + pct * 0.004}), rgba(245,110,15,0.05))` }}
                 />
               </div>
-              <WeatherIcon icon={h.icon} className="w-3 h-3 text-white/30" />
-              <span className="text-[9px] text-white/30 font-mono">{h.h}</span>
+              <WeatherIcon icon={h.icon} className="w-3 h-3 text-foreground/30" />
+              <span className="text-[9px] text-foreground/30 font-mono">{h.h}</span>
             </div>
           );
         })}
@@ -367,6 +374,7 @@ function NotificationsView({
   loading?:            boolean;
 }) {
   const t      = useTranslations("weather");
+  const locale = useLocale();
   const reduce = useReducedMotion();
   const [activeTab,    setActiveTab]    = useState<NotifTab>("unread");
   const [expandedUid,  setExpandedUid]  = useState<string | null>(null);
@@ -394,7 +402,7 @@ function NotificationsView({
     <div className="px-4 pt-2 pb-5">
       {/* Barre de tabs */}
       <div className="flex items-center gap-2 mb-3">
-        <div className="relative flex p-0.5 rounded-full bg-white/[0.06] border border-white/[0.07] flex-1">
+        <div className="relative flex p-0.5 rounded-full bg-foreground/6 border border-foreground/7 flex-1">
           {(["unread", "read"] as NotifTab[]).map(tab => (
             <button
               key={tab}
@@ -404,17 +412,17 @@ function NotificationsView({
               {activeTab === tab && (
                 <motion.div
                   layoutId="notif-tab-indicator"
-                  className="absolute inset-0 rounded-full bg-white/[0.10]"
+                  className="absolute inset-0 rounded-full bg-foreground/10"
                   transition={reduce ? { duration: 0 } : { ...S_FAST }}
                 />
               )}
               <span className={cn(
                 "relative text-[11px] font-semibold uppercase tracking-[0.15em] transition-colors",
-                activeTab === tab ? "text-white/90" : "text-white/30",
+                activeTab === tab ? "text-foreground/90" : "text-foreground/30",
               )}>
                 {tab === "unread"
-                  ? unreadNotifs.length > 0 ? `Non lues · ${unreadNotifs.length}` : "Non lues"
-                  : "Lues"
+                  ? unreadNotifs.length > 0 ? `${t("notifications.unread")} · ${unreadNotifs.length}` : t("notifications.unread")
+                  : t("notifications.read")
                 }
               </span>
             </button>
@@ -429,11 +437,11 @@ function NotificationsView({
               exit={{ opacity: 0, scale: 0.9 }}
               transition={reduce ? { duration: 0 } : { ...S_FAST }}
               onClick={onMarkAllRead}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.08] hover:bg-white/[0.09] transition-colors shrink-0"
-              title="Tout marquer comme lu"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-foreground/5 border border-foreground/8 hover:bg-foreground/9 transition-colors shrink-0"
+              title={t("notifications.markAll")}
             >
-              <CheckCircle2 className="w-3 h-3 text-white/35" strokeWidth={1.5} />
-              <span className="text-[10px] text-white/35 hidden sm:block">Tout lire</span>
+              <CheckCircle2 className="w-3 h-3 text-foreground/35" strokeWidth={1.5} />
+              <span className="text-[10px] text-foreground/35 hidden sm:block">{t("notifications.markAll")}</span>
             </motion.button>
           )}
         </AnimatePresence>
@@ -443,7 +451,7 @@ function NotificationsView({
       {loading ? (
         <div className="flex flex-col gap-2">
           {[0, 1, 2].map(i => (
-            <div key={i} className="h-[62px] rounded-2xl bg-white/[0.04] border border-white/[0.07] animate-pulse" />
+            <div key={i} className="h-[62px] rounded-2xl bg-foreground/4 border border-foreground/7 animate-pulse" />
           ))}
         </div>
       ) : (
@@ -459,13 +467,13 @@ function NotificationsView({
               <div className="flex flex-col items-center justify-center py-8 gap-2">
                 {activeTab === "unread" ? (
                   <>
-                    <Bell className="w-8 h-8 text-white/10" strokeWidth={1} />
-                    <p className="text-white/25 text-[13px]">{t("notifications.empty")}</p>
+                    <Bell className="w-8 h-8 text-foreground/10" strokeWidth={1} />
+                    <p className="text-foreground/25 text-[13px]">{t("notifications.empty")}</p>
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="w-8 h-8 text-white/10" strokeWidth={1} />
-                    <p className="text-white/25 text-[13px]">Aucune notification lue pour l'instant</p>
+                    <CheckCircle2 className="w-8 h-8 text-foreground/10" strokeWidth={1} />
+                    <p className="text-foreground/25 text-[13px]">{t("notifications.emptyRead")}</p>
                   </>
                 )}
               </div>
@@ -488,7 +496,7 @@ function NotificationsView({
                         <div className={cn(
                           "relative flex items-start gap-3 p-3 rounded-2xl border border-l-2 transition-opacity",
                           cfg.accent,
-                          isRead ? "bg-white/[0.025] border-white/[0.05] opacity-60" : "bg-white/[0.04] border-white/[0.07]",
+                          isRead ? "bg-foreground/[0.025] border-foreground/5 opacity-60" : "bg-foreground/4 border-foreground/7",
                         )}>
                           <div className="pt-1 shrink-0">
                             <span className={cn(
@@ -512,12 +520,12 @@ function NotificationsView({
                                 </span>
                               )}
                             </div>
-                            <p className="text-[13px] font-medium text-white leading-tight truncate">{n.title}</p>
+                            <p className="text-[13px] font-medium text-foreground leading-tight truncate">{localize(n, "title", locale)}</p>
                             <p className={cn(
-                              "text-[11px] text-white/40 mt-0.5",
+                              "text-[11px] text-foreground/40 mt-0.5",
                               isExpanded ? "whitespace-pre-wrap break-words leading-relaxed" : "truncate",
                             )}>
-                              {n.body}
+                              {localize(n, "body", locale)}
                             </p>
                             {canExpand && (
                               <button
@@ -525,11 +533,11 @@ function NotificationsView({
                                 className="flex items-center gap-1 mt-1.5"
                               >
                                 {isExpanded
-                                  ? <ChevronUp   className="w-3 h-3 text-white/30" strokeWidth={1.5} />
-                                  : <ChevronDown className="w-3 h-3 text-white/30" strokeWidth={1.5} />
+                                  ? <ChevronUp   className="w-3 h-3 text-foreground/30" strokeWidth={1.5} />
+                                  : <ChevronDown className="w-3 h-3 text-foreground/30" strokeWidth={1.5} />
                                 }
-                                <span className="text-[10px] text-white/30 hover:text-white/50 transition-colors">
-                                  {isExpanded ? "Voir moins" : "Voir plus"}
+                                <span className="text-[10px] text-foreground/30 hover:text-foreground/50 transition-colors">
+                                  {isExpanded ? t("notifications.showLess") : t("notifications.showMore")}
                                 </span>
                               </button>
                             )}
@@ -537,17 +545,17 @@ function NotificationsView({
 
                           {/* Actions */}
                           <div className="flex flex-col items-end gap-2 shrink-0">
-                            <div className="flex items-center gap-1 text-white/20 text-[10px]">
+                            <div className="flex items-center gap-1 text-foreground/20 text-[10px]">
                               <Clock className="w-2.5 h-2.5" strokeWidth={1.5} />
                               <span>{n.time}</span>
                             </div>
                             {activeTab === "unread" ? (
                               <button
                                 onClick={() => onDismiss(n._uid, n.id)}
-                                className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-white/10 active:scale-90 transition-all"
+                                className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-foreground/10 active:scale-90 transition-all"
                                 aria-label="Archiver"
                               >
-                                <X className="w-2.5 h-2.5 text-white/20 hover:text-white/50 transition-colors" strokeWidth={2} />
+                                <X className="w-2.5 h-2.5 text-foreground/20 hover:text-foreground/50 transition-colors" strokeWidth={2} />
                               </button>
                             ) : n._uid ? (
                               <button
@@ -555,7 +563,7 @@ function NotificationsView({
                                 className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-red-500/15 active:scale-90 transition-all"
                                 aria-label="Supprimer definitivement"
                               >
-                                <Trash2 className="w-2.5 h-2.5 text-white/20 hover:text-red-400/60 transition-colors" strokeWidth={2} />
+                                <Trash2 className="w-2.5 h-2.5 text-foreground/20 hover:text-red-400/60 transition-colors" strokeWidth={2} />
                               </button>
                             ) : null}
                           </div>
@@ -589,6 +597,7 @@ function SearchView({ onClose }: { onClose: () => void }) {
   const [allItems, setAllItems]       = useState<SearchResult[]>([]);
   const [loadingData, setLoadingData] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tSearch = useTranslations("weather");
 
   // Charge events + sites une seule fois à l'ouverture du panel
   useEffect(() => {
@@ -643,24 +652,24 @@ function SearchView({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="px-4 pt-2 pb-5">
-      <div className="flex items-center gap-2.5 px-3.5 py-3 rounded-2xl bg-white/[0.07] border border-white/[0.1] mb-4 focus-within:border-[#F56E0F]/40 transition-colors">
+      <div className="flex items-center gap-2.5 px-3.5 py-3 rounded-2xl bg-foreground/7 border border-vd-border-soft mb-4 focus-within:border-[#F56E0F]/40 transition-colors">
         {loadingData
-          ? <Loader2 className="w-4 h-4 text-white/30 shrink-0 animate-spin" strokeWidth={1.5} />
-          : <Search className="w-4 h-4 text-white/30 shrink-0" strokeWidth={1.5} />
+          ? <Loader2 className="w-4 h-4 text-foreground/30 shrink-0 animate-spin" strokeWidth={1.5} />
+          : <Search className="w-4 h-4 text-foreground/30 shrink-0" strokeWidth={1.5} />
         }
         <input ref={inputRef} type="text" value={query} onChange={e => setQuery(e.target.value)}
-          placeholder="Lieu, événement, cérémonie…"
-          className="flex-1 bg-transparent text-white text-[14px] placeholder:text-white/25 outline-none caret-[#F56E0F]" />
+          placeholder={tSearch("search.placeholder")}
+          className="flex-1 bg-transparent text-foreground text-[14px] placeholder:text-foreground/25 outline-none caret-[#F56E0F]" />
         {query.length > 0 && (
-          <button onClick={() => setQuery("")} className="p-1 rounded-full hover:bg-white/10 transition-colors">
-            <X className="w-3 h-3 text-white/30" strokeWidth={2} />
+          <button onClick={() => setQuery("")} className="p-1 rounded-full hover:bg-foreground/10 transition-colors">
+            <X className="w-3 h-3 text-foreground/30" strokeWidth={2} />
           </button>
         )}
       </div>
-      <p className="text-[10px] uppercase tracking-[0.2em] text-white/20 mb-2.5 font-medium px-0.5">
+      <p className="text-[10px] uppercase tracking-[0.2em] text-foreground/20 mb-2.5 font-medium px-0.5">
         {query.length > 0
-          ? `${results.length} résultat${results.length > 1 ? "s" : ""}`
-          : loadingData ? "Chargement…" : "Suggestions"}
+          ? tSearch("search.results", { count: results.length })
+          : loadingData ? tSearch("views.notificationsLoading") : tSearch("search.suggestions")}
       </p>
       <div className="flex flex-col gap-1.5">
         <AnimatePresence mode="popLayout">
@@ -668,7 +677,7 @@ function SearchView({ onClose }: { onClose: () => void }) {
             <motion.button key={item.id} layout
               initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }}
               transition={{ delay: i * 0.04, duration: 0.18 }}
-              className="flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] active:scale-[0.98] transition-all group text-left"
+              className="flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl bg-foreground/4 border border-foreground/6 hover:bg-foreground/8 active:scale-[0.98] transition-all group text-left"
             >
               <div className="flex items-center gap-2.5">
                 <div className={cn(
@@ -683,19 +692,19 @@ function SearchView({ onClose }: { onClose: () => void }) {
                   }
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[13px] text-white/70 group-hover:text-white/90 transition-colors block truncate">{item.label}</span>
+                  <span className="text-[13px] text-foreground/70 group-hover:text-foreground/90 transition-colors block truncate">{item.label}</span>
                   {item.sub && (
-                    <span className="text-[10px] text-white/30 block truncate">{item.sub}</span>
+                    <span className="text-[10px] text-foreground/30 block truncate">{item.sub}</span>
                   )}
                 </div>
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-white/15 group-hover:text-white/40 transition-colors shrink-0" strokeWidth={1.5} />
+              <ChevronRight className="w-3.5 h-3.5 text-foreground/15 group-hover:text-foreground/40 transition-colors shrink-0" strokeWidth={1.5} />
             </motion.button>
           ))}
         </AnimatePresence>
         {!loadingData && results.length === 0 && query.length > 0 && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center text-white/25 text-[13px] py-4">
-            Aucun résultat pour « {query} »
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center text-foreground/25 text-[13px] py-4">
+            {tSearch("search.empty", { query })}
           </motion.p>
         )}
       </div>
@@ -839,7 +848,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
             layout
             style={{ width: s === step ? 32 : 16 }}
             animate={{
-              backgroundColor: s === step ? "rgb(239,68,68)" : s < step ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.1)",
+              backgroundColor: s === step ? "rgb(239,68,68)" : s < step ? "rgba(239,68,68,0.4)" : "var(--vd-glass-border-color)",
               boxShadow: s === step ? "0 0 8px rgba(239,68,68,0.6)" : "0 0 0px rgba(239,68,68,0)",
             }}
             transition={reduce ? { duration: 0 } : { ...S_FAST }}
@@ -858,7 +867,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
             className="px-4"
           >
             {/* Services */}
-            <p className="text-[10px] uppercase tracking-[0.2em] text-white/25 mb-2.5 font-medium">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-foreground/25 mb-2.5 font-medium">
               {t("emergency.form.serviceLabel")}
             </p>
             <div className="flex flex-col gap-2 mb-4">
@@ -874,13 +883,13 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
                       "flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-200",
                       isActive
                         ? `${svc.bg} ${svc.border} shadow-[0_0_16px_rgba(0,0,0,0.2)]`
-                        : "bg-white/[0.04] border-white/[0.07] hover:bg-white/[0.07]",
+                        : "bg-foreground/4 border-foreground/7 hover:bg-foreground/7",
                     )}
                   >
-                    <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center border", isActive ? `${svc.bg} ${svc.border}` : "bg-white/[0.06] border-white/[0.08]")}>
-                      <Icon className={cn("w-4.5 h-4.5", isActive ? svc.color : "text-white/35")} strokeWidth={1.6} />
+                    <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center border", isActive ? `${svc.bg} ${svc.border}` : "bg-foreground/6 border-foreground/8")}>
+                      <Icon className={cn("w-4.5 h-4.5", isActive ? svc.color : "text-foreground/35")} strokeWidth={1.6} />
                     </div>
-                    <span className={cn("text-[14px] font-semibold transition-colors", isActive ? svc.text : "text-white/55")}>
+                    <span className={cn("text-[14px] font-semibold transition-colors", isActive ? svc.text : "text-foreground/55")}>
                       {svc.label}
                     </span>
                     {isActive && (
@@ -897,13 +906,13 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
             </div>
 
             {/* Categories */}
-            <p className="text-[10px] uppercase tracking-[0.2em] text-white/25 mb-2.5 font-medium">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-foreground/25 mb-2.5 font-medium">
               {t("emergency.form.typeLabel")}
             </p>
             {!form.service ? (
-              <div className="flex items-center gap-2 px-3.5 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] mb-4">
-                <HelpCircle className="w-4 h-4 text-white/15 shrink-0" strokeWidth={1.5} />
-                <span className="text-[12px] text-white/20 italic">{t("emergency.form.selectServiceFirst")}</span>
+              <div className="flex items-center gap-2 px-3.5 py-3 rounded-2xl bg-foreground/3 border border-foreground/6 mb-4">
+                <HelpCircle className="w-4 h-4 text-foreground/15 shrink-0" strokeWidth={1.5} />
+                <span className="text-[12px] text-foreground/20 italic">{t("emergency.form.selectServiceFirst")}</span>
               </div>
             ) : (
               <div className="flex flex-wrap gap-2 mb-4">
@@ -919,10 +928,10 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
                         "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[12px] font-medium transition-all duration-200",
                         isActive
                           ? "bg-red-500/15 border-red-500/35 text-red-300"
-                          : "bg-white/[0.05] border-white/[0.08] text-white/45 hover:bg-white/[0.08]",
+                          : "bg-foreground/5 border-foreground/8 text-foreground/45 hover:bg-foreground/8",
                       )}
                     >
-                      <TypeIcon className={cn("w-3.5 h-3.5 shrink-0", isActive ? "text-red-300" : "text-white/35")} strokeWidth={1.5} />
+                      <TypeIcon className={cn("w-3.5 h-3.5 shrink-0", isActive ? "text-red-300" : "text-foreground/35")} strokeWidth={1.5} />
                       <span>{t.label}</span>
                     </motion.button>
                   );
@@ -932,8 +941,8 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
 
             {/* Géoloc status */}
             <div className="flex items-center gap-1.5 mb-4 text-[11px]">
-              <MapPin className={cn("w-3 h-3 shrink-0", geoStatus === "ok" ? "text-emerald-400" : geoStatus === "error" ? "text-white/25" : "text-white/25")} strokeWidth={1.5} />
-              <span className={cn(geoStatus === "ok" ? "text-emerald-400/70" : "text-white/25")}>
+              <MapPin className={cn("w-3 h-3 shrink-0", geoStatus === "ok" ? "text-emerald-400" : geoStatus === "error" ? "text-foreground/25" : "text-foreground/25")} strokeWidth={1.5} />
+              <span className={cn(geoStatus === "ok" ? "text-emerald-400/70" : "text-foreground/25")}>
                 {geoStatus === "loading" && t("emergency.geo.fetching")}
                 {geoStatus === "ok"      && t("emergency.geo.obtained")}
                 {geoStatus === "error"   && t("emergency.geo.unavailable")}
@@ -949,7 +958,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
                 "w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-[14px] font-bold transition-all duration-200",
                 form.service && form.type
                   ? "bg-red-500/20 border border-red-500/35 text-red-400 shadow-[0_4px_16px_rgba(239,68,68,0.15)]"
-                  : "bg-white/[0.04] border border-white/[0.07] text-white/20 cursor-not-allowed",
+                  : "bg-foreground/4 border border-foreground/7 text-foreground/20 cursor-not-allowed",
               )}
             >
               {t("emergency.form.continue")}
@@ -965,21 +974,21 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
             transition={reduce ? { duration: 0 } : { ...S_UI }}
             className="px-4"
           >
-            <p className="text-[10px] uppercase tracking-[0.2em] text-white/25 mb-3 font-medium">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-foreground/25 mb-3 font-medium">
               {t("emergency.form.infoTitle")}
             </p>
 
             {/* Nom */}
             <div className="mb-3">
-              <label className="text-[11px] text-white/35 mb-1.5 block">Nom complet *</label>
+              <label className="text-[11px] text-foreground/35 mb-1.5 block">Nom complet *</label>
               <input
                 type="text"
                 value={form.name}
                 onChange={e => { setForm(f => ({ ...f, name: e.target.value })); setErrors(err => ({ ...err, name: undefined })); }}
                 placeholder="Votre nom complet"
                 className={cn(
-                  "w-full px-3.5 py-3 rounded-2xl bg-white/[0.06] border text-white text-[13px] placeholder:text-white/20 outline-none caret-red-400 transition-colors",
-                  errors.name ? "border-red-500/40" : "border-white/[0.10] focus:border-red-500/30",
+                  "w-full px-3.5 py-3 rounded-2xl bg-foreground/6 border text-foreground text-[13px] placeholder:text-foreground/20 outline-none caret-red-400 transition-colors",
+                  errors.name ? "border-red-500/40" : "border-foreground/10 focus:border-red-500/30",
                 )}
               />
               {errors.name && <p className="text-[11px] text-red-400/80 mt-1">{errors.name}</p>}
@@ -987,15 +996,15 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
 
             {/* Description */}
             <div className="mb-4">
-              <label className="text-[11px] text-white/35 mb-1.5 block">Description de la situation *</label>
+              <label className="text-[11px] text-foreground/35 mb-1.5 block">Description de la situation *</label>
               <textarea
                 value={form.description}
                 onChange={e => { setForm(f => ({ ...f, description: e.target.value })); setErrors(err => ({ ...err, description: undefined })); }}
                 placeholder="Décrivez brièvement la situation (lieu, état de la personne…)"
                 rows={3}
                 className={cn(
-                  "w-full px-3.5 py-3 rounded-2xl bg-white/[0.06] border text-white text-[13px] placeholder:text-white/20 outline-none caret-red-400 resize-none transition-colors",
-                  errors.description ? "border-red-500/40" : "border-white/[0.10] focus:border-red-500/30",
+                  "w-full px-3.5 py-3 rounded-2xl bg-foreground/6 border text-foreground text-[13px] placeholder:text-foreground/20 outline-none caret-red-400 resize-none transition-colors",
+                  errors.description ? "border-red-500/40" : "border-foreground/10 focus:border-red-500/30",
                 )}
               />
               {errors.description && <p className="text-[11px] text-red-400/80 mt-1">{errors.description}</p>}
@@ -1005,7 +1014,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => goTo(1, -1)}
-                className="px-4 py-3 rounded-2xl bg-white/[0.05] border border-white/[0.08] text-white/40 text-[13px] font-semibold flex items-center gap-1.5 transition-all"
+                className="px-4 py-3 rounded-2xl bg-foreground/5 border border-foreground/8 text-foreground/40 text-[13px] font-semibold flex items-center gap-1.5 transition-all"
               >
                 <ChevronLeft className="w-4 h-4" strokeWidth={2} />
                 Retour
@@ -1029,51 +1038,51 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
             transition={reduce ? { duration: 0 } : { ...S_UI }}
             className="px-4"
           >
-            <p className="text-[10px] uppercase tracking-[0.2em] text-white/25 mb-3 font-medium">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-foreground/25 mb-3 font-medium">
               Récapitulatif
             </p>
 
             {/* Recap card */}
-            <div className="rounded-2xl bg-white/[0.04] border border-white/[0.08] p-3.5 mb-4 space-y-2.5">
+            <div className="rounded-2xl bg-foreground/4 border border-foreground/8 p-3.5 mb-4 space-y-2.5">
               {selectedService && (
                 <div className="flex items-center gap-2.5">
                   <div className={cn("w-7 h-7 rounded-xl flex items-center justify-center border shrink-0", selectedService.bg, selectedService.border)}>
                     <selectedService.icon className={cn("w-3.5 h-3.5", selectedService.color)} strokeWidth={1.6} />
                   </div>
                   <div>
-                    <p className="text-[10px] text-white/30 uppercase tracking-wide">Service</p>
+                    <p className="text-[10px] text-foreground/30 uppercase tracking-wide">Service</p>
                     <p className={cn("text-[13px] font-semibold", selectedService.text)}>{selectedService.label}</p>
                   </div>
                 </div>
               )}
-              <div className="h-px bg-white/[0.06]" />
+              <div className="h-px bg-foreground/6" />
               <div>
-                <p className="text-[10px] text-white/30 uppercase tracking-wide mb-0.5">Urgence</p>
+                <p className="text-[10px] text-foreground/30 uppercase tracking-wide mb-0.5">Urgence</p>
                 {(() => {
                   const found = TYPES.find(t => t.id === form.type);
                   const RecapIcon = found?.icon;
                   return (
                     <div className="flex items-center gap-1.5">
-                      {RecapIcon && <RecapIcon className="w-3.5 h-3.5 text-white/50 shrink-0" strokeWidth={1.5} />}
-                      <p className="text-[13px] text-white/80">{found?.label}</p>
+                      {RecapIcon && <RecapIcon className="w-3.5 h-3.5 text-foreground/50 shrink-0" strokeWidth={1.5} />}
+                      <p className="text-[13px] text-foreground/80">{found?.label}</p>
                     </div>
                   );
                 })()}
               </div>
-              <div className="h-px bg-white/[0.06]" />
+              <div className="h-px bg-foreground/6" />
               <div>
-                <p className="text-[10px] text-white/30 uppercase tracking-wide mb-0.5">Nom</p>
-                <p className="text-[13px] text-white/80">{form.name}</p>
+                <p className="text-[10px] text-foreground/30 uppercase tracking-wide mb-0.5">Nom</p>
+                <p className="text-[13px] text-foreground/80">{form.name}</p>
               </div>
-              <div className="h-px bg-white/[0.06]" />
+              <div className="h-px bg-foreground/6" />
               <div>
-                <p className="text-[10px] text-white/30 uppercase tracking-wide mb-0.5">Situation</p>
-                <p className="text-[12px] text-white/60 leading-relaxed">{form.description}</p>
+                <p className="text-[10px] text-foreground/30 uppercase tracking-wide mb-0.5">Situation</p>
+                <p className="text-[12px] text-foreground/60 leading-relaxed">{form.description}</p>
               </div>
-              <div className="h-px bg-white/[0.06]" />
+              <div className="h-px bg-foreground/6" />
               <div className="flex items-center gap-1.5">
-                <MapPin className={cn("w-3 h-3 shrink-0", geoStatus === "ok" ? "text-emerald-400" : "text-white/20")} strokeWidth={1.5} />
-                <p className={cn("text-[11px]", geoStatus === "ok" ? "text-emerald-400/70" : "text-white/25")}>
+                <MapPin className={cn("w-3 h-3 shrink-0", geoStatus === "ok" ? "text-emerald-400" : "text-foreground/20")} strokeWidth={1.5} />
+                <p className={cn("text-[11px]", geoStatus === "ok" ? "text-emerald-400/70" : "text-foreground/25")}>
                   {geoStatus === "ok" && geoCoords
                     ? `${geoCoords.lat.toFixed(4)}, ${geoCoords.lng.toFixed(4)}`
                     : "Position non disponible"}
@@ -1085,7 +1094,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
             {countdown !== null ? (
               <div className="space-y-2">
                 {/* Progress bar */}
-                <div className="w-full h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+                <div className="w-full h-1.5 rounded-full bg-foreground/8 overflow-hidden">
                   <motion.div
                     className="h-full bg-red-500 rounded-full"
                     initial={{ width: "100%" }}
@@ -1098,7 +1107,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={cancelCountdown}
-                    className="px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/[0.10] text-[12px] font-semibold text-white/50 transition-all"
+                    className="px-3 py-1.5 rounded-xl bg-foreground/7 border border-foreground/10 text-[12px] font-semibold text-foreground/50 transition-all"
                   >
                     {t("emergency.send.cancel")}
                   </motion.button>
@@ -1109,7 +1118,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={() => goTo(2, -1)}
-                  className="px-4 py-3 rounded-2xl bg-white/[0.05] border border-white/[0.08] text-white/40 text-[13px] font-semibold flex items-center gap-1.5 transition-all"
+                  className="px-4 py-3 rounded-2xl bg-foreground/5 border border-foreground/8 text-foreground/40 text-[13px] font-semibold flex items-center gap-1.5 transition-all"
                 >
                   <ChevronLeft className="w-4 h-4" strokeWidth={2} />
                   {t("emergency.form.back")}
@@ -1162,7 +1171,7 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
           </div>
           <div>
             <p className={cn("text-[12px] font-bold", service.text)}>{service.label}</p>
-            <p className="text-[10px] text-white/30 font-mono">{request.ref}</p>
+            <p className="text-[10px] text-foreground/30 font-mono">{request.ref}</p>
           </div>
         </div>
         <div className={cn(
@@ -1180,17 +1189,17 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
       </div>
 
       {/* Nature de l'urgence */}
-      <div className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-white/[0.04] border border-white/[0.07] mb-4">
-        <TypeIcon className="w-3.5 h-3.5 text-white/40 shrink-0" strokeWidth={1.5} />
-        <span className="text-[12px] text-white/60">{type?.label}</span>
-        <span className="ml-auto flex items-center gap-1 text-[10px] text-white/25">
+      <div className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-foreground/4 border border-foreground/7 mb-4">
+        <TypeIcon className="w-3.5 h-3.5 text-foreground/40 shrink-0" strokeWidth={1.5} />
+        <span className="text-[12px] text-foreground/60">{type?.label}</span>
+        <span className="ml-auto flex items-center gap-1 text-[10px] text-foreground/25">
           <Clock className="w-2.5 h-2.5" strokeWidth={1.5} />
           {request.createdAt}
         </span>
       </div>
 
       {/* Timeline */}
-      <p className="text-[10px] uppercase tracking-[0.2em] text-white/25 mb-3 font-medium">{t("tracking.title")}</p>
+      <p className="text-[10px] uppercase tracking-[0.2em] text-foreground/25 mb-3 font-medium">{t("tracking.title")}</p>
       <div className="relative flex flex-col gap-0">
         {TRACKING_STEPS.map((step, i) => {
           const StepIcon  = step.icon;
@@ -1207,32 +1216,32 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
                   animate={{
                     backgroundColor: isDone
                       ? isResolved ? "rgba(52,211,153,0.9)" : "rgba(239,68,68,0.85)"
-                      : "rgba(255,255,255,0.08)",
+                      : "var(--vd-glass-border-color)",
                     borderColor: isDone
                       ? isResolved ? "rgba(52,211,153,0.4)" : "rgba(239,68,68,0.35)"
-                      : "rgba(255,255,255,0.08)",
+                      : "var(--vd-glass-border-color)",
                     scale: isCurrent ? 1.15 : 1,
                   }}
                   transition={reduce ? { duration: 0 } : { ...S_SOFT }}
                   className="w-7 h-7 rounded-xl border flex items-center justify-center shrink-0"
                 >
-                  <StepIcon className={cn("w-3.5 h-3.5", isDone ? "text-white" : "text-white/20", isCurrent && "animate-pulse")} strokeWidth={isCurrent ? 2 : 1.5} />
+                  <StepIcon className={cn("w-3.5 h-3.5", isDone ? "text-white" : "text-foreground/20", isCurrent && "animate-pulse")} strokeWidth={isCurrent ? 2 : 1.5} />
                 </motion.div>
                 {!isLast && (
-                  <div className="w-px flex-1 my-1" style={{ background: isDone ? "rgba(239,68,68,0.25)" : "rgba(255,255,255,0.06)", minHeight: 16 }} />
+                  <div className="w-px flex-1 my-1" style={{ background: isDone ? "rgba(239,68,68,0.25)" : "var(--vd-glass-border-color)", minHeight: 16 }} />
                 )}
               </div>
 
               {/* Content */}
               <div className={cn("pb-3 flex-1 min-w-0", isLast && "pb-0")}>
                 <div className="flex items-center justify-between gap-2">
-                  <p className={cn("text-[13px] font-semibold leading-tight", isDone ? "text-white/85" : "text-white/25")}>
+                  <p className={cn("text-[13px] font-semibold leading-tight", isDone ? "text-white/85" : "text-foreground/25")}>
                     {step.label}
                   </p>
-                  {event && <span className="text-[10px] text-white/25 font-mono shrink-0">{event.time}</span>}
+                  {event && <span className="text-[10px] text-foreground/25 font-mono shrink-0">{event.time}</span>}
                 </div>
                 {event && (
-                  <p className="text-[11px] text-white/40 mt-0.5 leading-snug">{event.detail}</p>
+                  <p className="text-[11px] text-foreground/40 mt-0.5 leading-snug">{event.detail}</p>
                 )}
                 {isCurrent && !isResolved && (
                   <div className="flex items-center gap-1 mt-1">
@@ -1258,7 +1267,7 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
           {t("tracking.close")}
         </motion.button>
       ) : (
-        <p className="mt-4 text-center text-[11px] text-white/20 leading-relaxed">
+        <p className="mt-4 text-center text-[11px] text-foreground/20 leading-relaxed">
           {t("tracking.footer")}
         </p>
       )}
@@ -1290,17 +1299,17 @@ function ExpandedHeader({ logoSrc, label, onClose, logoMerged, isEmergency = fal
           initial={{ opacity: 0, x: -4 }}
           animate={{ opacity: 1, x: 0 }}
           transition={reduce ? { duration: 0 } : { delay: 0.08, ...S_FAST }}
-          className={cn("text-[13px] font-semibold tracking-tight", isEmergency ? "text-red-400" : "text-white/70")}
+          className={cn("text-[13px] font-semibold tracking-tight", isEmergency ? "text-red-400" : "text-foreground/70")}
         >
           {label}
         </motion.span>
       </div>
       <button
         onClick={onClose}
-        className="flex items-center justify-center w-7 h-7 rounded-full bg-white/[0.07] hover:bg-white/[0.12] active:scale-90 transition-all"
+        className="flex items-center justify-center w-7 h-7 rounded-full bg-foreground/7 hover:bg-foreground/12 active:scale-90 transition-all"
         aria-label="Fermer"
       >
-        <X className="w-3.5 h-3.5 text-white/50" strokeWidth={2} />
+        <X className="w-3.5 h-3.5 text-foreground/50" strokeWidth={2} />
       </button>
     </div>
   );
@@ -1317,7 +1326,7 @@ function HairlineDivider() {
 function CloseHandle({ onClose }: { onClose: () => void }) {
   return (
     <button onClick={onClose} className="flex items-center justify-center w-full pt-1.5 pb-3 group" aria-label="Fermer">
-      <div className="w-9 h-1 rounded-full bg-white/[0.08] group-hover:bg-white/[0.18] transition-colors" />
+      <div className="w-9 h-1 rounded-full bg-foreground/8 group-hover:bg-foreground/18 transition-colors" />
     </button>
   );
 }
@@ -1557,35 +1566,35 @@ export function WeatherWidget({
         >
           <div className={cn("flex items-center gap-0.5 px-1.5 py-1.5 rounded-full overflow-hidden", GLASS.inner, GLASS.border)}>
             {/* Météo */}
-            <button onClick={() => openView("weather")} className="flex items-center gap-1.5 px-2.5 py-2 rounded-full hover:bg-white/[0.08] active:scale-95 transition-all duration-150 group">
+            <button onClick={() => openView("weather")} className="flex items-center gap-1.5 px-2.5 py-2 rounded-full hover:bg-foreground/8 active:scale-95 transition-all duration-150 group">
               <WeatherIcon icon={weather.icon} className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
-              <span className="text-[13px] font-semibold text-white/90 tabular-nums">{weather.temperature}°</span>
+              <span className="text-[13px] font-semibold text-foreground/90 tabular-nums">{weather.temperature}°</span>
             </button>
-            <div className="w-px h-3.5 bg-white/[0.1] mx-0.5" />
+            <div className="w-px h-3.5 bg-vd-border-soft mx-0.5" />
             {/* Notifications */}
             <button
               onClick={() => openView("notifications")}
-              className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/[0.08] active:scale-95 transition-all duration-150"
+              className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-foreground/8 active:scale-95 transition-all duration-150"
               aria-label={`${unreadCount} notification${unreadCount !== 1 ? "s" : ""} non lue${unreadCount !== 1 ? "s" : ""}`}
             >
-              <Bell className="w-[15px] h-[15px] text-white/55" strokeWidth={1.5} />
+              <Bell className="w-[15px] h-[15px] text-foreground/55" strokeWidth={1.5} />
               {unreadCount > 0 && (
                 <motion.span
                   key={unreadCount}
                   initial={{ scale: 0.6, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ ...S_FAST }}
-                  className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] rounded-full bg-red-500 ring-[1.5px] ring-[rgba(18,18,22,0.9)] flex items-center justify-center text-[9px] font-bold text-white px-0.5 tabular-nums"
+                  className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] rounded-full bg-red-500 ring-[1.5px] ring-vd-page-bg flex items-center justify-center text-[9px] font-bold text-white px-0.5 tabular-nums"
                 >
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </motion.span>
               )}
             </button>
             {/* Recherche */}
-            <button onClick={() => openView("search")} className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/[0.08] active:scale-95 transition-all duration-150" aria-label="Recherche">
-              <Search className="w-[15px] h-[15px] text-white/55" strokeWidth={1.5} />
+            <button onClick={() => openView("search")} className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-foreground/8 active:scale-95 transition-all duration-150" aria-label="Recherche">
+              <Search className="w-[15px] h-[15px] text-foreground/55" strokeWidth={1.5} />
             </button>
-            <div className="w-px h-3.5 bg-white/[0.1] mx-0.5" />
+            <div className="w-px h-3.5 bg-vd-border-soft mx-0.5" />
             {/* ── Bouton Urgence / Tracking ── */}
             <button
               onClick={() => openView(activeAlert ? "tracking" : "emergency")}
@@ -1594,7 +1603,7 @@ export function WeatherWidget({
             >
               <ShieldAlert className="w-[15px] h-[15px] text-red-400/70 group-hover:text-red-400 transition-colors" strokeWidth={1.5} />
               {activeAlert && activeAlert.status !== "RESOLU" && (
-                <span className="absolute top-[7px] right-[7px] min-w-[6px] h-[6px] rounded-full bg-red-500 ring-[1.5px] ring-[rgba(18,18,22,0.9)] animate-pulse" />
+                <span className="absolute top-[7px] right-[7px] min-w-[6px] h-[6px] rounded-full bg-red-500 ring-[1.5px] ring-vd-page-bg animate-pulse" />
               )}
             </button>
           </div>
@@ -1618,7 +1627,7 @@ export function WeatherWidget({
             GLASS.outer,
             // Bordure rouge subtile en mode urgence
             isEmergency
-              ? "shadow-[0_8px_40px_rgba(0,0,0,0.55),0_0_0_1px_rgba(239,68,68,0.15),inset_0_1px_0_rgba(255,255,255,0.08)]"
+              ? "shadow-[0_8px_40px_rgba(0,0,0,0.3),0_0_0_1px_rgba(239,68,68,0.15)]"
               : GLASS.shadow,
           )}
         >

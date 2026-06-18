@@ -1,4 +1,5 @@
 import prisma from "../../prisma/prisma.client.js";
+import { translateFields } from "../../utils/translate.js";
 
 export const findAll = async ({ target, status, page = 1, limit = 20 } = {}) => {
   const where = {};
@@ -35,6 +36,11 @@ export const findById = async (id) => {
 };
 
 export const create = async ({ title, message, target = "ALL", targetId, scheduledAt, titleEn, messageEn }) => {
+  const toTranslate = [];
+  if (titleEn   === undefined && title)   toTranslate.push({ field: "title",   text: title });
+  if (messageEn === undefined && message) toTranslate.push({ field: "message", text: message });
+  const translated = await translateFields(toTranslate);
+
   return prisma.notifications.create({
     data: {
       title,
@@ -44,8 +50,8 @@ export const create = async ({ title, message, target = "ALL", targetId, schedul
       status:      scheduledAt ? "PENDING" : "SENT",
       scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
       sentAt:      scheduledAt ? null : new Date(),
-      titleEn:     titleEn   ?? null,
-      messageEn:   messageEn ?? null,
+      titleEn:     titleEn   ?? translated.titleEn   ?? null,
+      messageEn:   messageEn ?? translated.messageEn ?? null,
     },
   });
 };

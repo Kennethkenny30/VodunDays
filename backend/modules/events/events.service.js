@@ -1,4 +1,5 @@
 import prisma from "../../prisma/prisma.client.js";
+import { translateFields } from "../../utils/translate.js";
 
 export const findAll = async (filters = {}) => {
   const where = {};
@@ -36,6 +37,11 @@ export const findById = async (id) => {
 };
 
 export const create = async (data) => {
+  const toTranslate = [];
+  if (data.nameEn === undefined && data.name)        toTranslate.push({ field: "name",        text: data.name });
+  if (data.descriptionEn === undefined && data.description) toTranslate.push({ field: "description", text: data.description });
+  const translated = await translateFields(toTranslate);
+
   return prisma.events.create({
     data: {
       name:          data.name,
@@ -44,9 +50,9 @@ export const create = async (data) => {
       siteId:        data.siteId,
       eventTypeId:   data.eventTypeId,
       createdBy:     data.createdBy,
-      imageUrl:      data.imageUrl      ?? null,
-      nameEn:        data.nameEn        ?? null,
-      descriptionEn: data.descriptionEn ?? null,
+      imageUrl:      data.imageUrl ?? null,
+      nameEn:        data.nameEn        ?? translated.nameEn        ?? null,
+      descriptionEn: data.descriptionEn ?? translated.descriptionEn ?? null,
     },
     include: { site: true, eventType: true },
   });
@@ -54,6 +60,12 @@ export const create = async (data) => {
 
 export const update = async (id, data) => {
   await findById(id);
+
+  const toTranslate = [];
+  if (data.name        !== undefined && data.nameEn        === undefined) toTranslate.push({ field: "name",        text: data.name });
+  if (data.description !== undefined && data.descriptionEn === undefined) toTranslate.push({ field: "description", text: data.description });
+  const translated = await translateFields(toTranslate);
+
   return prisma.events.update({
     where: { id },
     data: {
@@ -63,6 +75,8 @@ export const update = async (id, data) => {
       ...(data.siteId        !== undefined && { siteId: data.siteId }),
       ...(data.eventTypeId   !== undefined && { eventTypeId: data.eventTypeId }),
       ...(data.imageUrl      !== undefined && { imageUrl: data.imageUrl }),
+      ...(translated.nameEn        !== undefined && { nameEn: translated.nameEn }),
+      ...(translated.descriptionEn !== undefined && { descriptionEn: translated.descriptionEn }),
       ...(data.nameEn        !== undefined && { nameEn: data.nameEn }),
       ...(data.descriptionEn !== undefined && { descriptionEn: data.descriptionEn }),
     },

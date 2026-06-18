@@ -98,17 +98,16 @@ export function ConfirmationScreen() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8, duration: 0.4 }}
-        className="text-[28px] font-black text-white mb-3"
+        className="text-[28px] font-black text-foreground mb-3"
       >
         {t("confirmation.title")}
       </motion.h2>
 
-      {/* Subtext */}
       <motion.p
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.95, duration: 0.4 }}
-        className="text-[14px] text-[#878787] leading-relaxed max-w-xs mb-10"
+        className="text-[14px] text-muted-foreground leading-relaxed max-w-xs mb-10"
       >
         {t("confirmation.subtitle")}
       </motion.p>
@@ -120,7 +119,7 @@ export function ConfirmationScreen() {
         transition={{ delay: 1.1, duration: 0.4 }}
       >
         <Link
-          href="/"
+          href="/programme"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#F56E0F] text-white text-[14px] font-bold hover:bg-[#D4600C] transition-colors duration-150 shadow-[0_4px_24px_rgba(245,110,15,0.4)]"
         >
           {t("confirmation.backToProgramme")}

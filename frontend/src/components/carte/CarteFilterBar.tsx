@@ -95,17 +95,17 @@ export function CarteFilterBar({ activeFilters, onFiltersChange }: CarteFilterBa
               // Glass effect
               background: isActive
                 ? `rgba(${rgb}, 0.13)`
-                : "rgba(255,255,255,0.04)",
+                : "var(--vd-filter-bg-inactive)",
               border: isActive
                 ? `1px solid rgba(${rgb}, 0.38)`
-                : "1px solid rgba(255,255,255,0.07)",
+                : "1px solid var(--vd-filter-border-inactive)",
               backdropFilter: "blur(20px) saturate(180%)",
               WebkitBackdropFilter: "blur(20px) saturate(180%)",
-              color: isActive ? color : "rgba(255,255,255,0.38)",
+              color: isActive ? color : "var(--muted-foreground)",
               // Subtle inner highlight (glass top edge)
               boxShadow: isActive
                 ? `0 0 0 0.5px rgba(${rgb}, 0.15), inset 0 1px 0 rgba(255,255,255,0.10), 0 4px 16px rgba(${rgb}, 0.10)`
-                : "inset 0 1px 0 rgba(255,255,255,0.06), 0 1px 4px rgba(0,0,0,0.2)",
+                : "0 1px 4px rgba(0,0,0,0.1)",
               transform: isActive ? "scale(1.02)" : "scale(1)",
             }}
           >

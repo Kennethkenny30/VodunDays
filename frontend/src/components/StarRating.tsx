@@ -33,7 +33,7 @@ export function StarRating({ value, onChange }: StarRatingProps) {
               className="size-7 select-none transition-colors duration-150"
               fill={isFilled ? "#F56E0F" : "none"}
               style={{
-                color: isFilled ? "#F56E0F" : "#878787",
+                color: isFilled ? "#F56E0F" : "var(--muted-foreground)",
                 filter: isFilled
                   ? "drop-shadow(0 0 6px rgba(245, 110, 15, 0.5))"
                   : "none",

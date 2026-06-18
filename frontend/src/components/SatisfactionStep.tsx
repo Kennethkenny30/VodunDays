@@ -35,39 +35,33 @@ export function SatisfactionStep({
     >
       {/* Glass card */}
       <div
-        className="rounded-2xl p-5"
+        className="rounded-2xl p-5 border backdrop-blur-md"
         style={{
-          background:
-            "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          backdropFilter: "blur(12px)",
+          background: "var(--vd-glass-grad-start)",
+          borderColor: "var(--vd-border-soft)",
         }}
       >
-        {/* Step indicator */}
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#878787] text-center mb-2">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground text-center mb-2">
           Question {stepIndex + 1} / {totalSteps}
         </p>
 
-        {/* Question */}
-        <h3 className="text-[18px] font-black text-white text-center mb-6 leading-snug">
+        <h3 className="text-[18px] font-black text-foreground text-center mb-6 leading-snug">
           {question}
         </h3>
 
-        {/* Stars */}
         <StarRating value={value} onChange={onChange} />
 
-        {/* Next button */}
         <button
           type="button"
           onClick={onNext}
           disabled={!canProceed}
           className={cn(
-            "w-full mt-6 py-[14px] rounded-xl",
+            "w-full mt-6 py-3.5 rounded-xl",
             "text-[14px] font-black tracking-wide",
             "transition-all duration-200 active:scale-[0.98]",
             canProceed
               ? "bg-[#F56E0F] text-white shadow-[0_4px_24px_rgba(245,110,15,0.4)]"
-              : "bg-white/10 text-[#878787] cursor-not-allowed"
+              : "bg-vd-inner-tint text-muted-foreground cursor-not-allowed"
           )}
         >
           Suivant →

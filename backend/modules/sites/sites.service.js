@@ -1,4 +1,5 @@
 import prisma from "../../prisma/prisma.client.js";
+import { translateFields } from "../../utils/translate.js";
 
 const VALID_CATEGORIES = ["SITE", "TOILETTES", "URGENCES", "TRANSPORT", "ASSISTANCE", "PRA"];
 
@@ -27,6 +28,15 @@ export const findById = async (id) => {
 };
 
 export const create = async (data) => {
+  const toTranslate = [
+    { field: "name",        text: data.name,        skip: data.nameEn        !== undefined },
+    { field: "description", text: data.description, skip: data.descriptionEn !== undefined },
+    { field: "type",        text: data.type,        skip: data.typeEn        !== undefined },
+    { field: "arLabel",     text: data.arLabel,     skip: data.arLabelEn     !== undefined },
+    { field: "arContent",   text: data.arContent,   skip: data.arContentEn   !== undefined },
+  ].filter(({ skip, text }) => !skip && text);
+  const translated = await translateFields(toTranslate);
+
   return prisma.sites.create({
     data: {
       name:        data.name,
@@ -39,18 +49,26 @@ export const create = async (data) => {
       arLabel:     data.arLabel   ?? null,
       arContent:   data.arContent ?? null,
       arRadius:    data.arRadius  ?? null,
-      // Champs i18n EN optionnels
-      nameEn:        data.nameEn        ?? null,
-      descriptionEn: data.descriptionEn ?? null,
-      typeEn:        data.typeEn        ?? null,
-      arLabelEn:     data.arLabelEn     ?? null,
-      arContentEn:   data.arContentEn   ?? null,
+      nameEn:        data.nameEn        ?? translated.nameEn        ?? null,
+      descriptionEn: data.descriptionEn ?? translated.descriptionEn ?? null,
+      typeEn:        data.typeEn        ?? translated.typeEn        ?? null,
+      arLabelEn:     data.arLabelEn     ?? translated.arLabelEn     ?? null,
+      arContentEn:   data.arContentEn   ?? translated.arContentEn   ?? null,
     },
   });
 };
 
 export const update = async (id, data) => {
   await findById(id);
+
+  const toTranslate = [
+    { field: "name",        text: data.name,        skip: data.name        === undefined || data.nameEn        !== undefined },
+    { field: "description", text: data.description, skip: data.description === undefined || data.descriptionEn !== undefined },
+    { field: "type",        text: data.type,        skip: data.type        === undefined || data.typeEn        !== undefined },
+    { field: "arLabel",     text: data.arLabel,     skip: data.arLabel     === undefined || data.arLabelEn     !== undefined },
+    { field: "arContent",   text: data.arContent,   skip: data.arContent   === undefined || data.arContentEn   !== undefined },
+  ].filter(({ skip }) => !skip);
+  const translated = await translateFields(toTranslate);
 
   const patch = {};
   if (data.name        !== undefined) patch.name        = data.name;
@@ -60,9 +78,14 @@ export const update = async (id, data) => {
   if (data.type        !== undefined) patch.type        = data.type;
   if (data.category    !== undefined) patch.category    = data.category;
   if (data.capacity    !== undefined) patch.capacity    = data.capacity;
-  if (data.arLabel       !== undefined) patch.arLabel       = data.arLabel;
-  if (data.arContent     !== undefined) patch.arContent     = data.arContent;
-  if (data.arRadius      !== undefined) patch.arRadius      = data.arRadius;
+  if (data.arLabel     !== undefined) patch.arLabel     = data.arLabel;
+  if (data.arContent   !== undefined) patch.arContent   = data.arContent;
+  if (data.arRadius    !== undefined) patch.arRadius    = data.arRadius;
+  if (translated.nameEn        !== undefined) patch.nameEn        = translated.nameEn;
+  if (translated.descriptionEn !== undefined) patch.descriptionEn = translated.descriptionEn;
+  if (translated.typeEn        !== undefined) patch.typeEn        = translated.typeEn;
+  if (translated.arLabelEn     !== undefined) patch.arLabelEn     = translated.arLabelEn;
+  if (translated.arContentEn   !== undefined) patch.arContentEn   = translated.arContentEn;
   if (data.nameEn        !== undefined) patch.nameEn        = data.nameEn;
   if (data.descriptionEn !== undefined) patch.descriptionEn = data.descriptionEn;
   if (data.typeEn        !== undefined) patch.typeEn        = data.typeEn;

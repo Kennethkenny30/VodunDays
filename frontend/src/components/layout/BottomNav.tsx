@@ -62,22 +62,26 @@ export function BottomNav() {
       className={cn(
         "fixed left-1/2 -translate-x-1/2 z-50",
         "rounded-full",
-        "bg-[linear-gradient(135deg,rgba(255,255,255,0.15)_0%,rgba(0,0,0,0)_100%)]",
-        "shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
+        "shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
         "p-px",
         "touch-callout-none",
         "lg:hidden"
       )}
-      style={{ bottom: "max(24px, calc(env(safe-area-inset-bottom, 0px) + 12px))" }}
+      style={{
+        bottom: "max(24px, calc(env(safe-area-inset-bottom, 0px) + 12px))",
+        background: "var(--vd-nav-border-grad)",
+      }}
     >
       <div
         className={cn(
           "rounded-full",
-          "bg-[rgba(30,30,30,0.55)]",
           "backdrop-blur-[10px] backdrop-saturate-180",
-          "shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]",
           "px-3 py-2.5",
         )}
+        style={{
+          background: "var(--vd-nav-bg)",
+          boxShadow: "inset 0 1px 0 var(--vd-nav-inset-shadow)",
+        }}
       >
         <div className="flex items-center gap-1">
           {navItems.map((item) => {
@@ -96,14 +100,14 @@ export function BottomNav() {
                 className={cn(
                   "relative flex items-center justify-center w-12 h-12 rounded-full",
                   "transition-all duration-200 ease-out",
-                  isActive && "bg-white/15"
                 )}
+                style={isActive ? { background: "var(--vd-nav-active-bg)" } : undefined}
               >
                 {/* Point indicateur sous l'icône active */}
                 {isActive && (
                   <motion.span
                     layoutId="nav-dot"
-                    className="absolute bottom-1.5 w-1 h-1 rounded-full bg-white/60"
+                    className="absolute bottom-1.5 w-1 h-1 rounded-full bg-foreground/50"
                     transition={{ type: "spring", stiffness: 380, damping: 34 }}
                   />
                 )}
@@ -112,8 +116,8 @@ export function BottomNav() {
                   className={cn(
                     "w-5 h-5 transition-all duration-200",
                     isActive
-                      ? "text-white"
-                      : "text-white/50 hover:text-white/80"
+                      ? "text-foreground"
+                      : "text-foreground/40 hover:text-foreground/70"
                   )}
                   strokeWidth={isActive ? 2 : 1.5}
                 />

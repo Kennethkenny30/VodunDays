@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { useSearchParams } from "next/navigation";
 import type React from "react";
 import {
@@ -33,12 +34,17 @@ const OUIDAH_CENTER: [number, number] = [2.0851, 6.3599];
 const DEFAULT_ZOOM  = 15;
 const MAPTILER_KEY  = "rF42xkuvfnAvkNeWRop5";
 
-const MAP_STYLES = {
+const MAP_STYLES_DARK = {
   plan:      "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
   satellite: `https://api.maptiler.com/maps/hybrid/style.json?key=${MAPTILER_KEY}`,
 } as const;
 
-type MapMode = keyof typeof MAP_STYLES;
+const MAP_STYLES_LIGHT = {
+  plan:      "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+  satellite: `https://api.maptiler.com/maps/hybrid/style.json?key=${MAPTILER_KEY}`,
+} as const;
+
+type MapMode = keyof typeof MAP_STYLES_DARK;
 
 // ─── Types OSM ────────────────────────────────────────────────────────────────
 
@@ -542,6 +548,8 @@ interface CarteMapSectionProps {
 
 export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
   const mapRef = useRef<MapRef>(null);
+  const { resolvedTheme } = useTheme();
+  const MAP_STYLES = resolvedTheme === "light" ? MAP_STYLES_LIGHT : MAP_STYLES_DARK;
 
   const [pois,             setPois]             = useState<POI[]>([]);
   const [selectedSite,     setSelectedSite]     = useState<POI | null>(null);

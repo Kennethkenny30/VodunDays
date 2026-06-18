@@ -20,9 +20,9 @@ function CultureDetailContent({ slug }: { slug: string }) {
 
   if (!site) {
     return (
-      <div className="min-h-screen bg-[#151419] flex items-center justify-center">
+      <div className="min-h-screen bg-vd-page-bg flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-xl font-bold text-white mb-2">Site non trouvé</h1>
+          <h1 className="text-xl font-bold text-foreground mb-2">Site non trouvé</h1>
           <Link href="/pedagogie" className="text-[#F56E0F] text-sm">
             Retour aux contenus pédagogiques
           </Link>
@@ -34,7 +34,7 @@ function CultureDetailContent({ slug }: { slug: string }) {
   const fullDescription = (site as CulturalSiteExtended).fullDescription || site.description;
 
   return (
-    <div className="min-h-screen bg-[#151419] relative">
+    <div className="min-h-screen bg-vd-page-bg relative">
       {/* Full-screen hero image - inspired by f2.jpg design */}
       <div className="fixed inset-0 z-0">
         {site.image ? (
@@ -50,13 +50,13 @@ function CultureDetailContent({ slug }: { slug: string }) {
             className="absolute inset-0"
             style={{
               background: site.thematicColor
-                ? `linear-gradient(135deg, ${site.thematicColor}, #151419)`
-                : "linear-gradient(135deg, #F56E0F, #151419)",
+                ? `linear-gradient(135deg, ${site.thematicColor}, var(--vd-page-bg))`
+                : "linear-gradient(135deg, #F56E0F, var(--vd-page-bg))",
             }}
           />
         )}
         {/* Gradient overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-[#151419]" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/30 via-transparent to-vd-page-bg" />
       </div>
 
       {/* Back button - floating */}
@@ -88,14 +88,14 @@ function CultureDetailContent({ slug }: { slug: string }) {
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           className={cn(
             "rounded-t-[32px] overflow-hidden",
-            "bg-[#1B1B1E]/95 backdrop-blur-xl",
-            "border-t border-white/10",
+            "bg-vd-card-surface/95 backdrop-blur-xl",
+            "border-t border-vd-border-soft",
             "shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
           )}
         >
           {/* Handle indicator */}
           <div className="flex justify-center pt-3 pb-2">
-            <div className="w-10 h-1 rounded-full bg-white/20" />
+            <div className="w-10 h-1 rounded-full bg-foreground/20" />
           </div>
 
           {/* Entity tag - like the "Мастер спорта" badge */}
@@ -119,17 +119,17 @@ function CultureDetailContent({ slug }: { slug: string }) {
 
           {/* Site name - large bold title like in f2.jpg */}
           <div className="px-5 pt-2 pb-4">
-            <h1 className="text-[28px] font-black text-white leading-tight tracking-tight">
+            <h1 className="text-[28px] font-black text-foreground leading-tight tracking-tight">
               {site.name}
             </h1>
           </div>
 
           {/* Divider */}
-          <div className="mx-5 h-px bg-white/10" />
+          <div className="mx-5 h-px bg-vd-border-soft" />
 
           {/* Content section */}
           <div className="px-5 py-5">
-            <h2 className="text-[13px] uppercase tracking-wider text-[#878787] mb-3">
+            <h2 className="text-[13px] uppercase tracking-wider text-muted-foreground mb-3">
               A propos
             </h2>
             
@@ -143,7 +143,7 @@ function CultureDetailContent({ slug }: { slug: string }) {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    <p className="text-[14px] text-[#c0c0c0] leading-relaxed">
+                    <p className="text-[14px] text-foreground/75 leading-relaxed">
                       {site.description}
                     </p>
                   </motion.div>
@@ -154,7 +154,7 @@ function CultureDetailContent({ slug }: { slug: string }) {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    <p className="text-[14px] text-[#c0c0c0] leading-relaxed whitespace-pre-line">
+                    <p className="text-[14px] text-foreground/75 leading-relaxed whitespace-pre-line">
                       {fullDescription}
                     </p>
                   </motion.div>
@@ -201,7 +201,7 @@ export default function CultureDetailPage({ params }: PageProps) {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#151419] flex items-center justify-center">
+        <div className="min-h-screen bg-vd-page-bg flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-[#F56E0F] border-t-transparent rounded-full animate-spin" />
         </div>
       }

@@ -61,7 +61,7 @@ export function WaitingScreen({ quizTitle, onCheck }: WaitingScreenProps) {
           style={{
             background: "linear-gradient(135deg, rgba(245,110,15,0.18) 0%, rgba(245,110,15,0.06) 100%)",
             border: "1.5px solid rgba(245,110,15,0.30)",
-            boxShadow: "0 8px 32px rgba(245,110,15,0.15), inset 0 1px 0 rgba(255,255,255,0.06)",
+            boxShadow: "0 8px 32px rgba(245,110,15,0.15)",
           }}
         >
           <CalendarClock className="w-10 h-10 text-[#F56E0F]" strokeWidth={1.4} />
@@ -81,7 +81,7 @@ export function WaitingScreen({ quizTitle, onCheck }: WaitingScreenProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35, duration: 0.4 }}
-        className="text-[24px] font-black text-white mb-3 leading-tight"
+        className="text-[24px] font-black text-foreground mb-3 leading-tight"
       >
         Merci pour votre participation
       </motion.h2>
@@ -91,7 +91,7 @@ export function WaitingScreen({ quizTitle, onCheck }: WaitingScreenProps) {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5, duration: 0.4 }}
-        className="text-[14px] text-[#878787] leading-relaxed max-w-xs mb-2"
+        className="text-[14px] text-muted-foreground leading-relaxed max-w-xs mb-2"
       >
         {quizTitle
           ? `Vous avez deja repondu au questionnaire « ${quizTitle} ».`
@@ -103,7 +103,7 @@ export function WaitingScreen({ quizTitle, onCheck }: WaitingScreenProps) {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.4 }}
-        className="text-[13px] text-[#878787]/70 leading-relaxed max-w-xs mb-10"
+        className="text-[13px] text-muted-foreground/70 leading-relaxed max-w-xs mb-10"
       >
         Un nouveau questionnaire apparaitra ici lorsqu'il sera disponible.
       </motion.p>
@@ -157,7 +157,7 @@ export function WaitingScreen({ quizTitle, onCheck }: WaitingScreenProps) {
         {/* Retour programme */}
         <Link
           href="/programme"
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[14px] font-semibold text-white/60 border border-white/10 hover:border-white/20 hover:text-white/80 transition-all duration-150 active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[14px] font-semibold text-foreground/60 border border-foreground/10 hover:border-foreground/20 hover:text-foreground/80 transition-all duration-150 active:scale-[0.98]"
         >
           Voir le programme
           <ArrowRight className="w-4 h-4" strokeWidth={2} />

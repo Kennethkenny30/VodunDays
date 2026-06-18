@@ -88,16 +88,16 @@ export default function UrgencesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#151419] pb-28">
+    <div className="min-h-screen bg-vd-page-bg pb-28">
       <div
-        className="sticky top-0 z-20 bg-[#151419]/95 backdrop-blur border-b border-white/6 px-4 pb-4"
+        className="sticky top-0 z-20 bg-vd-page-bg/95 backdrop-blur border-b border-vd-border-soft px-4 pb-4"
         style={{ paddingTop: "max(16px, env(safe-area-inset-top))" }}
       >
         <div className="flex items-center justify-between max-w-md mx-auto">
-          <button onClick={() => router.back()} className="text-white/60 hover:text-white transition-colors p-1">
+          <button onClick={() => router.back()} className="text-foreground/60 hover:text-foreground transition-colors p-1">
             <ArrowLeft className="size-5" />
           </button>
-          <h1 className="text-white font-semibold">{t("title")}</h1>
+          <h1 className="text-foreground font-semibold">{t("title")}</h1>
           <div className="w-7" />
         </div>
       </div>
@@ -113,21 +113,21 @@ export default function UrgencesPage() {
               className="space-y-4"
             >
               <div className="text-center mb-6">
-                <p className="text-white/60 text-sm">{t("subtitle")}</p>
+                <p className="text-foreground/60 text-sm">{t("subtitle")}</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {ALERT_TYPE_CONFIG.map(({ type, key, Icon, color }) => (
                   <button
                     key={type}
                     onClick={() => { setSelectedType(type); setStep("details"); }}
-                    className="relative flex flex-col items-center gap-2 p-4 rounded-2xl border border-white/8 bg-white/3 hover:bg-white/[0.07] active:scale-95 transition-all text-left"
+                    className="relative flex flex-col items-center gap-2 p-4 rounded-2xl border bg-vd-inner-tint hover:bg-foreground/[0.07] active:scale-95 transition-all text-left"
                     style={{ borderColor: `${color}30` }}
                   >
                     <Icon className="size-6" style={{ color }} />
-                    <span className="text-white text-sm font-medium text-center leading-tight">
+                    <span className="text-foreground text-sm font-medium text-center leading-tight">
                       {t(`types.${key}.label`)}
                     </span>
-                    <span className="text-white/40 text-xs text-center leading-tight">
+                    <span className="text-foreground/40 text-xs text-center leading-tight">
                       {t(`types.${key}.desc`)}
                     </span>
                   </button>
@@ -153,41 +153,41 @@ export default function UrgencesPage() {
               >
                 <selectedConfig.Icon className="size-6" style={{ color: selectedConfig.color }} />
                 <div>
-                  <p className="text-white font-medium text-sm">
+                  <p className="text-foreground font-medium text-sm">
                     {t(`types.${selectedConfig.key}.label`)}
                   </p>
-                  <p className="text-white/50 text-xs">
+                  <p className="text-foreground/50 text-xs">
                     {t(`types.${selectedConfig.key}.desc`)}
                   </p>
                 </div>
-                <button onClick={() => setStep("type")} className="ml-auto text-white/40 hover:text-white/70">
+                <button onClick={() => setStep("type")} className="ml-auto text-foreground/40 hover:text-foreground/70">
                   <X className="size-4" />
                 </button>
               </div>
 
               <div className="space-y-2">
-                <label className="text-white/70 text-sm font-medium">{t("nameLabel")}</label>
+                <label className="text-foreground/70 text-sm font-medium">{t("nameLabel")}</label>
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder={t("namePlaceholder")}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30 transition-colors"
+                  className="w-full bg-foreground/5 border border-foreground/10 rounded-xl px-4 py-3 text-foreground placeholder:text-foreground/30 text-sm focus:outline-none focus:border-foreground/30 transition-colors"
                   maxLength={100}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-white/70 text-sm font-medium">{t("descLabel")}</label>
+                <label className="text-foreground/70 text-sm font-medium">{t("descLabel")}</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder={t("descPlaceholder")}
                   rows={4}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30 transition-colors resize-none"
+                  className="w-full bg-foreground/5 border border-foreground/10 rounded-xl px-4 py-3 text-foreground placeholder:text-foreground/30 text-sm focus:outline-none focus:border-foreground/30 transition-colors resize-none"
                   maxLength={500}
                 />
-                <p className="text-white/30 text-xs text-right">{description.length}/500</p>
+                <p className="text-foreground/30 text-xs text-right">{description.length}/500</p>
               </div>
 
               {error && (
@@ -209,7 +209,7 @@ export default function UrgencesPage() {
                 )}
               </button>
 
-              <p className="text-white/30 text-xs text-center">{t("disclaimer")}</p>
+              <p className="text-foreground/30 text-xs text-center">{t("disclaimer")}</p>
             </motion.div>
           )}
 
@@ -229,35 +229,35 @@ export default function UrgencesPage() {
                 <CheckCircle className="size-16 text-green-400" />
               </motion.div>
               <div>
-                <h2 className="text-white text-xl font-bold mb-2">{t("success.title")}</h2>
-                <p className="text-white/60 text-sm leading-relaxed">{t("success.message")}</p>
+                <h2 className="text-foreground text-xl font-bold mb-2">{t("success.title")}</h2>
+                <p className="text-foreground/60 text-sm leading-relaxed">{t("success.message")}</p>
               </div>
 
               {selectedConfig && (
-                <div className="bg-white/4 border border-white/8 rounded-2xl p-4 text-left space-y-2">
-                  <div className="flex items-center gap-2 text-white/70 text-sm">
+                <div className="bg-foreground/4 border border-foreground/8 rounded-2xl p-4 text-left space-y-2">
+                  <div className="flex items-center gap-2 text-foreground/70 text-sm">
                     <selectedConfig.Icon className="size-4" style={{ color: selectedConfig.color }} />
                     <span>{t(`types.${selectedConfig.key}.label`)}</span>
                   </div>
-                  <p className="text-white/50 text-xs">{description}</p>
+                  <p className="text-foreground/50 text-xs">{description}</p>
                 </div>
               )}
 
               <div className="space-y-3 pt-4">
-                <div className="flex items-center justify-center gap-2 text-white/40 text-xs">
+                <div className="flex items-center justify-center gap-2 text-foreground/40 text-xs">
                   <Phone className="size-3.5" />
                   <span>{t("success.emergency")}</span>
                 </div>
                 <button
                   onClick={resetForm}
-                  className="w-full py-3 rounded-2xl border border-white/10 text-white/70 text-sm hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-2xl border border-foreground/10 text-foreground/70 text-sm hover:bg-foreground/5 transition-colors flex items-center justify-center gap-2"
                 >
                   <RotateCcw className="size-4" />
                   {t("success.newReport")}
                 </button>
                 <button
                   onClick={() => router.push("/")}
-                  className="w-full py-3 rounded-2xl bg-white/8 text-white text-sm font-medium hover:bg-white/12 transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-2xl bg-foreground/8 text-foreground text-sm font-medium hover:bg-foreground/12 transition-colors flex items-center justify-center gap-2"
                 >
                   <Home className="size-4" />
                   {t("success.home")}

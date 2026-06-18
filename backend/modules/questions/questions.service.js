@@ -1,4 +1,5 @@
 import prisma from "../../prisma/prisma.client.js";
+import { translateFields } from "../../utils/translate.js";
 
 export const findAll = async (quizId) => {
   const where = quizId ? { quizId } : {};
@@ -39,13 +40,17 @@ export const create = async (data) => {
   });
   const nextOrder = (aggregate._max.order ?? -1) + 1;
 
+  const translated = data.wordingEn === undefined && data.wording
+    ? await translateFields([{ field: "wording", text: data.wording }])
+    : {};
+
   return prisma.questions.create({
     data: {
       wording:        data.wording,
       questionTypeId: data.questionTypeId,
       quizId:         data.quizId,
       order:          nextOrder,
-      wordingEn:      data.wordingEn ?? null,
+      wordingEn:      data.wordingEn ?? translated.wordingEn ?? null,
     },
     include: { questionType: true, quiz: true },
   });
@@ -67,13 +72,18 @@ export const update = async (id, data) => {
     }
   }
 
+  const translated = data.wording !== undefined && data.wordingEn === undefined
+    ? await translateFields([{ field: "wording", text: data.wording }])
+    : {};
+
   return prisma.questions.update({
     where: { id },
     data: {
-      ...(data.wording         !== undefined && { wording: data.wording }),
-      ...(data.questionTypeId  !== undefined && { questionTypeId: data.questionTypeId }),
-      ...(data.quizId          !== undefined && { quizId: data.quizId }),
-      ...(data.wordingEn       !== undefined && { wordingEn: data.wordingEn }),
+      ...(data.wording        !== undefined && { wording: data.wording }),
+      ...(data.questionTypeId !== undefined && { questionTypeId: data.questionTypeId }),
+      ...(data.quizId         !== undefined && { quizId: data.quizId }),
+      ...(translated.wordingEn !== undefined && { wordingEn: translated.wordingEn }),
+      ...(data.wordingEn      !== undefined && { wordingEn: data.wordingEn }),
     },
     include: { questionType: true, quiz: true },
   });

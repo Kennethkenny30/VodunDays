@@ -2,9 +2,9 @@ import { cn } from "@/lib/utils";
 
 export function ProgramCardSkeleton() {
   return (
-    <div className="bg-[#1B1B1E] rounded-2xl overflow-hidden border border-white/6">
+    <div className="bg-vd-card-surface rounded-2xl overflow-hidden border border-vd-border-soft">
       {/* Image skeleton */}
-      <div className="relative aspect-16/10 bg-[#262626] animate-pulse">
+      <div className="relative aspect-16/10 bg-vd-skeleton animate-pulse">
         <div className="absolute inset-0 animate-shimmer" />
       </div>
       
@@ -13,20 +13,20 @@ export function ProgramCardSkeleton() {
         {/* Title and rating row */}
         <div className="flex items-start justify-between">
           <div className="space-y-2 flex-1">
-            <div className="h-5 w-3/4 bg-[#262626] rounded-md animate-pulse" />
-            <div className="h-3 w-1/2 bg-[#262626] rounded-md animate-pulse" />
+            <div className="h-5 w-3/4 bg-vd-skeleton rounded-md animate-pulse" />
+            <div className="h-3 w-1/2 bg-vd-skeleton rounded-md animate-pulse" />
           </div>
-          <div className="h-5 w-12 bg-[#262626] rounded-md animate-pulse" />
+          <div className="h-5 w-12 bg-vd-skeleton rounded-md animate-pulse" />
         </div>
         
         {/* Location skeleton */}
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-[#262626] rounded-full animate-pulse" />
-          <div className="h-3 w-1/3 bg-[#262626] rounded-md animate-pulse" />
+          <div className="w-4 h-4 bg-vd-skeleton rounded-full animate-pulse" />
+          <div className="h-3 w-1/3 bg-vd-skeleton rounded-md animate-pulse" />
         </div>
         
         {/* Button skeleton */}
-        <div className="h-10 w-full bg-[#262626] rounded-xl animate-pulse" />
+        <div className="h-10 w-full bg-vd-skeleton rounded-xl animate-pulse" />
       </div>
     </div>
   );
@@ -51,7 +51,7 @@ export function DayFilterSkeleton() {
             key={i}
             className={cn(
               "h-9 rounded-full animate-pulse",
-              i === 0 ? "w-20 bg-[#F56E0F]/30" : "w-16 bg-[#262626]"
+              i === 0 ? "w-20 bg-[#F56E0F]/30" : "w-16 bg-vd-skeleton"
             )}
           />
         ))}
@@ -66,12 +66,12 @@ export function HeaderSkeleton() {
       <div className="flex items-center justify-between">
         {/* Logo and title */}
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full bg-[#262626] animate-pulse" />
-          <div className="h-7 w-20 bg-[#262626] rounded-md animate-pulse" />
+          <div className="w-11 h-11 rounded-full bg-vd-skeleton animate-pulse" />
+          <div className="h-7 w-20 bg-vd-skeleton rounded-md animate-pulse" />
         </div>
         
         {/* Weather widget */}
-        <div className="h-9 w-24 rounded-full bg-[#262626] animate-pulse" />
+        <div className="h-9 w-24 rounded-full bg-vd-skeleton animate-pulse" />
       </div>
     </header>
   );
@@ -79,7 +79,7 @@ export function HeaderSkeleton() {
 
 export function PageSkeleton() {
   return (
-    <div className="min-h-screen bg-[#151419]">
+    <div className="min-h-screen bg-vd-page-bg">
       <HeaderSkeleton />
       <DayFilterSkeleton />
       <div className="py-2">
