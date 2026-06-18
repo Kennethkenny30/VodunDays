@@ -47,7 +47,7 @@ export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterPr
               aria-selected={isActive}
               aria-controls={`day-${day}-content`}
               onClick={() => onDayChange(day)}
-              style={{ WebkitTapHighlightColor: "transparent" }}
+              style={{ WebkitTapHighlightColor: "transparent", background: "var(--vd-nav-bg)" }}
               className={cn(
                 // Base : fond glass identique sur tous les boutons
                 "relative flex items-center justify-center p-2 px-5 text-sm",
@@ -69,7 +69,6 @@ export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterPr
                   "shadow-[inset_0_1px_0_var(--vd-glass-inset-shadow)]",
                 ),
               )}
-              style={{ background: "var(--vd-nav-bg)" }}
             >
               {/* ── Reflets lumineux sur le bouton actif uniquement ── */}
               {isActive && (
