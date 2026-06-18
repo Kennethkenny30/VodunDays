@@ -22,7 +22,7 @@ interface UserLocation {
 }
 
 export type RoutePoint =
-  | { type: "gps"; label: "Ma position" }
+  | { type: "gps"; label: string }
   | { type: "poi"; poi: POI };
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
@@ -200,11 +200,11 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
   }, [site, onClose]);
 
   const handleOpenRoute = useCallback(() => {
-    setFromPoint(userLocation ? { type: "gps", label: "Ma position" } : null);
+    setFromPoint(userLocation ? { type: "gps", label: tCarte("itinerary.myPosition") } : null);
     setToPoint(site ? { type: "poi", poi: site } : null);
     setShowRoutePanel(true);
     snapTo(1);
-  }, [userLocation, site, snapTo]);
+  }, [userLocation, site, snapTo, tCarte]);
 
   if (!site) return null;
 
