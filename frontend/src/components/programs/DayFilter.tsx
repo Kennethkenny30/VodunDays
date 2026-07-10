@@ -47,18 +47,18 @@ export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterPr
               aria-selected={isActive}
               aria-controls={`day-${day}-content`}
               onClick={() => onDayChange(day)}
-              style={{ WebkitTapHighlightColor: "transparent", background: "var(--vd-nav-bg)" }}
+              style={{ WebkitTapHighlightColor: "transparent", background: "rgba(255,255,255,0.08)" }}
               className={cn(
-                // Base : fond glass identique sur tous les boutons
+                // Base : fond glass identique sur tous les boutons (aligné sur ARModeSwitcher)
                 "relative flex items-center justify-center p-2 px-5 text-sm",
                 "transition-all duration-300 select-none active:scale-[0.96]",
-                "[backdrop-filter:blur(10px)_saturate(180%)]",
+                "backdrop-blur-xl border border-white/[0.15]",
 
                 // Actif : se détache du flux avec mx + rounded + orange
                 isActive && cn(
                   "mx-2 rounded-xl font-bold",
                   "text-[#F56E0F]",
-                  "shadow-[inset_0_1px_0_var(--vd-glass-inset-shadow)]",
+                  "shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_8px_24px_rgba(0,0,0,0.40)]",
                 ),
 
                 // Inactif : coins adaptés selon voisinage (morphic)
@@ -66,7 +66,7 @@ export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterPr
                   "font-semibold text-muted-foreground hover:text-foreground",
                   (isPrevActive || isFirst) ? "rounded-l-xl" : "rounded-l-none",
                   (isNextActive || isLast)  ? "rounded-r-xl" : "rounded-r-none",
-                  "shadow-[inset_0_1px_0_var(--vd-glass-inset-shadow)]",
+                  "shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_8px_24px_rgba(0,0,0,0.40)]",
                 ),
               )}
             >

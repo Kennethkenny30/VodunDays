@@ -59,10 +59,10 @@ export function Footer() {
               </div>
             </Link>
 
-            {/* Badge officiel */}
+            {/* Badge officiel 
             <span className="mb-5 inline-flex items-center rounded-full border border-[var(--vd-gold)]/30 bg-[var(--vd-gold)]/8 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--vd-gold)]">
               Officiel
-            </span>
+            </span>*/}
 
             <p className="mt-4 max-w-[240px] text-[13px] leading-relaxed text-muted-foreground/60">
               Plateforme numérique officielle des Vodun Days. Célébrez la tradition ancestrale du Bénin.

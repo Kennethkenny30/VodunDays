@@ -62,7 +62,7 @@ export function BottomNav() {
       className={cn(
         "fixed left-1/2 -translate-x-1/2 z-50",
         "rounded-full",
-        "shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
+        "shadow-[0_8px_24px_rgba(0,0,0,0.40)]",
         "p-px",
         "touch-callout-none",
         "lg:hidden"
@@ -75,12 +75,12 @@ export function BottomNav() {
       <div
         className={cn(
           "rounded-full",
-          "backdrop-blur-[10px] backdrop-saturate-180",
+          "backdrop-blur-xl border border-white/[0.15]",
           "px-3 py-2.5",
         )}
         style={{
-          background: "var(--vd-nav-bg)",
-          boxShadow: "inset 0 1px 0 var(--vd-nav-inset-shadow)",
+          background: "rgba(255,255,255,0.08)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.10)",
         }}
       >
         <div className="flex items-center gap-1">
