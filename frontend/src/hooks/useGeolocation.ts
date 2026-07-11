@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// Types
 
 export interface UserLocation {
   longitude: number;
@@ -18,7 +18,7 @@ export interface GeolocationState {
   requestLocation:  () => void;
 }
 
-// ─── Options ──────────────────────────────────────────────────────────────────
+// Options
 
 /**
  * maximumAge: 0  → jamais de cache, position fraîche à chaque fois
@@ -31,9 +31,14 @@ const GEO_OPTIONS: PositionOptions = {
   timeout:            15_000,
 };
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
+// Hook
 
-export function useGeolocation(): GeolocationState {
+export interface UseGeolocationOptions {
+  /** Si false, ne demande pas la permission au montage : attendre un geste utilisateur (requestLocation) */
+  auto?: boolean;
+}
+
+export function useGeolocation({ auto = true }: UseGeolocationOptions = {}): GeolocationState {
   const [location,         setLocation]         = useState<UserLocation | null>(null);
   const [error,            setError]            = useState<string | null>(null);
   const [loading,          setLoading]          = useState(false);
@@ -89,16 +94,16 @@ export function useGeolocation(): GeolocationState {
     );
   }, [onSuccess, onError]);
 
-  // Démarre automatiquement au montage
+  // Démarre au montage seulement si auto (sinon la permission attend un geste utilisateur)
   useEffect(() => {
-    startWatch();
+    if (auto) startWatch();
     return () => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
         watchIdRef.current = null;
       }
     };
-  }, [startWatch]);
+  }, [auto, startWatch]);
 
   return { location, error, loading, permissionDenied, requestLocation: startWatch };
 }

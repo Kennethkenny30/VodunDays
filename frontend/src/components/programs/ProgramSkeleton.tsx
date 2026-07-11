@@ -43,15 +43,17 @@ export function ProgramListSkeleton({ count = 3 }: { count?: number }) {
 }
 
 export function DayFilterSkeleton() {
+  // Reproduit la géométrie réelle du DayFilter : 3 segments joints
   return (
     <div className="px-4 py-3">
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="flex items-center overflow-hidden rounded-full">
+        {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
             className={cn(
-              "h-9 rounded-full animate-pulse",
-              i === 0 ? "w-20 bg-[#F56E0F]/30" : "w-16 bg-vd-skeleton"
+              "min-h-11 w-28 animate-pulse bg-vd-skeleton",
+              i === 0 && "rounded-l-full",
+              i === 2 && "rounded-r-full",
             )}
           />
         ))}

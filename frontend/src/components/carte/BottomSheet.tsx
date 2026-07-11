@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   motion,
   useMotionValue,
@@ -14,7 +15,7 @@ import { MARKER_CATEGORIES, type POI } from "@/lib/markers";
 import { localize } from "@/lib/i18n/localize";
 import { X, Navigation, MapPin, ChevronDown, ArrowRight, ChevronUp } from "lucide-react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// Types
 
 interface UserLocation {
   longitude: number;
@@ -25,7 +26,7 @@ export type RoutePoint =
   | { type: "gps"; label: string }
   | { type: "poi"; poi: POI };
 
-// ─── Utils ────────────────────────────────────────────────────────────────────
+// Utils
 
 function formatDistance(from: UserLocation, to: POI): string {
   const R  = 6_371_000;
@@ -49,7 +50,7 @@ function hexToRgb(hex: string): string {
   return `${r}, ${g}, ${b}`;
 }
 
-// ─── Snap points ─────────────────────────────────────────────────────────────
+// Snap points
 
 function useSnapPoints() {
   const [winH, setWinH] = useState(
@@ -76,7 +77,7 @@ function useSnapPoints() {
   };
 }
 
-// ─── RoutePointSelector ───────────────────────────────────────────────────────
+// RoutePointSelector
 
 interface RoutePointSelectorProps {
   label: string;
@@ -86,17 +87,27 @@ interface RoutePointSelectorProps {
   allPois: POI[];
   readOnly?: boolean;
   onChange: (point: RoutePoint) => void;
+  /** Si fourni, "Ma position" est toujours proposée : sans position connue, ce handler déclenche la géoloc */
+  onSelectGps?: () => void;
+  /** Acquisition GPS en cours pour ce champ */
+  pending?: boolean;
+  /** Dernière demande de géoloc refusée : affiche un état distinct plutôt qu'un retour silencieux au neutre */
+  denied?: boolean;
 }
 
 function RoutePointSelector({
-  label, dotColor, value, userLocation, allPois, readOnly = false, onChange,
+  label, dotColor, value, userLocation, allPois, readOnly = false, onChange, onSelectGps, pending = false, denied = false,
 }: RoutePointSelectorProps) {
   const [open, setOpen] = useState(false);
   const locale = useLocale();
   const tCarte = useTranslations("carte");
-  const displayLabel = !value
-    ? tCarte("itinerary.choosePoi")
-    : value.type === "gps" ? tCarte("itinerary.myPosition") : localize(value.poi, "name", locale);
+  const displayLabel = pending
+    ? tCarte("itinerary.locating")
+    : denied
+      ? tCarte("itinerary.locationDenied")
+      : !value
+        ? tCarte("itinerary.choosePoi")
+        : value.type === "gps" ? tCarte("itinerary.myPosition") : localize(value.poi, "name", locale);
 
   return (
     <div style={{ position: "relative" }}>
@@ -106,18 +117,26 @@ function RoutePointSelector({
       </div>
       <button
         onClick={() => { if (!readOnly) setOpen(o => !o); }}
-        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "10px 14px", borderRadius: 12, background: readOnly ? "rgba(68,136,255,0.08)" : open ? `rgba(${hexToRgb(dotColor)}, 0.10)` : "var(--vd-filter-bg-inactive)", border: `1px solid ${readOnly ? "rgba(68,136,255,0.22)" : open ? `rgba(${hexToRgb(dotColor)}, 0.40)` : "var(--vd-filter-border-inactive)"}`, color: value ? "var(--foreground)" : "var(--muted-foreground)", fontSize: 13, fontWeight: 600, cursor: readOnly ? "default" : "pointer", transition: "background 160ms, border-color 160ms", textAlign: "left" }}
+        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "10px 14px", borderRadius: 12, background: denied ? "rgba(255,68,68,0.08)" : readOnly ? "rgba(68,136,255,0.08)" : open ? `rgba(${hexToRgb(dotColor)}, 0.10)` : "var(--vd-filter-bg-inactive)", border: `1px solid ${denied ? "rgba(255,68,68,0.30)" : readOnly ? "rgba(68,136,255,0.22)" : open ? `rgba(${hexToRgb(dotColor)}, 0.40)` : "var(--vd-filter-border-inactive)"}`, color: denied ? "#FF4444" : value ? "var(--foreground)" : "var(--muted-foreground)", fontSize: 13, fontWeight: 600, cursor: readOnly ? "default" : "pointer", transition: "background 160ms, border-color 160ms", textAlign: "left" }}
       >
         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayLabel}</span>
         {readOnly
           ? <MapPin size={13} style={{ flexShrink: 0, color: "#4488FF", opacity: 0.7 }} />
-          : <ChevronDown size={14} style={{ flexShrink: 0, color: "var(--muted-foreground)", transform: open ? "rotate(180deg)" : "none", transition: "transform 160ms ease" }} />
+          : <ChevronDown size={14} style={{ flexShrink: 0, color: denied ? "#FF4444" : "var(--muted-foreground)", transform: open ? "rotate(180deg)" : "none", transition: "transform 160ms ease" }} />
         }
       </button>
       {open && !readOnly && (
-        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "var(--vd-dropdown-bg)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid var(--vd-glass-border-color)", borderRadius: 14, zIndex: 200, maxHeight: 220, overflowY: "auto", boxShadow: "0 12px 36px rgba(0,0,0,0.4)" }}>
-          {userLocation && (
-            <button onClick={() => { onChange({ type: "gps", label: tCarte("itinerary.myPosition") }); setOpen(false); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "transparent", border: "none", borderBottom: "1px solid var(--vd-glass-border-color)", color: "#4488FF", fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "left" }}>
+        /* Ouvre vers le haut : la liste n'est pas clippée par l'overflow hidden du sheet aux snaps partiels */
+        <div style={{ position: "absolute", bottom: "calc(100% + 6px)", left: 0, right: 0, background: "var(--vd-dropdown-bg)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid var(--vd-glass-border-color)", borderRadius: 14, zIndex: 200, maxHeight: 220, overflowY: "auto", boxShadow: "0 12px 36px rgba(0,0,0,0.4)" }}>
+          {(userLocation || onSelectGps) && (
+            <button
+              onClick={() => {
+                if (userLocation) onChange({ type: "gps", label: tCarte("itinerary.myPosition") });
+                else onSelectGps?.();
+                setOpen(false);
+              }}
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "transparent", border: "none", borderBottom: "1px solid var(--vd-glass-border-color)", color: "#4488FF", fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "left" }}
+            >
               <MapPin size={14} style={{ flexShrink: 0 }} />
               {tCarte("itinerary.myPosition")}
             </button>
@@ -137,7 +156,7 @@ function RoutePointSelector({
   );
 }
 
-// ─── BottomSheet ──────────────────────────────────────────────────────────────
+// BottomSheet
 
 interface BottomSheetProps {
   site: POI | null;
@@ -145,15 +164,26 @@ interface BottomSheetProps {
   onClose: () => void;
   onNavigateFromTo: (from: RoutePoint, to: RoutePoint) => void;
   allPois: POI[];
+  /** Déclenche la demande de géolocalisation (geste utilisateur) */
+  onRequestLocation: () => void;
+  gpsLoading: boolean;
+  /** Dernière demande de géolocalisation refusée par l'utilisateur */
+  permissionDenied: boolean;
+  /** Incrémenté par le parent pour ouvrir directement le panneau itinéraire du site courant */
+  openRouteSignal?: number;
 }
 
-export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, allPois }: BottomSheetProps) {
+export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, allPois, onRequestLocation, gpsLoading, permissionDenied, openRouteSignal = 0 }: BottomSheetProps) {
   const locale = useLocale();
   const tCarte = useTranslations("carte");
   const [showRoutePanel, setShowRoutePanel] = useState(false);
   const [fromPoint, setFromPoint] = useState<RoutePoint | null>(null);
   const [toPoint,   setToPoint]   = useState<RoutePoint | null>(null);
   const [snapIdx,   setSnapIdx]   = useState(0);
+  // Portal vers body : le conteneur carte (zIndex:1) crée un contexte d'empilement
+  // qui plafonnait le sheet sous le BottomNav (z-50)
+  const [mounted,   setMounted]   = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   const { containerH, offsets } = useSnapPoints();
   const prefersReduced = useReducedMotion();
@@ -199,6 +229,12 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
     return () => window.removeEventListener("keydown", handler);
   }, [site, onClose]);
 
+  // Re-synchronise la position sur le snap courant quand la hauteur change (rotation)
+  useEffect(() => {
+    y.set(offsets[snapIdx]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offsets[0], offsets[1], offsets[2]]);
+
   const handleOpenRoute = useCallback(() => {
     setFromPoint(userLocation ? { type: "gps", label: tCarte("itinerary.myPosition") } : null);
     setToPoint(site ? { type: "poi", poi: site } : null);
@@ -206,7 +242,40 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
     snapTo(1);
   }, [userLocation, site, snapTo, tCarte]);
 
-  if (!site) return null;
+  // Ouverture du panneau itinéraire pilotée par le parent (CTA du marqueur sans position connue)
+  useEffect(() => {
+    if (!site || !openRouteSignal) return;
+    handleOpenRoute();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openRouteSignal]);
+
+  // Sélection de "Ma position" sans position connue : on demande la géoloc et on remplit à l'arrivée
+  const [awaitingGps, setAwaitingGps] = useState(false);
+  const prevGpsLoadingRef = useRef(false);
+
+  const handleSelectMyPosition = useCallback(() => {
+    if (userLocation) {
+      setFromPoint({ type: "gps", label: tCarte("itinerary.myPosition") });
+      return;
+    }
+    setAwaitingGps(true);
+    onRequestLocation();
+  }, [userLocation, onRequestLocation, tCarte]);
+
+  useEffect(() => {
+    if (awaitingGps && userLocation) {
+      setFromPoint({ type: "gps", label: tCarte("itinerary.myPosition") });
+      setAwaitingGps(false);
+    }
+  }, [awaitingGps, userLocation, tCarte]);
+
+  // Fin d'acquisition sans position (refus/timeout) : on rend la main au sélecteur
+  useEffect(() => {
+    if (prevGpsLoadingRef.current && !gpsLoading && !userLocation) setAwaitingGps(false);
+    prevGpsLoadingRef.current = gpsLoading;
+  }, [gpsLoading, userLocation]);
+
+  if (!site || !mounted) return null;
 
   const cat  = MARKER_CATEGORIES[site.category];
   const rgb  = hexToRgb(cat.color);
@@ -234,7 +303,7 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
     }
   };
 
-  return (
+  return createPortal(
     <>
       {/* Scrim animé - z-index 55 pour être sous le sheet mais au-dessus de la carte */}
       <motion.div
@@ -250,6 +319,9 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
 
       {/* Sheet - z-index 60, au-dessus de la BottomNav (z-50) */}
       <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-label={localize(site, "name", locale)}
         className="fixed left-0 right-0"
         style={{
           bottom: 0,
@@ -265,7 +337,8 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
           borderLeft: "1px solid var(--vd-glass-border-color)",
           borderRight: "1px solid var(--vd-glass-border-color)",
           borderRadius: "24px 24px 0 0",
-          touchAction: "none",
+          // Pas de touchAction:none ici : il bloquerait le scroll tactile du contenu.
+          // Le drag ne part que du grabber (dragListener=false), qui garde son touchAction.
           willChange: "transform",
           boxShadow: `0 -8px 48px rgba(${rgb}, 0.10), 0 -2px 0 rgba(${rgb}, 0.30)`,
         }}
@@ -317,8 +390,8 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
             </div>
 
             {/* Bouton fermer */}
-            <button onClick={onClose} style={{ flexShrink: 0, marginTop: 2, width: 30, height: 30, borderRadius: "50%", background: "var(--vd-inner-tint)", border: "1px solid var(--vd-glass-border-color)", color: "var(--muted-foreground)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <X size={14} />
+            <button onClick={onClose} aria-label="Fermer" style={{ flexShrink: 0, width: 40, height: 40, borderRadius: "50%", background: "var(--vd-inner-tint)", border: "1px solid var(--vd-glass-border-color)", color: "var(--muted-foreground)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <X size={15} />
             </button>
           </div>
 
@@ -361,7 +434,18 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
                   {tCarte("itinerary.title")}
                 </p>
 
-                <RoutePointSelector label={tCarte("itinerary.from")} dotColor="#4488FF" value={fromPoint} userLocation={userLocation} allPois={allPois} readOnly={fromLocked} onChange={setFromPoint} />
+                <RoutePointSelector
+                  label={tCarte("itinerary.from")}
+                  dotColor="#4488FF"
+                  value={fromPoint}
+                  userLocation={userLocation}
+                  allPois={allPois}
+                  readOnly={fromLocked}
+                  onChange={setFromPoint}
+                  onSelectGps={handleSelectMyPosition}
+                  pending={awaitingGps}
+                  denied={permissionDenied && !userLocation}
+                />
 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", margin: "10px 0", gap: 4 }}>
                   <div style={{ width: 1, height: 18, background: "repeating-linear-gradient(to bottom, #55556a 0px, #55556a 3px, transparent 3px, transparent 6px)" }} />
@@ -404,6 +488,7 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
           </div>
         </div>
       </motion.div>
-    </>
+    </>,
+    document.body
   );
 }

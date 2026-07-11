@@ -123,15 +123,24 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
   // Tooltip mobile : affiché 1 500 ms après un tap
   const [showMobileTooltip, setShowMobileTooltip] = useState(false);
   const mobileTooltipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Anti double-tap : certains navigateurs émettent quand même un click synthétique
+  // après le touchend, ce qui déclenchait le toggle deux fois (ouverture puis fermeture)
+  const suppressClickRef = useRef(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    const handleClick = (e: MouseEvent) => { e.stopPropagation(); onClick(poi); };
+    const handleClick = (e: MouseEvent) => {
+      e.stopPropagation();
+      if (suppressClickRef.current) { suppressClickRef.current = false; return; }
+      onClick(poi);
+    };
     const handleTouch = (e: TouchEvent) => {
       e.stopPropagation();
       e.preventDefault();
+      suppressClickRef.current = true;
+      setTimeout(() => { suppressClickRef.current = false; }, 500);
       setShowMobileTooltip(true);
       if (mobileTooltipTimer.current) clearTimeout(mobileTooltipTimer.current);
       mobileTooltipTimer.current = setTimeout(() => setShowMobileTooltip(false), 1500);
@@ -182,6 +191,10 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
               transition: "width 200ms ease, height 200ms ease",
             }}
           >
+            {/* Zone de hit tactile étendue à 44px minimum (le visuel reste inchangé) */}
+            {size < 44 && (
+              <div style={{ position: "absolute", inset: -(44 - size) / 2, borderRadius: "50%" }} />
+            )}
             {/* Halo ping (sélection) */}
             {isSelected && (
               <>
@@ -406,6 +419,7 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
               onClick={(e) => { e.stopPropagation(); onNavigate(poi); }}
               style={{
                 width: "100%",
+                minHeight: 44,
                 background: `linear-gradient(135deg, ${cat.color} 0%, ${cat.color}D0 100%)`,
                 color: "#fff",
                 border: "none",
@@ -424,6 +438,9 @@ export function SiteMarker({ poi, isSelected, onClick, onNavigate }: SiteMarkerP
               }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.filter = "brightness(1.08)"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.filter = "brightness(1)"; }}
+              onPointerDown={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.97)"; }}
+              onPointerUp={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = ""; }}
+              onPointerLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = ""; }}
             >
               <Navigation size={13} />
               Itinéraire

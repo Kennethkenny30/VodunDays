@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, CalendarPlus, CalendarCheck, AlertTriangle } from "lucide-react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
@@ -20,7 +20,7 @@ const programTypeBadgeStyles: Record<ProgramType, { bg: string; textVar: string;
 };
 
 
-// ── Ripple ────────────────────────────────────────────────────────────────────
+// Ripple
 
 function AddRipple({ active }: { active: boolean }) {
   return (
@@ -39,14 +39,15 @@ function AddRipple({ active }: { active: boolean }) {
   );
 }
 
-// ── ProgramCard ───────────────────────────────────────────────────────────────
+// ProgramCard
 
 interface ProgramCardProps {
   program: Program;
   index?: number;
+  highlighted?: boolean; // Ciblé par la recherche : scroll + surbrillance temporaire
 }
 
-export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
+export function ProgramCard({ program, index = 0, highlighted = false }: ProgramCardProps) {
   const router = useRouter();
   const locale = useLocale();
   const tEnum = useTranslations("enums");
@@ -60,6 +61,15 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
 
   const ref      = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: "0px 0px -60px 0px" });
+
+  // Scroll vers la carte ciblée par la recherche, après l'animation d'entrée de la liste
+  useEffect(() => {
+    if (!highlighted) return;
+    const t = setTimeout(() => {
+      ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 350);
+    return () => clearTimeout(t);
+  }, [highlighted]);
 
   function handleAgendaToggle(e: React.MouseEvent) {
     e.stopPropagation();
@@ -122,6 +132,8 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
         hasConflict
           ? "border-amber-500/40 shadow-[0_4px_24px_rgba(245,158,11,0.15)]"
           : "border-vd-border-soft shadow-[0_4px_24px_rgba(0,0,0,0.25)]",
+        "transition-[border-color,box-shadow] duration-700",
+        highlighted && "border-[#F56E0F]/60 shadow-[0_4px_24px_rgba(245,110,15,0.25)]",
       )}
     >
       {/* Conflict banner */}
@@ -253,7 +265,7 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
   );
 }
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
+// Skeleton
 
 export function ProgramCardSkeleton() {
   return (

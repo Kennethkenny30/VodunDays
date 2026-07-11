@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
@@ -14,6 +15,7 @@ import { useWeather }              from "@/hooks/useWeather";
 import type { Program, ProgramType } from "@/lib/types";
 import { PwaInstallPrompt }        from "@/components/pwa-install-prompt";
 import { getApiBase }              from "@/lib/api/client";
+import { getFestivalStartDate }    from "@/lib/festival";
 
 // Config
 
@@ -66,18 +68,6 @@ type BackendEvent = {
   eventType?:    { name: string };
   programs?:     BackendProgram[];
 };
-
-// Dates du festival
-
-function getFestivalYear(): number {
-  const now = new Date();
-  const cutoff = new Date(now.getFullYear(), 0, 10, 23, 59, 59);
-  return now > cutoff ? now.getFullYear() + 1 : now.getFullYear();
-}
-
-function getFestivalStartDate(): Date {
-  return new Date(getFestivalYear(), 0, 8);
-}
 
 // Mapper
 // Transporte maintenant siteId + siteLat + siteLng pour le deep-link carte.
@@ -188,9 +178,13 @@ const glowVariants: Variants = {
 
 function ProgrammeContent() {
   const t = useTranslations("programme");
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+  const eventParam   = searchParams.get("event");
   const [activeDay, setActiveDay]   = useState(1);
   const [programs, setPrograms]     = useState<Program[]>([]);
   const [loading, setLoading]       = useState(true);
+  const [highlightEventId, setHighlightEventId] = useState<string | null>(null);
   const { weather } = useWeather();
 
   useEffect(() => {
@@ -211,6 +205,28 @@ function ProgrammeContent() {
     }
     loadPrograms();
   }, []);
+
+  // Deep-link ?event=<id> (recherche du WeatherWidget) : sélectionne le jour
+  // du premier programme de l'événement puis déclenche scroll + surbrillance
+  useEffect(() => {
+    if (!eventParam || programs.length === 0) return;
+    const matches = programs.filter((p) => p.eventId === eventParam);
+    if (matches.length === 0) return;
+    const target = [...matches].sort(
+      (a, b) => a.day - b.day || a.startTime.localeCompare(b.startTime)
+    )[0];
+    setActiveDay(target.day);
+    setHighlightEventId(eventParam);
+    // Nettoie le param pour qu'une recherche ultérieure du même événement re-déclenche
+    router.replace("/programme", { scroll: false });
+  }, [eventParam, programs, router]);
+
+  // La surbrillance est temporaire : on la retire une fois l'attention captée
+  useEffect(() => {
+    if (!highlightEventId) return;
+    const t = setTimeout(() => setHighlightEventId(null), 2600);
+    return () => clearTimeout(t);
+  }, [highlightEventId]);
 
   const filteredPrograms = programs.filter((p) => p.day === activeDay);
 
@@ -266,7 +282,11 @@ function ProgrammeContent() {
               {t("empty")}
             </p>
           ) : (
-            <ProgramList programs={filteredPrograms} />
+            <ProgramList
+              programs={filteredPrograms}
+              activeDay={activeDay}
+              highlightEventId={highlightEventId}
+            />
           )}
         </motion.div>
 
@@ -281,7 +301,10 @@ function ProgrammeContent() {
 export default function ProgrammePage() {
   return (
     <FestivalPlannerProvider>
-      <ProgrammeContent />
+      {/* Suspense requis par useSearchParams dans ProgrammeContent */}
+      <Suspense>
+        <ProgrammeContent />
+      </Suspense>
     </FestivalPlannerProvider>
   );
 }

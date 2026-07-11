@@ -200,6 +200,8 @@
   },
   "carte": {
     "header": "Navigation",
+    "loading": "Chargement de la carte…",
+    "noFilter": "Aucune catégorie sélectionnée",
     "filters": {
       "all": "Tous",
       "sites": "Sites",
@@ -219,6 +221,8 @@
       "fromYou": "depuis vous",
       "fromMyPosition": "depuis ma position",
       "myPosition": "Ma position",
+      "locating": "Recherche de votre position…",
+      "locationDenied": "Position refusée - réessayer",
       "choosePoi": "Choisir un point..."
     }
   },

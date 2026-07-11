@@ -13,15 +13,18 @@ import {
   Radio, Loader2, UserCheck, CircleCheck, ExternalLink,
   Trash2, ChevronDown, ChevronUp,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useNotifPrefs } from "@/hooks/useNotifPrefs";
 import { cn } from "@/lib/utils";
 import { getApiBase } from "@/lib/api/client";
+import { getEvents } from "@/lib/api/events";
+import { getSites } from "@/lib/api/sites";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { WeatherData } from "@/lib/types";
 import { useTranslations, useLocale } from "next-intl";
 import { localize } from "@/lib/i18n/localize";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// Types
 
 type View = "idle" | "weather" | "notifications" | "search" | "emergency" | "tracking";
 
@@ -78,11 +81,11 @@ export interface DynamicIslandProps {
   onLogoSeparate?: () => void;
 }
 
-// ─── Config ───────────────────────────────────────────────────────────────────
+// Config
 
 const API_BASE = getApiBase();
 
-// ─── UUID festivalier persisté ────────────────────────────────────────────────
+// UUID festivalier persisté
 
 function getOrCreateUUID(): string {
   if (typeof window === "undefined") return crypto.randomUUID();
@@ -94,7 +97,7 @@ function getOrCreateUUID(): string {
   return uuid;
 }
 
-// ─── Defaults ────────────────────────────────────────────────────────────────
+// Valeurs par défaut
 
 const defaultWeather: WeatherData = {
   temperature: 28,
@@ -108,7 +111,7 @@ const defaultWeather: WeatherData = {
   location:    "Ouidah, Bénin",
 };
 
-// ─── Notification helpers ─────────────────────────────────────────────────────
+// Helpers de notifications
 
 /** Déduit un type visuel depuis le titre de la notification BDD */
 function inferNotifType(title: string): Notification["type"] {
@@ -164,7 +167,7 @@ const HOURLY_FALLBACK = [
   { h: "21h", t: 25, icon: "cloud" },
 ];
 
-// ─── Emergency config ─────────────────────────────────────────────────────────
+// Config urgences
 
 const SERVICES: { id: EmergencyService; label: string; icon: React.ElementType; color: string; border: string; text: string; bg: string }[] = [
   {
@@ -221,13 +224,13 @@ const SERVICE_TYPES: Record<EmergencyService, EmergencyType[]> = {
   SECURITE_FESTIVAL: ["BOUSCULADE", "INTRUSION", "OBJET_SUSPECT", "INCENDIE"],
 };
 
-// ─── Glass tokens ─────────────────────────────────────────────────────────────
+// Tokens glass
 
 const GLASS = {
-  outer:  "[background:linear-gradient(135deg,var(--vd-glass-radial-outer)_0%,var(--vd-glass-radial-inner)_100%)]",
-  inner:  "bg-vd-card-surface/80 [backdrop-filter:blur(24px)_saturate(200%)]",
-  shadow: "shadow-[0_8px_40px_rgba(0,0,0,0.3)]",
-  border: "border border-vd-border-soft",
+  outer:  "[background:var(--vd-nav-border-grad)]",
+  inner:  "bg-white/[0.08] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]",
+  shadow: "shadow-[0_8px_24px_rgba(0,0,0,0.40)]",
+  border: "border border-white/[0.15]",
 };
 
 // Springs iOS-like : stiffness 300-420, damping 30-36, mass 0.7-0.9 - settle naturel, zéro overshoot
@@ -235,7 +238,7 @@ const S_UI   = { type: "spring", stiffness: 360, damping: 32, mass: 0.8 } as con
 const S_FAST = { type: "spring", stiffness: 420, damping: 36, mass: 0.7 } as const;
 const S_SOFT = { type: "spring", stiffness: 300, damping: 30, mass: 0.9 } as const;
 
-// ─── WeatherIcon ──────────────────────────────────────────────────────────────
+// WeatherIcon
 
 function WeatherIcon({ icon, className }: { icon: string; className?: string }) {
   const map: Record<string, React.ElementType> = {
@@ -245,7 +248,7 @@ function WeatherIcon({ icon, className }: { icon: string; className?: string }) 
   return <Icon className={className} strokeWidth={1.5} />;
 }
 
-// ─── notifConfig ──────────────────────────────────────────────────────────────
+// notifConfig
 
 const notifConfig = {
   live:   { dot: "bg-red-500",    accent: "border-l-red-500/60",   label: "Live",   labelColor: "text-red-400"   },
@@ -254,7 +257,7 @@ const notifConfig = {
   info:   { dot: "bg-blue-400",   accent: "border-l-blue-400/60",  label: "Info",   labelColor: "text-blue-400"  },
 };
 
-// ─── WeatherView ──────────────────────────────────────────────────────────────
+// WeatherView
 
 function WeatherView({ weather }: { weather: WeatherData }) {
   const t = useTranslations("weather");
@@ -352,7 +355,7 @@ function WeatherView({ weather }: { weather: WeatherData }) {
   );
 }
 
-// ─── NotificationsView ────────────────────────────────────────────────────────
+// NotificationsView
 
 type NotifTab = "unread" | "read";
 
@@ -581,21 +584,27 @@ function NotificationsView({
   );
 }
 
-// ─── SearchView ───────────────────────────────────────────────────────────────
+// SearchView
 
 interface SearchResult {
-  id:       string;
-  label:    string;
-  sub?:     string;
-  kind:     "event" | "site";
+  id:           string;
+  label:        string;
+  sub?:         string;
+  kind:         "event" | "site";
+  siteId?:      string | null;
+  lat?:         number | null;
+  lng?:         number | null;
+  hasPrograms?: boolean;
 }
 
 function SearchView({ onClose }: { onClose: () => void }) {
+  const router     = useRouter();
+  const locale     = useLocale();
   const inputRef   = useRef<HTMLInputElement>(null);
   const [query, setQuery]             = useState("");
   const [results, setResults]         = useState<SearchResult[]>([]);
   const [allItems, setAllItems]       = useState<SearchResult[]>([]);
-  const [loadingData, setLoadingData] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tSearch = useTranslations("weather");
 
@@ -603,25 +612,37 @@ function SearchView({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     const t = setTimeout(() => inputRef.current?.focus(), 120);
 
-    setLoadingData(true);
     Promise.all([
-      fetch(`${API_BASE}/events?status=PUBLISHED`, { credentials: "include" })
-        .then(r => r.ok ? r.json() : { success: false })
-        .catch(() => ({ success: false })),
-      fetch(`${API_BASE}/sites`, { credentials: "include" })
-        .then(r => r.ok ? r.json() : { success: false })
-        .catch(() => ({ success: false })),
+      getEvents({ status: "PUBLISHED" }).catch(() => null),
+      getSites().catch(() => null),
     ]).then(([evRes, siteRes]) => {
       const items: SearchResult[] = [];
 
-      if (evRes.success && Array.isArray(evRes.data)) {
-        evRes.data.forEach((e: { id: string; name: string; site?: { name: string } }) => {
-          items.push({ id: e.id, label: e.name, sub: e.site?.name, kind: "event" });
+      if (evRes?.success && Array.isArray(evRes.data)) {
+        evRes.data.forEach(e => {
+          items.push({
+            id:          e.id,
+            label:       localize(e, "name", locale),
+            sub:         e.site ? localize(e.site, "name", locale) : undefined,
+            kind:        "event",
+            siteId:      e.site?.id ?? null,
+            lat:         e.site?.latitude ?? null,
+            lng:         e.site?.longitude ?? null,
+            hasPrograms: (e.programs?.length ?? 0) > 0,
+          });
         });
       }
-      if (siteRes.success && Array.isArray(siteRes.data)) {
-        siteRes.data.forEach((s: { id: string; name: string; type?: string }) => {
-          items.push({ id: s.id, label: s.name, sub: s.type, kind: "site" });
+      if (siteRes?.success && Array.isArray(siteRes.data)) {
+        siteRes.data.forEach(s => {
+          items.push({
+            id:     s.id,
+            label:  localize(s, "name", locale),
+            sub:    localize(s, "type", locale),
+            kind:   "site",
+            siteId: s.id,
+            lat:    s.latitude,
+            lng:    s.longitude,
+          });
         });
       }
 
@@ -630,7 +651,32 @@ function SearchView({ onClose }: { onClose: () => void }) {
     }).finally(() => setLoadingData(false));
 
     return () => clearTimeout(t);
-  }, []);
+  }, [locale]);
+
+  // Navigation calquée sur handleViewOnMap de ProgramCard :
+  // site → carte centrée ; événement planifié → programme (jour + scroll) ;
+  // événement sans horaires → carte sur son site, à défaut programme.
+  function handleSelect(item: SearchResult) {
+    onClose();
+    if (item.kind === "site") {
+      router.push(`/carte?siteId=${item.id}`);
+      return;
+    }
+    if (item.hasPrograms) {
+      router.push(`/programme?event=${item.id}`);
+      return;
+    }
+    if (item.siteId) {
+      router.push(`/carte?siteId=${item.siteId}`);
+      return;
+    }
+    if (item.lat != null && item.lng != null) {
+      const params = new URLSearchParams({ lat: String(item.lat), lng: String(item.lng), name: item.label });
+      router.push(`/carte?${params.toString()}`);
+      return;
+    }
+    router.push(`/programme?event=${item.id}`);
+  }
 
   // Filtre avec debounce 300ms
   useEffect(() => {
@@ -677,6 +723,7 @@ function SearchView({ onClose }: { onClose: () => void }) {
             <motion.button key={item.id} layout
               initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }}
               transition={{ delay: i * 0.04, duration: 0.18 }}
+              onClick={() => handleSelect(item)}
               className="flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl bg-foreground/4 border border-foreground/6 hover:bg-foreground/8 active:scale-[0.98] transition-all group text-left"
             >
               <div className="flex items-center gap-2.5">
@@ -712,7 +759,7 @@ function SearchView({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ─── EmergencyView ────────────────────────────────────────────────────────────
+// EmergencyView
 
 function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req: AlertRequest) => void }) {
   const t = useTranslations("weather");
@@ -736,7 +783,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
     );
   }, []);
 
-  // Countdown
+  // Compte à rebours
   useEffect(() => {
     if (countdown === null) return;
     if (countdown === 0) { handleSend(); return; } // eslint-disable-line react-hooks/exhaustive-deps
@@ -840,7 +887,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
   return (
     <div className="pb-4 overflow-hidden">
 
-      {/* ── Step indicator ── */}
+      {/* Indicateur d'étape */}
       <div className="flex items-center justify-center gap-2 pt-1 pb-3 px-4">
         {([1, 2, 3] as EmergencyStep[]).map(s => (
           <motion.div
@@ -857,7 +904,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
         ))}
       </div>
 
-      {/* ── Steps ── */}
+      {/* Étapes */}
       <AnimatePresence mode="wait" custom={directionRef.current} initial={false}>
         {step === 1 && (
           <motion.div key="step1"
@@ -905,7 +952,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
               })}
             </div>
 
-            {/* Categories */}
+            {/* Catégories */}
             <p className="text-[10px] uppercase tracking-[0.2em] text-foreground/25 mb-2.5 font-medium">
               {t("emergency.form.typeLabel")}
             </p>
@@ -939,7 +986,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
               </div>
             )}
 
-            {/* Géoloc status */}
+            {/* Statut géoloc */}
             <div className="flex items-center gap-1.5 mb-4 text-[11px]">
               <MapPin className={cn("w-3 h-3 shrink-0", geoStatus === "ok" ? "text-emerald-400" : geoStatus === "error" ? "text-foreground/25" : "text-foreground/25")} strokeWidth={1.5} />
               <span className={cn(geoStatus === "ok" ? "text-emerald-400/70" : "text-foreground/25")}>
@@ -1042,7 +1089,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
               Récapitulatif
             </p>
 
-            {/* Recap card */}
+            {/* Carte récapitulative */}
             <div className="rounded-2xl bg-foreground/4 border border-foreground/8 p-3.5 mb-4 space-y-2.5">
               {selectedService && (
                 <div className="flex items-center gap-2.5">
@@ -1090,10 +1137,10 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
               </div>
             </div>
 
-            {/* Countdown button */}
+            {/* Bouton compte à rebours */}
             {countdown !== null ? (
               <div className="space-y-2">
-                {/* Progress bar */}
+                {/* Barre de progression */}
                 <div className="w-full h-1.5 rounded-full bg-foreground/8 overflow-hidden">
                   <motion.div
                     className="h-full bg-red-500 rounded-full"
@@ -1140,7 +1187,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
   );
 }
 
-// ─── TrackingView ─────────────────────────────────────────────────────────────
+// TrackingView
 
 const TRACKING_STEPS: { status: TrackingStatus; label: string; icon: React.ElementType }[] = [
   { status: "EN_ATTENTE", label: "Alerte envoyée",      icon: Radio        },
@@ -1163,7 +1210,7 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
   return (
     <div className="px-4 pt-2 pb-5">
 
-      {/* Ref + service badge */}
+      {/* Réf + badge service */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center border shrink-0", service.bg, service.border)}>
@@ -1209,7 +1256,7 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
           const event     = request.timeline.find(e => e.status === step.status);
           return (
             <div key={step.status} className="flex gap-3">
-              {/* Spine */}
+              {/* Axe vertical de la timeline */}
               <div className="flex flex-col items-center shrink-0" style={{ width: 28 }}>
                 <motion.div
                   initial={false}
@@ -1232,7 +1279,7 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
                 )}
               </div>
 
-              {/* Content */}
+              {/* Contenu */}
               <div className={cn("pb-3 flex-1 min-w-0", isLast && "pb-0")}>
                 <div className="flex items-center justify-between gap-2">
                   <p className={cn("text-[13px] font-semibold leading-tight", isDone ? "text-white/85" : "text-foreground/25")}>
@@ -1255,7 +1302,7 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
         })}
       </div>
 
-      {/* Footer */}
+      {/* Pied de vue */}
       {isResolved ? (
         <motion.button
           initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={reduce ? { duration: 0 } : { delay: 0.15, ...S_SOFT }}
@@ -1275,7 +1322,7 @@ function TrackingView({ request, onClose, onResolved }: { request: AlertRequest;
   );
 }
 
-// ─── ExpandedHeader ───────────────────────────────────────────────────────────
+// ExpandedHeader
 
 function ExpandedHeader({ logoSrc, label, onClose, logoMerged, isEmergency = false }: {
   logoSrc: string; label: string; onClose: () => void; logoMerged: boolean; isEmergency?: boolean;
@@ -1315,13 +1362,13 @@ function ExpandedHeader({ logoSrc, label, onClose, logoMerged, isEmergency = fal
   );
 }
 
-// ─── HairlineDivider ──────────────────────────────────────────────────────────
+// HairlineDivider
 
 function HairlineDivider() {
   return <div className="mx-4 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />;
 }
 
-// ─── CloseHandle ──────────────────────────────────────────────────────────────
+// CloseHandle
 
 function CloseHandle({ onClose }: { onClose: () => void }) {
   return (
@@ -1331,7 +1378,7 @@ function CloseHandle({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ─── Main WeatherWidget ───────────────────────────────────────────────────────
+// WeatherWidget principal
 
 export function WeatherWidget({
   weather: weatherProp,
@@ -1341,7 +1388,7 @@ export function WeatherWidget({
   onLogoSeparate,
 }: DynamicIslandProps) {
   const tw = useTranslations("weather");
-  // Guard: parent may pass null/undefined even though prop is optional
+  // Garde : le parent peut passer null/undefined même si la prop est optionnelle
   const weather = weatherProp ?? defaultWeather;
   const [view, setView]               = useState<View>("idle");
   const [notifs, setNotifs]           = useState<Notification[]>([]);
@@ -1354,7 +1401,7 @@ export function WeatherWidget({
   const pollingRef                    = useRef<ReturnType<typeof setInterval> | null>(null);
   const notifPrefs                    = useNotifPrefs();
 
-  // ── Fetch notifications depuis l'API ──────────────────────────────────────
+  // Fetch notifications depuis l'API
   const fetchNotifications = useCallback(async () => {
     try {
       setNotifsLoading(true);
@@ -1431,12 +1478,12 @@ export function WeatherWidget({
     notifPrefs.markAllRead(uids);
   }, [visibleNotifs, notifPrefs]);
 
-  /** Called when EmergencyView sends the alert */
+  /** Appelé quand EmergencyView envoie l'alerte */
   const handleAlertSent = useCallback((req: AlertRequest) => {
     setActiveAlert(req);
     setView("tracking");
 
-    // Add initial notification
+    // Notification initiale
     const firstNotifId = ++notifIdRef.current;
     setNotifs(prev => [{
       id:    firstNotifId,
@@ -1446,7 +1493,7 @@ export function WeatherWidget({
       type:  "alert",
     }, ...prev]);
 
-    // ── Polling réel sur GET /api/urgences/:id toutes les 5s ──────────────────
+    // Polling réel sur GET /api/urgences/:id toutes les 5s
     // Mapping statuts BDD → statuts internes du widget
     const STATUS_MAP: Record<string, TrackingStatus> = {
       OPEN:        "RECU",
@@ -1529,7 +1576,7 @@ export function WeatherWidget({
     }, 5_000);
   }, []);
 
-  /** Reset everything after a resolved alert is dismissed */
+  /** Réinitialise tout après fermeture d'une alerte résolue */
   const handleAlertReset = useCallback(() => {
     progressionTimersRef.current.forEach(clearTimeout);
     progressionTimersRef.current = [];
@@ -1554,10 +1601,10 @@ export function WeatherWidget({
 
   return (
     <>
-      {/* ── Fixed container ── */}
+      {/* Conteneur fixe */}
       <div className="fixed z-50 top-0 right-0 pointer-events-none pt-[max(10px,env(safe-area-inset-top))] pr-3">
 
-        {/* ── IDLE PILL ── */}
+        {/* Pastille idle */}
         <motion.div
           animate={{ opacity: isExpanded ? 0 : 1, scale: isExpanded ? 0.85 : 1 }}
           transition={shouldReduceMotion ? { duration: 0 } : { ...S_FAST }}
@@ -1595,7 +1642,7 @@ export function WeatherWidget({
               <Search className="w-[15px] h-[15px] text-foreground/55" strokeWidth={1.5} />
             </button>
             <div className="w-px h-3.5 bg-vd-border-soft mx-0.5" />
-            {/* ── Bouton Urgence / Tracking ── */}
+            {/* Bouton Urgence / Tracking */}
             <button
               onClick={() => openView(activeAlert ? "tracking" : "emergency")}
               className="relative flex items-center justify-center w-9 h-9 rounded-full bg-red-500/10 hover:bg-red-500/20 active:scale-95 transition-all duration-150 group"
@@ -1609,7 +1656,7 @@ export function WeatherWidget({
           </div>
         </motion.div>
 
-        {/* ── EXPANDED PANEL ── */}
+        {/* Panneau étendu */}
         <motion.div
           initial={false}
           animate={isExpanded ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.88, y: -6 }}
@@ -1627,7 +1674,7 @@ export function WeatherWidget({
             GLASS.outer,
             // Bordure rouge subtile en mode urgence
             isEmergency
-              ? "shadow-[0_8px_40px_rgba(0,0,0,0.3),0_0_0_1px_rgba(239,68,68,0.15)]"
+              ? "shadow-[0_8px_24px_rgba(0,0,0,0.40),0_0_0_1px_rgba(239,68,68,0.15)]"
               : GLASS.shadow,
           )}
         >
@@ -1690,7 +1737,7 @@ export function WeatherWidget({
 
       </div>
 
-      {/* ── Backdrop ── */}
+      {/* Backdrop */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div

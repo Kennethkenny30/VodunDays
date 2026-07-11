@@ -14,7 +14,7 @@ const FILTER_CONFIG = [
   { value: "pra",        key: "ar",         color: "#00E5CC", Icon: Scan       },
 ] as const;
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// Helpers
 
 function hexToRgb(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -23,14 +23,14 @@ function hexToRgb(hex: string): string {
   return `${r}, ${g}, ${b}`;
 }
 
-// ─── Props ────────────────────────────────────────────────────────────────────
+// Props
 
 interface CarteFilterBarProps {
   activeFilters: Set<string>;
   onFiltersChange: (filters: Set<string>) => void;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// Component
 
 export function CarteFilterBar({ activeFilters, onFiltersChange }: CarteFilterBarProps) {
   const t = useTranslations("carte.filters");
@@ -78,14 +78,15 @@ export function CarteFilterBar({ activeFilters, onFiltersChange }: CarteFilterBa
           <button
             key={value}
             onClick={() => handleFilterClick(value)}
+            aria-pressed={isActive}
             className="shrink-0 cursor-pointer"
             style={{
               // Liquid glass pill
               display: "flex",
               alignItems: "center",
               gap: 6,
-              padding: isActive ? "0 14px 0 10px" : "0 14px",
-              height: 34,
+              padding: "0 14px 0 10px",
+              height: 40,
               borderRadius: 99,
               fontSize: 11.5,
               fontWeight: 600,
@@ -109,18 +110,16 @@ export function CarteFilterBar({ activeFilters, onFiltersChange }: CarteFilterBa
               transform: isActive ? "scale(1.02)" : "scale(1)",
             }}
           >
-            {/* Icon - only shown when active, for clean minimal look */}
-            {isActive && (
-              <Icon
-                size={12}
-                style={{
-                  flexShrink: 0,
-                  color: color,
-                  opacity: 0.9,
-                  transition: "opacity 200ms",
-                }}
-              />
-            )}
+            {/* Icône toujours affichée : largeur stable, pas de décalage de la rangée au toggle */}
+            <Icon
+              size={12}
+              style={{
+                flexShrink: 0,
+                color: isActive ? color : "var(--muted-foreground)",
+                opacity: isActive ? 0.9 : 0.45,
+                transition: "opacity 200ms, color 200ms",
+              }}
+            />
             {label}
           </button>
         );

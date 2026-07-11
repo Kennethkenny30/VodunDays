@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type React from "react";
 import {
   Map,
@@ -28,7 +29,7 @@ import { SiteMarker } from "./SiteMarker";
 import { BottomSheet, type RoutePoint } from "./BottomSheet";
 import { useGeolocation } from "@/hooks/useGeolocation";
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
+// Constantes
 
 const OUIDAH_CENTER: [number, number] = [2.0851, 6.3599];
 const DEFAULT_ZOOM  = 15;
@@ -46,7 +47,7 @@ const MAP_STYLES_LIGHT = {
 
 type MapMode = keyof typeof MAP_STYLES_DARK;
 
-// ─── Types OSM ────────────────────────────────────────────────────────────────
+// Types OSM
 
 interface OsmPoi {
   id:   number;
@@ -198,7 +199,7 @@ function generateSyntheticAlt(
   };
 }
 
-// ─── Sous-composants ──────────────────────────────────────────────────────────
+// Sous-composants
 
 function MapClickHandler({ onMapClick }: { onMapClick: () => void }) {
   const { map } = useMap();
@@ -245,7 +246,7 @@ async function getLabelStyle(): Promise<Record<string, unknown>> {
   return cachedLabelStyle as Record<string, unknown>;
 }
 
-function LabelOverlayHandler({ enabled }: { enabled: boolean }) {
+function LabelOverlayHandler({ enabled, light = false }: { enabled: boolean; light?: boolean }) {
   const { map, isLoaded } = useMap();
   useEffect(() => {
     if (!map || !isLoaded) return;
@@ -289,8 +290,9 @@ function LabelOverlayHandler({ enabled }: { enabled: boolean }) {
           delete cleanLayout["icon-image"];
           remapped.layout = cleanLayout;
           const paint = { ...(layer.paint as Record<string, unknown> ?? {}) };
-          paint["text-color"]      = "#E8E8F0";
-          paint["text-halo-color"] = "#151419";
+          // Couleurs selon le style de carte actif (sinon labels clairs illisibles sur fond clair)
+          paint["text-color"]      = light ? "#2B2B33" : "#E8E8F0";
+          paint["text-halo-color"] = light ? "#FFFFFF" : "#151419";
           paint["text-halo-width"] = 1.5;
           remapped.paint = paint;
           try {
@@ -310,8 +312,7 @@ function LabelOverlayHandler({ enabled }: { enabled: boolean }) {
     }
     if (enabled) inject();
     return () => { cancelled = true; cleanup(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, isLoaded, enabled]);
+  }, [map, isLoaded, enabled, light]);
   return null;
 }
 
@@ -320,15 +321,22 @@ function useOsmPois(enabled: boolean): { pois: OsmPoi[]; loading: boolean } {
   const [pois, setPois]       = useState<OsmPoi[]>([]);
   const [loading, setLoading] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Bbox du dernier fetch réussi : évite de re-solliciter Overpass quand la vue reste incluse dedans
+  const lastFetchRef = useRef<{ s: number; w: number; n: number; e: number; z: number } | null>(null);
   const fetchForCurrentView = useCallback(async () => {
     if (!map || !enabled) return;
     const bounds = map.getBounds();
     const zoom   = map.getZoom();
-    if (zoom < 13) { setPois([]); return; }
+    if (zoom < 13) { setPois([]); lastFetchRef.current = null; return; }
+    const s = bounds.getSouth(), w = bounds.getWest(), n = bounds.getNorth(), e = bounds.getEast();
+    const z = Math.round(zoom);
+    const last = lastFetchRef.current;
+    if (last && last.z === z && s >= last.s && w >= last.w && n <= last.n && e <= last.e) return;
     setLoading(true);
     try {
-      const data = await fetchOsmPois(bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast());
+      const data = await fetchOsmPois(s, w, n, e);
       setPois(data);
+      lastFetchRef.current = { s, w, n, e, z };
     } catch {} finally { setLoading(false); }
   }, [map, enabled]);
   useEffect(() => {
@@ -336,7 +344,7 @@ function useOsmPois(enabled: boolean): { pois: OsmPoi[]; loading: boolean } {
     fetchForCurrentView();
     const onMoveEnd = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(fetchForCurrentView, 800);
+      timerRef.current = setTimeout(fetchForCurrentView, 1200);
     };
     map.on("moveend", onMoveEnd);
     return () => { map.off("moveend", onMoveEnd); if (timerRef.current) clearTimeout(timerRef.current); };
@@ -371,9 +379,13 @@ function OsmPoiMarker({ poi }: { poi: OsmPoi }) {
       if (mobileTimer.current) clearTimeout(mobileTimer.current);
       mobileTimer.current = setTimeout(() => setShowMobileTooltip(false), 1500);
     };
+    // Bloque aussi le click synthétique : sinon il atteint la carte et ferme le BottomSheet
+    const handleClick = (e: MouseEvent) => { e.stopPropagation(); };
     el.addEventListener("touchend", handleTouch, { passive: true });
+    el.addEventListener("click", handleClick, true);
     return () => {
       el.removeEventListener("touchend", handleTouch);
+      el.removeEventListener("click", handleClick, true);
       if (mobileTimer.current) clearTimeout(mobileTimer.current);
     };
   }, []);
@@ -423,12 +435,24 @@ function OsmPoiLayer({ enabled }: { enabled: boolean }) {
 }
 
 function UserLocationMarker({ longitude, latitude, accuracy }: { longitude: number; latitude: number; accuracy?: number }) {
+  // Conversion mètres → pixels selon zoom et latitude (le rayon de précision est en mètres)
+  const { map } = useMap();
+  const [zoom, setZoom] = useState(() => map?.getZoom() ?? DEFAULT_ZOOM);
+  useEffect(() => {
+    if (!map) return;
+    const onZoom = () => setZoom(map.getZoom());
+    map.on("zoom", onZoom);
+    return () => { map.off("zoom", onZoom); };
+  }, [map]);
+  const metersPerPixel = (156543.03392 * Math.cos((latitude * Math.PI) / 180)) / Math.pow(2, zoom);
+  const accuracyPx = accuracy !== undefined ? Math.min((accuracy / metersPerPixel) * 2, 600) : 0;
+
   return (
     <MapMarker longitude={longitude} latitude={latitude}>
       <MarkerContent>
         <style>{`@keyframes _uLocSpin{to{transform:rotate(360deg)}} @keyframes _uLocPulse{0%,100%{opacity:.18;transform:scale(1)} 50%{opacity:.06;transform:scale(1.5)}} @keyframes _uLocBeat{0%,100%{opacity:.35;transform:scale(1)} 50%{opacity:.12;transform:scale(1.9)}}`}</style>
         <div style={{ position: "relative", width: 0, height: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {accuracy !== undefined && accuracy < 300 && <div style={{ position: "absolute", width: accuracy * 2, height: accuracy * 2, borderRadius: "50%", background: "rgba(68,136,255,0.07)", border: "1px solid rgba(68,136,255,0.18)", transform: "translate(-50%,-50%)", top: 0, left: 0, pointerEvents: "none" }} />}
+          {accuracy !== undefined && accuracy < 300 && accuracyPx > 48 && <div style={{ position: "absolute", width: accuracyPx, height: accuracyPx, borderRadius: "50%", background: "rgba(68,136,255,0.07)", border: "1px solid rgba(68,136,255,0.18)", transform: "translate(-50%,-50%)", top: 0, left: 0, pointerEvents: "none" }} />}
           <div style={{ position: "absolute", width: 44, height: 44, borderRadius: "50%", background: "rgba(68,136,255,0.14)", animation: "_uLocBeat 2.4s ease-in-out infinite", pointerEvents: "none" }} />
           <div style={{ position: "absolute", width: 28, height: 28, borderRadius: "50%", background: "rgba(68,136,255,0.20)", animation: "_uLocPulse 1.6s ease-in-out infinite", pointerEvents: "none" }} />
           <div style={{ position: "absolute", width: 18, height: 18, borderRadius: "50%", background: "conic-gradient(from 0deg, #4488FF, #a0c4ff, #ffffff, #4488FF)", padding: 2, animation: "_uLocSpin 4s linear infinite", boxShadow: "0 0 0 2px rgba(27,27,30,0.8), 0 4px 12px rgba(68,136,255,0.5)" }}><div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "#1B1B1E" }} /></div>
@@ -468,7 +492,8 @@ function OsmLoadingIndicator({ mapRef }: { mapRef: React.RefObject<MapRef | null
   }, [mapRef]);
   if (!loading) return null;
   return (
-    <div style={{ position: "absolute", bottom: 100, right: 12, zIndex: 200, display: "flex", alignItems: "center", gap: 6, background: "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 99, padding: "5px 11px", boxShadow: "0 2px 10px rgba(0,0,0,0.4)" }}>
+    /* Sous la rangée de boutons mode (haut-droite) : ne chevauche plus les contrôles de zoom */
+    <div style={{ position: "absolute", top: "calc(env(safe-area-inset-top, 0px) + 200px)", right: 12, zIndex: 200, display: "flex", alignItems: "center", gap: 6, background: "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 99, padding: "5px 11px", boxShadow: "0 2px 10px rgba(0,0,0,0.4)" }}>
       <div style={{ width: 8, height: 8, borderRadius: "50%", border: "1.5px solid rgba(245,110,15,0.3)", borderTopColor: "#F56E0F", animation: "_uLocSpin 0.9s linear infinite" }} />
       <span style={{ fontSize: 10, fontWeight: 600, color: "#878787" }}>Chargement des lieux…</span>
     </div>
@@ -478,17 +503,18 @@ function OsmLoadingIndicator({ mapRef }: { mapRef: React.RefObject<MapRef | null
 function GpsStatusBadge({ loading, permissionDenied, onRequestAgain }: { loading: boolean; permissionDenied: boolean; onRequestAgain: () => void }) {
   if (!loading && !permissionDenied) return null;
   return (
-    <div style={{ position: "absolute", top: 52, left: "50%", transform: "translateX(-50%)", zIndex: 300, display: "flex", alignItems: "center", gap: 8, background: "rgba(27,27,30,0.95)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: permissionDenied ? "1px solid rgba(255,68,68,0.35)" : "1px solid rgba(68,136,255,0.30)", borderRadius: 99, padding: "6px 14px", boxShadow: "0 4px 16px rgba(0,0,0,0.4)" }}>
+    <div style={{ position: "absolute", top: "calc(env(safe-area-inset-top, 0px) + 52px)", left: "50%", transform: "translateX(-50%)", zIndex: 300, display: "flex", alignItems: "center", gap: 8, background: "rgba(27,27,30,0.95)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: permissionDenied ? "1px solid rgba(255,68,68,0.35)" : "1px solid rgba(68,136,255,0.30)", borderRadius: 99, padding: "6px 14px", boxShadow: "0 4px 16px rgba(0,0,0,0.4)" }}>
       {loading ? (<><div style={{ width: 10, height: 10, borderRadius: "50%", border: "2px solid rgba(68,136,255,0.3)", borderTopColor: "#4488FF", animation: "_uLocSpin 0.8s linear infinite", flexShrink: 0 }} /><span style={{ fontSize: 11, fontWeight: 600, color: "#878787", whiteSpace: "nowrap" }}>Recherche de votre position…</span></>) : (<><LocateFixed size={12} style={{ color: "#FF4444", flexShrink: 0 }} /><span style={{ fontSize: 11, fontWeight: 600, color: "#FF4444", whiteSpace: "nowrap" }}>Position refusée</span><button onClick={onRequestAgain} style={{ fontSize: 11, fontWeight: 700, color: "#FBFBFB", background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 99, padding: "2px 8px", cursor: "pointer", marginLeft: 2 }}>Réessayer</button></>)}
     </div>
   );
 }
 
 function RouteAlternativesPanel({ routes, selectedIndex, onSelect, onClose, routeError }: { routes: RouteAlternative[]; selectedIndex: number; onSelect: (i: number) => void; onClose: () => void; routeError: string | null }) {
-  if (routes.length === 0) return null;
+  // Affiché aussi sans routes quand il y a une erreur, pour la rendre visible et permettre de sortir
+  if (routes.length === 0 && !routeError) return null;
   const routeColor = (i: number, active: boolean) => active ? ROUTE_COLOR_ACTIVE : ROUTE_COLOR_ALT;
   return (
-    <div style={{ position: "absolute", top: 148, left: 12, zIndex: 250, display: "flex", flexDirection: "column", gap: 6 }}>
+    <div style={{ position: "absolute", top: "calc(env(safe-area-inset-top, 0px) + 148px)", left: 12, zIndex: 250, display: "flex", flexDirection: "column", gap: 6 }}>
       {routeError && (
         <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 12, background: "rgba(255,80,80,0.10)", border: "1px solid rgba(255,80,80,0.30)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", fontSize: 11, fontWeight: 600, color: "#ff8080", boxShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
           <X size={12} style={{ flexShrink: 0 }} />
@@ -515,7 +541,7 @@ function RouteAlternativesPanel({ routes, selectedIndex, onSelect, onClose, rout
   );
 }
 
-// ─── Hook : deep-link depuis URL ──────────────────────────────────────────────
+// Hook : deep-link depuis URL
 /**
  * Lit les query params à l'ouverture de la page et retourne la cible de focal.
  *
@@ -540,7 +566,7 @@ function useMapFocalTarget(): FocalTarget {
   return null;
 }
 
-// ─── CarteMapSection ──────────────────────────────────────────────────────────
+// CarteMapSection
 
 interface CarteMapSectionProps {
   activeFilters: Set<string>;
@@ -561,21 +587,25 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
   const [mapMode,          setMapMode]          = useState<MapMode>("plan");
   const [terrain3D,        setTerrain3D]        = useState(false);
   const [osmEnabled,       setOsmEnabled]       = useState(true);
+  // Incrémenté pour ouvrir le panneau itinéraire du BottomSheet (CTA marqueur sans position connue)
+  const [routeSignal,      setRouteSignal]      = useState(0);
 
   // Annule la requête OSRM en cours quand une nouvelle navigation démarre
   const osrmAbortRef = useRef<AbortController | null>(null);
 
-  const { location: userLocation, loading: gpsLoading, permissionDenied, requestLocation } = useGeolocation();
+  // Pas de prompt géoloc au chargement : la permission est demandée au premier geste (bouton locate)
+  const { location: userLocation, loading: gpsLoading, permissionDenied, requestLocation } = useGeolocation({ auto: false });
   const focalTarget = useMapFocalTarget();
+  const tCarte = useTranslations("carte");
 
-  // ── Chargement des POI depuis la BDD (toutes catégories) ─────────────────
+  // Chargement des POI depuis la BDD (toutes catégories)
   // Fallback sur [] - plus de POI_DATA statique
 
   useEffect(() => {
     loadPOIs().then(setPois).catch(() => setPois([]));
   }, []);
 
-  // ── Centrage GPS initial ──
+  // Centrage GPS initial
 
   const hasCenteredRef = useRef(false);
   useEffect(() => {
@@ -585,7 +615,7 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
     }
   }, [userLocation, focalTarget]);
 
-  // ── Deep-link : focal automatique quand la carte ET les POI sont prêts ────
+  // Deep-link : focal automatique quand la carte ET les POI sont prêts
   //
   // On attend que `pois` soit chargé ET que la carte soit montée.
   // La carte est disponible dès que mapRef.current est non-null, ce qui arrive
@@ -633,10 +663,9 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
       return () => clearTimeout(timer);
     }
     applyFocal();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focalTarget, pois]);
 
-  // ── Handlers ────────────────────────────────────────────────────────────
+  // Handlers
 
   const handleMapClick = useCallback(() => {
     setSelectedSite(null);
@@ -655,7 +684,13 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
   const handleNavigateFromTo = useCallback(async (from: RoutePoint, to: RoutePoint) => {
     const fromCoords = resolveCoords(from);
     const toCoords   = resolveCoords(to);
-    if (!fromCoords || !toCoords) return;
+    if (!fromCoords || !toCoords) {
+      // Erreur visible plutôt qu'un échec silencieux (ex : point GPS sans position acquise)
+      setRouteAlts([]);
+      setRouteActive(true);
+      setRouteError("Position introuvable - activez la localisation");
+      return;
+    }
 
     // Annule toute requête OSRM précédente encore en vol (évite les race conditions)
     osrmAbortRef.current?.abort();
@@ -678,7 +713,9 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
       if (data.routes?.length > 0) {
         const osrmAlts: RouteAlternative[] = data.routes.map((r: { geometry: { coordinates: [number, number][] }; duration: number; distance: number }) => ({
           coordinates: r.geometry.coordinates,
-          duration:    r.duration,
+          // Le serveur OSRM public ignore le profil foot (durées voiture) :
+          // on estime la marche à ~4,9 km/h à partir de la distance
+          duration:    r.distance / 1.35,
           distance:    r.distance,
         }));
         if (osrmAlts.length === 1) osrmAlts.push(generateSyntheticAlt(osrmAlts[0], fromCoords, toCoords));
@@ -703,9 +740,18 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
     if (span < 0.005) {
       map.flyTo({ center: [(lng1 + lng2) / 2, (lat1 + lat2) / 2], zoom: Math.max(map.getZoom(), 16), duration: 900 });
     } else {
+      // Padding réduit sur mobile : la réserve gauche de 230px (panneau routes desktop)
+      // écraserait le tracé sur un petit écran
+      const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
       map.fitBounds(
         [[Math.min(lng1, lng2), Math.min(lat1, lat2)], [Math.max(lng1, lng2), Math.max(lat1, lat2)]],
-        { padding: { top: 140, bottom: 160, left: 230, right: 60 }, duration: 900, maxZoom: 17 },
+        {
+          padding: isMobile
+            ? { top: 160, bottom: 220, left: 40, right: 40 }
+            : { top: 140, bottom: 160, left: 230, right: 60 },
+          duration: 900,
+          maxZoom: 17,
+        },
       );
     }
   }, [resolveCoords]);
@@ -732,7 +778,7 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
     poi => activeFilters.has(poi.category) || activeFilters.has("all")
   );
 
-  // ── Render ───────────────────────────────────────────────────────────────
+  // Render
 
   return (
     <div className="relative h-full">
@@ -748,7 +794,7 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
         <MapClickHandler onMapClick={handleMapClick} />
         <TerrainHandler enabled={terrain3D} />
 
-        <LabelOverlayHandler enabled={mapMode === "plan"} />
+        <LabelOverlayHandler enabled={mapMode === "plan"} light={resolvedTheme === "light"} />
         <OsmPoiLayer enabled={osmEnabled} />
 
         {userLocation && (
@@ -769,10 +815,16 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
               setSelectedSite(prev => prev?.id === clickedPoi.id ? null : clickedPoi);
               mapRef.current?.flyTo({ center: [clickedPoi.longitude, clickedPoi.latitude], zoom: 17, duration: 800 });
             }}
-            onNavigate={poi => handleNavigateFromTo(
-              userLocation ? { type: "gps", label: "Ma position" } : { type: "poi", poi },
-              { type: "poi", poi }
-            )}
+            onNavigate={poi => {
+              if (userLocation) {
+                handleNavigateFromTo({ type: "gps", label: "Ma position" }, { type: "poi", poi });
+              } else {
+                // Pas de position connue : on ouvre le panneau itinéraire du sheet
+                // pour que l'utilisateur choisisse ou déclenche son point de départ
+                setSelectedSite(poi);
+                setRouteSignal(s => s + 1);
+              }
+            }}
           />
         ))}
 
@@ -818,18 +870,28 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
         />
       )}
 
-      {/* Boutons mode carte - positionnés sous l'overlay header (~140px) */}
-      <div className="absolute right-3 flex gap-2" style={{ top: 148, zIndex: 200 }}>
-        <button onClick={toggleMapMode} className="flex items-center gap-1.5 px-3 py-2 rounded-xl cursor-pointer" style={{ background: mapMode === "satellite" ? "rgba(245,110,15,0.15)" : "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: mapMode === "satellite" ? "1px solid rgba(245,110,15,0.5)" : "1px solid rgba(255,255,255,0.12)", color: mapMode === "satellite" ? "#F56E0F" : "#FBFBFB", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 12px rgba(0,0,0,0.4)", transition: "all 200ms ease" }}>
+      {/* Boutons mode carte - sous l'overlay header, décalés du safe-area (PWA iOS) */}
+      <div className="absolute right-3 flex gap-2" style={{ top: "calc(env(safe-area-inset-top, 0px) + 148px)", zIndex: 200 }}>
+        <button onClick={toggleMapMode} aria-pressed={mapMode === "satellite"} className="flex items-center gap-1.5 px-3 rounded-xl cursor-pointer" style={{ minHeight: 44, background: mapMode === "satellite" ? "rgba(245,110,15,0.15)" : "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: mapMode === "satellite" ? "1px solid rgba(245,110,15,0.5)" : "1px solid rgba(255,255,255,0.12)", color: mapMode === "satellite" ? "#F56E0F" : "#FBFBFB", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 12px rgba(0,0,0,0.4)", transition: "all 200ms ease" }}>
           <Layers className="w-3.5 h-3.5" />{mapMode === "plan" ? "Satellite" : "Plan"}
         </button>
-        <button onClick={toggleTerrain} className="flex items-center gap-1.5 px-3 py-2 rounded-xl cursor-pointer" style={{ background: terrain3D ? "rgba(245,110,15,0.15)" : "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: terrain3D ? "1px solid rgba(245,110,15,0.5)" : "1px solid rgba(255,255,255,0.12)", color: terrain3D ? "#F56E0F" : "#FBFBFB", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 12px rgba(0,0,0,0.4)", transition: "all 200ms ease" }}>
+        <button onClick={toggleTerrain} aria-pressed={terrain3D} className="flex items-center gap-1.5 px-3 rounded-xl cursor-pointer" style={{ minHeight: 44, background: terrain3D ? "rgba(245,110,15,0.15)" : "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: terrain3D ? "1px solid rgba(245,110,15,0.5)" : "1px solid rgba(255,255,255,0.12)", color: terrain3D ? "#F56E0F" : "#FBFBFB", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 12px rgba(0,0,0,0.4)", transition: "all 200ms ease" }}>
           <Mountain className="w-3.5 h-3.5" />3D
         </button>
-        <button onClick={toggleOsm} className="flex items-center gap-1.5 px-3 py-2 rounded-xl cursor-pointer" style={{ background: osmEnabled ? "rgba(245,110,15,0.15)" : "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: osmEnabled ? "1px solid rgba(245,110,15,0.5)" : "1px solid rgba(255,255,255,0.12)", color: osmEnabled ? "#F56E0F" : "#FBFBFB", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 12px rgba(0,0,0,0.4)", transition: "all 200ms ease" }}>
+        <button onClick={toggleOsm} aria-pressed={osmEnabled} className="flex items-center gap-1.5 px-3 rounded-xl cursor-pointer" style={{ minHeight: 44, background: osmEnabled ? "rgba(245,110,15,0.15)" : "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: osmEnabled ? "1px solid rgba(245,110,15,0.5)" : "1px solid rgba(255,255,255,0.12)", color: osmEnabled ? "#F56E0F" : "#FBFBFB", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 12px rgba(0,0,0,0.4)", transition: "all 200ms ease" }}>
           <MapPin className="w-3.5 h-3.5" />Lieux
         </button>
       </div>
+
+      {/* État vide : aucune catégorie de filtre sélectionnée */}
+      {activeFilters.size === 0 && (
+        <div
+          className="absolute left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-full text-[12px] font-medium"
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 110px)", zIndex: 150, background: "rgba(27,27,30,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.12)", color: "#C8C8D8", boxShadow: "0 2px 12px rgba(0,0,0,0.4)", whiteSpace: "nowrap" }}
+        >
+          {tCarte("noFilter")}
+        </div>
+      )}
 
       {/* allPois passé au BottomSheet pour alimenter le sélecteur de destination */}
       <BottomSheet
@@ -838,6 +900,10 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
         onClose={() => setSelectedSite(null)}
         onNavigateFromTo={handleNavigateFromTo}
         allPois={pois}
+        onRequestLocation={requestLocation}
+        gpsLoading={gpsLoading}
+        permissionDenied={permissionDenied}
+        openRouteSignal={routeSignal}
       />
     </div>
   );

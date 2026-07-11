@@ -758,7 +758,8 @@ function ControlButton({
       aria-label={label}
       type="button"
       className={cn(
-        "hover:bg-accent dark:hover:bg-accent/40 flex size-8 items-center justify-center transition-colors",
+        // size-11 (44px) : cible tactile minimale recommandée sur mobile
+        "hover:bg-accent dark:hover:bg-accent/40 flex size-11 items-center justify-center transition-colors",
         disabled && "pointer-events-none cursor-not-allowed opacity-50",
       )}
       disabled={disabled}
@@ -834,6 +835,8 @@ function MapControls({
         positionClasses[position],
         className,
       )}
+      // Décale les contrôles au-dessus de la barre gestuelle iOS (PWA standalone)
+      style={position.startsWith("bottom") ? { marginBottom: "env(safe-area-inset-bottom, 0px)" } : undefined}
     >
       {showZoom && (
         <ControlGroup>

@@ -1,16 +1,19 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 /**
  * Skeleton de chargement pour la carte interactive
  * Affiché pendant le chargement lazy de MapLibre GL
  */
 export function CarteMapSkeleton() {
+  const t = useTranslations("carte");
   return (
     <div
       className="relative w-full h-full flex items-center justify-center"
-      style={{ background: "#1B1B1E" }}
+      style={{ background: "var(--vd-page-bg)" }}
     >
-      {/* Animation shimmer */}
+      {/* Animation shimmer (pas de spinner : cohérence avec les autres skeletons du site) */}
       <div
         className="absolute inset-0 animate-shimmer"
         style={{
@@ -18,20 +21,10 @@ export function CarteMapSkeleton() {
           backgroundSize: "200% 100%",
         }}
       />
-      
-      {/* Texte de chargement */}
-      <div className="flex flex-col items-center gap-3">
-        <div
-          className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-          style={{ borderColor: "#F56E0F", borderTopColor: "transparent" }}
-        />
-        <p
-          className="text-[13px] font-medium"
-          style={{ color: "#878787" }}
-        >
-          Chargement de la carte...
-        </p>
-      </div>
+
+      <p className="text-[13px] font-medium text-muted-foreground">
+        {t("loading")}
+      </p>
     </div>
   );
 }

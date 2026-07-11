@@ -11,9 +11,10 @@ interface ProgramListProps {
   isLoading?: boolean;
   error?: string | null;
   activeDay?: number; // Utilisé comme clé pour l'AnimatePresence
+  highlightEventId?: string | null; // Événement ciblé par la recherche (scroll + surbrillance)
 }
 
-export function ProgramList({ programs, isLoading = false, error = null, activeDay = 1 }: ProgramListProps) {
+export function ProgramList({ programs, isLoading = false, error = null, activeDay = 1, highlightEventId = null }: ProgramListProps) {
 
   // État chargement - 3 skeletons
   if (isLoading) {
@@ -84,7 +85,12 @@ export function ProgramList({ programs, isLoading = false, error = null, activeD
         className="space-y-3 px-4 pb-24"
       >
         {sortedPrograms.map((program, index) => (
-          <ProgramCard key={program.id} program={program} index={index} />
+          <ProgramCard
+            key={program.id}
+            program={program}
+            index={index}
+            highlighted={highlightEventId != null && program.eventId === highlightEventId}
+          />
         ))}
       </motion.div>
     </AnimatePresence>

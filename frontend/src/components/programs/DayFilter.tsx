@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
@@ -12,19 +13,31 @@ interface DayFilterProps {
 export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterProps) {
   const t = useTranslations("programme");
   const days = Array.from({ length: totalDays }, (_, i) => i + 1);
+  const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // Navigation clavier du tablist : flèches (avec boucle), Home/End
+  function handleKeyDown(e: React.KeyboardEvent) {
+    const idx = days.indexOf(activeDay);
+    let next: number | null = null;
+    if      (e.key === "ArrowRight") next = (idx + 1) % days.length;
+    else if (e.key === "ArrowLeft")  next = (idx - 1 + days.length) % days.length;
+    else if (e.key === "Home")       next = 0;
+    else if (e.key === "End")        next = days.length - 1;
+    if (next === null) return;
+    e.preventDefault();
+    onDayChange(days[next]);
+    btnRefs.current[next]?.focus();
+  }
 
   return (
     <div
       className="flex items-center justify-start px-4 py-3"
       role="tablist"
       aria-label={t("dayFilter")}
+      onKeyDown={handleKeyDown}
     >
-      {/*
-        Container transparent - aucun fond, aucun border.
-        C'est le principe morphic navbar : seuls les boutons ont un style,
-        pas le wrapper qui les contient.
-      */}
-      <div className="flex items-center overflow-hidden rounded-xl">
+      {/* Principe morphic : seuls les boutons ont un style, pas le wrapper */}
+      <div className="flex items-center overflow-hidden rounded-full">
         {days.map((day, index) => {
           const isActive     = activeDay === day;
           const isFirst      = index === 0;
@@ -35,49 +48,48 @@ export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterPr
           const isNextActive = nextDay !== null && activeDay === nextDay;
 
           return (
-            /*
-              Chaque bouton est une unité liquid glass individuelle.
-              Tous partagent le même fond glass (comme bg-[#1a1a1a] dans morphic navbar),
-              mais ici c'est rgba(30,30,30,0.55) + backdrop-blur.
-              L'actif se détache avec mx + rounded + orange + reflets lumineux.
-            */
             <button
               key={day}
+              ref={(el) => { btnRefs.current[index] = el; }}
               role="tab"
               aria-selected={isActive}
-              aria-controls={`day-${day}-content`}
+              tabIndex={isActive ? 0 : -1}
               onClick={() => onDayChange(day)}
-              style={{ WebkitTapHighlightColor: "transparent", background: "rgba(255,255,255,0.08)" }}
+              style={{
+                WebkitTapHighlightColor: "transparent",
+                background: "var(--vd-dayfilter-bg)",
+                borderColor: "var(--vd-dayfilter-border)",
+              }}
               className={cn(
-                // Base : fond glass identique sur tous les boutons (aligné sur ARModeSwitcher)
-                "relative flex items-center justify-center p-2 px-5 text-sm",
+                // Fond glass identique sur tous les boutons (aligné sur ARModeSwitcher)
+                "relative flex items-center justify-center min-h-11 p-2 px-5 text-sm",
                 "transition-all duration-300 select-none active:scale-[0.96]",
-                "backdrop-blur-xl border border-white/[0.15]",
+                "backdrop-blur-xl border",
 
                 // Actif : se détache du flux avec mx + rounded + orange
                 isActive && cn(
-                  "mx-2 rounded-xl font-bold",
+                  "mx-2 rounded-full font-bold",
                   "text-[#F56E0F]",
-                  "shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_8px_24px_rgba(0,0,0,0.40)]",
+                  "shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]",
                 ),
 
                 // Inactif : coins adaptés selon voisinage (morphic)
                 !isActive && cn(
                   "font-semibold text-muted-foreground hover:text-foreground",
-                  (isPrevActive || isFirst) ? "rounded-l-xl" : "rounded-l-none",
-                  (isNextActive || isLast)  ? "rounded-r-xl" : "rounded-r-none",
-                  "shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_8px_24px_rgba(0,0,0,0.40)]",
+                  (isPrevActive || isFirst) ? "rounded-l-full" : "rounded-l-none",
+                  (isNextActive || isLast)  ? "rounded-r-full" : "rounded-r-none",
+                  // Pas de bordure sur les bords partagés entre segments accolés (évite le trait double)
+                  !isFirst && !isPrevActive && "border-l-0",
+                  !isLast  && !isNextActive && "border-r-0",
+                  "shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]",
                 ),
               )}
             >
-              {/* ── Reflets lumineux sur le bouton actif uniquement ── */}
+              {/* Reflets lumineux du bouton actif */}
               {isActive && (
                 <>
-                  {/* Ligne spéculaire principale en haut */}
                   <span className="absolute inset-x-3 top-0 h-px bg-linear-to-r from-transparent via-foreground/20 to-transparent rounded-full pointer-events-none" />
-                  {/* Blob de lumière diffus en haut */}
-                  <span className="absolute inset-x-0 top-0 h-[40%] bg-linear-to-b from-foreground/5 to-transparent rounded-t-xl pointer-events-none" />
-                  {/* Streak lumineux sur le bord gauche */}
+                  <span className="absolute inset-x-0 top-0 h-[40%] bg-linear-to-b from-foreground/5 to-transparent rounded-t-full pointer-events-none" />
                   <span className="absolute left-0 inset-y-2 w-px bg-linear-to-b from-foreground/15 via-foreground/5 to-transparent pointer-events-none" />
                 </>
               )}

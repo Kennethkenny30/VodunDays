@@ -40,6 +40,10 @@
   --vd-filter-border-inactive: rgba(0, 0, 0, 0.09);
   --vd-dropdown-bg:            rgba(248, 247, 244, 0.99);
 
+  /* Tokens DayFilter (mode clair) */
+  --vd-dayfilter-bg:     rgba(0, 0, 0, 0.05);
+  --vd-dayfilter-border: rgba(0, 0, 0, 0.12);
+
   /* Couleurs badges type événement (mode clair - oranges lisibles sur fond ivoire) */
   --vd-badge-ritual:     #C05010;
   --vd-badge-animation:  #D06020;
@@ -118,6 +122,10 @@
   --vd-filter-bg-inactive:     rgba(255, 255, 255, 0.04);
   --vd-filter-border-inactive: rgba(255, 255, 255, 0.07);
   --vd-dropdown-bg:            rgba(20, 20, 24, 0.99);
+
+  /* Tokens DayFilter (mode sombre - valeurs identiques à l'ancien style hardcodé) */
+  --vd-dayfilter-bg:     rgba(255, 255, 255, 0.08);
+  --vd-dayfilter-border: rgba(255, 255, 255, 0.15);
 
   /* Couleurs badges type événement (mode sombre - dégradé orangé lisible sur fond sombre) */
   --vd-badge-ritual:     #F56E0F;
