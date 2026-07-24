@@ -25,6 +25,11 @@ import {
 } from "lucide-react";
 // POI_DATA supprimé - toutes les données viennent de la BDD via loadPOIs()
 import { loadPOIs, type POI } from "@/lib/markers";
+import {
+  type TravelMode, type RoutePreview,
+  fetchOsrmRoute, deriveModeMetrics, estimateModeMetrics, haversineMeters,
+  formatDuration, formatDistanceMeters,
+} from "@/lib/routing";
 import { SiteMarker } from "./SiteMarker";
 import { BottomSheet, type RoutePoint } from "./BottomSheet";
 import { useGeolocation } from "@/hooks/useGeolocation";
@@ -163,17 +168,6 @@ interface RouteAlternative {
   coordinates: [number, number][];
   duration:    number;
   distance:    number;
-}
-
-function formatDuration(s: number): string {
-  const m = Math.round(s / 60);
-  if (m < 60) return `${m} min`;
-  const h = Math.floor(m / 60), r = m % 60;
-  return r === 0 ? `${h} h` : `${h} h ${r} min`;
-}
-
-function formatDistance(m: number): string {
-  return m < 1_000 ? `${Math.round(m)} m` : `${(m / 1_000).toFixed(1)} km`;
 }
 
 function generateSyntheticAlt(
@@ -529,7 +523,7 @@ function RouteAlternativesPanel({ routes, selectedIndex, onSelect, onClose, rout
           <button key={i} onClick={() => onSelect(i)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", borderRadius: 12, cursor: "pointer", background: isActive ? "rgba(74,158,255,0.12)" : "rgba(27,27,30,0.92)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", border: `1px solid ${isActive ? "rgba(74,158,255,0.45)" : "rgba(255,255,255,0.10)"}`, boxShadow: "0 2px 12px rgba(0,0,0,0.4)", transition: "all 180ms ease", minWidth: 200 }}>
             <div style={{ width: 3, height: 28, borderRadius: 2, background: color, flexShrink: 0 }} />
             <div style={{ display: "flex", alignItems: "center", gap: 5 }}><Clock size={12} style={{ color: isActive ? ROUTE_COLOR_ACTIVE : "#878787", flexShrink: 0 }} /><span style={{ fontSize: 13, fontWeight: 800, color: isActive ? "#FBFBFB" : "#a0a0a0" }}>{formatDuration(route.duration)}</span></div>
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}><RouteIcon size={11} style={{ color: "#55556a", flexShrink: 0 }} /><span style={{ fontSize: 11, color: "#55556a" }}>{formatDistance(route.distance)}</span></div>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}><RouteIcon size={11} style={{ color: "#55556a", flexShrink: 0 }} /><span style={{ fontSize: 11, color: "#55556a" }}>{formatDistanceMeters(route.distance)}</span></div>
             {isFastest && <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "#22c55e", background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: 99, padding: "1px 7px" }}>+ rapide</span>}
           </button>
         );
@@ -589,9 +583,14 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
   const [osmEnabled,       setOsmEnabled]       = useState(true);
   // Incrémenté pour ouvrir le panneau itinéraire du BottomSheet (CTA marqueur sans position connue)
   const [routeSignal,      setRouteSignal]      = useState(0);
+  // Mode de déplacement actif et preview d'itinéraire (position -> site) pour la fiche
+  const [travelMode,       setTravelMode]       = useState<TravelMode>("foot");
+  const [routePreview,     setRoutePreview]     = useState<RoutePreview>({ loading: false, metrics: null, estimated: false });
 
   // Annule la requête OSRM en cours quand une nouvelle navigation démarre
   const osrmAbortRef = useRef<AbortController | null>(null);
+  // Annule le preview en cours quand le site sélectionné change
+  const previewAbortRef = useRef<AbortController | null>(null);
 
   // Pas de prompt géoloc au chargement : la permission est demandée au premier geste (bouton locate)
   const { location: userLocation, loading: gpsLoading, permissionDenied, requestLocation } = useGeolocation({ auto: false });
@@ -665,6 +664,35 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
     applyFocal();
   }, [focalTarget, pois]);
 
+  // Preview d'itinéraire (position utilisateur -> site) dès que les deux sont connus.
+  // Une seule requête OSRM voiture ; les 3 modes en sont dérivés. Repli à vol d'oiseau si échec.
+  useEffect(() => {
+    if (!selectedSite || !userLocation) {
+      setRoutePreview({ loading: false, metrics: null, estimated: false });
+      return;
+    }
+    const from: [number, number] = [userLocation.longitude, userLocation.latitude];
+    const to:   [number, number] = [selectedSite.longitude, selectedSite.latitude];
+    previewAbortRef.current?.abort();
+    const controller = new AbortController();
+    previewAbortRef.current = controller;
+    setRoutePreview({ loading: true, metrics: null, estimated: false });
+    (async () => {
+      try {
+        const routes = await fetchOsrmRoute(from, to, controller.signal);
+        const best = routes[0];
+        setRoutePreview({ loading: false, metrics: deriveModeMetrics(best.distance, best.carDuration), estimated: false });
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        // Repli à vol d'oiseau pour ne pas laisser l'en-tête vide
+        const hav = haversineMeters(userLocation, selectedSite);
+        setRoutePreview({ loading: false, metrics: estimateModeMetrics(hav), estimated: true });
+      }
+    })();
+    return () => controller.abort();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSite?.id, userLocation]);
+
   // Handlers
 
   const handleMapClick = useCallback(() => {
@@ -681,7 +709,7 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
     return [point.poi.longitude, point.poi.latitude];
   }, [userLocation]);
 
-  const handleNavigateFromTo = useCallback(async (from: RoutePoint, to: RoutePoint) => {
+  const handleNavigateFromTo = useCallback(async (from: RoutePoint, to: RoutePoint, mode: TravelMode = travelMode) => {
     const fromCoords = resolveCoords(from);
     const toCoords   = resolveCoords(to);
     if (!fromCoords || !toCoords) {
@@ -706,24 +734,16 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
     setRouteAlts([fallback, generateSyntheticAlt(fallback, fromCoords, toCoords)]);
 
     try {
-      const url = `https://router.project-osrm.org/route/v1/foot/${fromCoords[0]},${fromCoords[1]};${toCoords[0]},${toCoords[1]}?overview=full&geometries=geojson&alternatives=true`;
-      const res  = await fetch(url, { signal: controller.signal });
-      if (!res.ok) throw new Error(`OSRM HTTP ${res.status}`);
-      const data = await res.json();
-      if (data.routes?.length > 0) {
-        const osrmAlts: RouteAlternative[] = data.routes.map((r: { geometry: { coordinates: [number, number][] }; duration: number; distance: number }) => ({
-          coordinates: r.geometry.coordinates,
-          // Le serveur OSRM public ignore le profil foot (durées voiture) :
-          // on estime la marche à ~4,9 km/h à partir de la distance
-          duration:    r.distance / 1.35,
-          distance:    r.distance,
-        }));
-        if (osrmAlts.length === 1) osrmAlts.push(generateSyntheticAlt(osrmAlts[0], fromCoords, toCoords));
-        setRouteAlts(osrmAlts);
-      } else {
-        console.warn("[OSRM] Aucun itinéraire retourné:", data);
-        setRouteError("Aucun itinéraire trouvé");
-      }
+      // Une seule requête voiture (le serveur ne route qu'en voiture) ; la durée
+      // affichée est dérivée du mode choisi via deriveModeMetrics.
+      const routes = await fetchOsrmRoute(fromCoords, toCoords, controller.signal);
+      const alts: RouteAlternative[] = routes.map(r => ({
+        coordinates: r.coordinates,
+        duration:    deriveModeMetrics(r.distance, r.carDuration)[mode].duration,
+        distance:    r.distance,
+      }));
+      if (alts.length === 1) alts.push(generateSyntheticAlt(alts[0], fromCoords, toCoords));
+      setRouteAlts(alts);
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       console.error("[OSRM] Erreur de routage:", err);
@@ -754,7 +774,7 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
         },
       );
     }
-  }, [resolveCoords]);
+  }, [resolveCoords, travelMode]);
 
   const handleEndNavigation = useCallback(() => {
     osrmAbortRef.current?.abort();
@@ -901,9 +921,11 @@ export function CarteMapSection({ activeFilters }: CarteMapSectionProps) {
         onNavigateFromTo={handleNavigateFromTo}
         allPois={pois}
         onRequestLocation={requestLocation}
-        gpsLoading={gpsLoading}
         permissionDenied={permissionDenied}
         openRouteSignal={routeSignal}
+        travelMode={travelMode}
+        onSelectMode={setTravelMode}
+        routePreview={routePreview}
       />
     </div>
   );

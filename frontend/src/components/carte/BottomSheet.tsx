@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useState, useRef } from "react";
+import { useEffect, useCallback, useState, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import {
   motion,
@@ -13,7 +13,9 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import { MARKER_CATEGORIES, type POI } from "@/lib/markers";
 import { localize } from "@/lib/i18n/localize";
-import { X, Navigation, MapPin, ChevronDown, ArrowRight, ChevronUp } from "lucide-react";
+import { type TravelMode, type RoutePreview, formatDuration, formatDistanceMeters } from "@/lib/routing";
+import { X, Navigation, MapPin, ChevronDown, ChevronUp, LocateFixed, ArrowUpDown, Search, Check, Footprints, Bike, Car } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 // Types
 
@@ -26,22 +28,14 @@ export type RoutePoint =
   | { type: "gps"; label: string }
   | { type: "poi"; poi: POI };
 
-// Utils
+// Modes de déplacement proposés dans l'en-tête (icônes Lucide)
+const TRAVEL_MODE_ITEMS: { key: TravelMode; Icon: LucideIcon; labelKey: string }[] = [
+  { key: "foot", Icon: Footprints, labelKey: "itinerary.modeWalk" },
+  { key: "bike", Icon: Bike,       labelKey: "itinerary.modeBike" },
+  { key: "car",  Icon: Car,        labelKey: "itinerary.modeCar"  },
+];
 
-function formatDistance(from: UserLocation, to: POI): string {
-  const R  = 6_371_000;
-  const φ1 = (from.latitude  * Math.PI) / 180;
-  const φ2 = (to.latitude    * Math.PI) / 180;
-  const Δφ = ((to.latitude  - from.latitude)  * Math.PI) / 180;
-  const Δλ = ((to.longitude - from.longitude) * Math.PI) / 180;
-  const a  =
-    Math.sin(Δφ / 2) ** 2 +
-    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-  const d  = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return d < 1_000
-    ? `${Math.round(d)} m`
-    : `${(d / 1_000).toFixed(1)} km`;
-}
+// Utils
 
 function hexToRgb(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -85,7 +79,6 @@ interface RoutePointSelectorProps {
   value: RoutePoint | null;
   userLocation: UserLocation | null;
   allPois: POI[];
-  readOnly?: boolean;
   onChange: (point: RoutePoint) => void;
   /** Si fourni, "Ma position" est toujours proposée : sans position connue, ce handler déclenche la géoloc */
   onSelectGps?: () => void;
@@ -95,12 +88,23 @@ interface RoutePointSelectorProps {
   denied?: boolean;
 }
 
+// Normalise pour une recherche insensible à la casse et aux accents
+function normalizeSearch(s: string): string {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+
 function RoutePointSelector({
-  label, dotColor, value, userLocation, allPois, readOnly = false, onChange, onSelectGps, pending = false, denied = false,
+  label, dotColor, value, userLocation, allPois, onChange, onSelectGps, pending = false, denied = false,
 }: RoutePointSelectorProps) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [coords, setCoords] = useState<{ left: number; width: number; bottom: number; maxHeight: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const locale = useLocale();
   const tCarte = useTranslations("carte");
+
   const displayLabel = pending
     ? tCarte("itinerary.locating")
     : denied
@@ -109,48 +113,173 @@ function RoutePointSelector({
         ? tCarte("itinerary.choosePoi")
         : value.type === "gps" ? tCarte("itinerary.myPosition") : localize(value.poi, "name", locale);
 
+  const isGps = value?.type === "gps";
+
+  // Accent du champ : rouge en cas de refus, couleur du point sinon
+  const accent    = denied ? "#FF4444" : dotColor;
+  const accentRgb = hexToRgb(accent);
+
+  const fieldBg = denied
+    ? "rgba(255,68,68,0.08)"
+    : open
+      ? `rgba(${accentRgb}, 0.10)`
+      : "var(--vd-filter-bg-inactive)";
+  const fieldBorder = denied
+    ? "rgba(255,68,68,0.30)"
+    : open
+      ? `rgba(${accentRgb}, 0.40)`
+      : "var(--vd-filter-border-inactive)";
+
+  // Recherche affichée seulement au-delà d'une liste courte
+  const showSearch = allPois.length > 6;
+  const filteredPois = useMemo(() => {
+    if (!query.trim()) return allPois;
+    const q = normalizeSearch(query);
+    return allPois.filter(poi => normalizeSearch(localize(poi, "name", locale)).includes(q));
+  }, [allPois, query, locale]);
+
+  const closeDropdown = useCallback(() => { setOpen(false); setQuery(""); }, []);
+
+  // Positionne le dropdown en fixed au-dessus du champ (hors du conteneur clippant du sheet)
+  const updateCoords = useCallback(() => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setCoords({
+      left: rect.left,
+      width: rect.width,
+      bottom: window.innerHeight - rect.top + 8,
+      maxHeight: Math.min(300, rect.top - 24),
+    });
+  }, []);
+
+  // Recalcule la position tant que le dropdown est ouvert (scroll du contenu, rotation, resize)
+  useEffect(() => {
+    if (!open) return;
+    const onReposition = () => updateCoords();
+    window.addEventListener("scroll", onReposition, true);
+    window.addEventListener("resize", onReposition);
+    return () => {
+      window.removeEventListener("scroll", onReposition, true);
+      window.removeEventListener("resize", onReposition);
+    };
+  }, [open, updateCoords]);
+
+  // Ouvre/ferme le dropdown ; la position initiale est calculée avant l'ouverture (évite un setState en effet)
+  const toggleOpen = useCallback(() => {
+    if (open) { closeDropdown(); return; }
+    updateCoords();
+    setOpen(true);
+  }, [open, closeDropdown, updateCoords]);
+
+  // Fermeture au clic hors du sélecteur (le dropdown est portalisé hors de containerRef)
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (containerRef.current?.contains(target)) return;
+      if (dropdownRef.current?.contains(target)) return;
+      closeDropdown();
+    };
+    document.addEventListener("pointerdown", handler);
+    return () => document.removeEventListener("pointerdown", handler);
+  }, [open, closeDropdown]);
+
+  // Style de survol appliqué en inline (cohérent avec le reste du fichier)
+  const hoverOn = (e: { currentTarget: HTMLElement }) => { e.currentTarget.style.background = "var(--vd-inner-tint)"; };
+
   return (
-    <div style={{ position: "relative" }}>
-      <div style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: dotColor, marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
-        <span style={{ width: 6, height: 6, borderRadius: "50%", background: dotColor, display: "inline-block", flexShrink: 0 }} />
-        {label}
-      </div>
+    <div ref={containerRef} style={{ position: "relative" }}>
       <button
-        onClick={() => { if (!readOnly) setOpen(o => !o); }}
-        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "10px 14px", borderRadius: 12, background: denied ? "rgba(255,68,68,0.08)" : readOnly ? "rgba(68,136,255,0.08)" : open ? `rgba(${hexToRgb(dotColor)}, 0.10)` : "var(--vd-filter-bg-inactive)", border: `1px solid ${denied ? "rgba(255,68,68,0.30)" : readOnly ? "rgba(68,136,255,0.22)" : open ? `rgba(${hexToRgb(dotColor)}, 0.40)` : "var(--vd-filter-border-inactive)"}`, color: denied ? "#FF4444" : value ? "var(--foreground)" : "var(--muted-foreground)", fontSize: 13, fontWeight: 600, cursor: readOnly ? "default" : "pointer", transition: "background 160ms, border-color 160ms", textAlign: "left" }}
+        ref={triggerRef}
+        onClick={toggleOpen}
+        style={{ position: "relative", width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "11px 14px 11px 38px", borderRadius: 16, background: fieldBg, border: `1px solid ${fieldBorder}`, cursor: "pointer", transition: "background 160ms, border-color 160ms", textAlign: "left" }}
       >
-        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayLabel}</span>
-        {readOnly
-          ? <MapPin size={13} style={{ flexShrink: 0, color: "#4488FF", opacity: 0.7 }} />
-          : <ChevronDown size={14} style={{ flexShrink: 0, color: denied ? "#FF4444" : "var(--muted-foreground)", transform: open ? "rotate(180deg)" : "none", transition: "transform 160ms ease" }} />
-        }
+        {/* Pastille indicatrice avec anneau teinté */}
+        <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", width: 8, height: 8, borderRadius: "50%", background: accent, boxShadow: `0 0 0 4px rgba(${accentRgb}, 0.18)`, flexShrink: 0 }} />
+
+        <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+          <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: accent }}>
+            {label}
+          </span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: denied ? "#FF4444" : value ? "var(--foreground)" : "var(--muted-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {displayLabel}
+          </span>
+        </span>
+
+        {/* Indice "position actuelle" quand la valeur est GPS */}
+        {isGps && !open && <LocateFixed size={15} style={{ flexShrink: 0, color: "#4488FF" }} />}
+        <ChevronDown size={16} style={{ flexShrink: 0, color: denied ? "#FF4444" : "var(--muted-foreground)", transform: open ? "rotate(180deg)" : "none", transition: "transform 160ms ease" }} />
       </button>
-      {open && !readOnly && (
-        /* Ouvre vers le haut : la liste n'est pas clippée par l'overflow hidden du sheet aux snaps partiels */
-        <div style={{ position: "absolute", bottom: "calc(100% + 6px)", left: 0, right: 0, background: "var(--vd-dropdown-bg)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid var(--vd-glass-border-color)", borderRadius: 14, zIndex: 200, maxHeight: 220, overflowY: "auto", boxShadow: "0 12px 36px rgba(0,0,0,0.4)" }}>
+
+      {open && coords && createPortal(
+        /* Portalisé vers body en fixed : le dropdown n'est plus clippé par l'overflow du sheet */
+        <div ref={dropdownRef} style={{ position: "fixed", left: coords.left, width: coords.width, bottom: coords.bottom, maxHeight: coords.maxHeight, background: "var(--vd-dropdown-bg)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid var(--vd-glass-border-color)", borderRadius: 16, zIndex: 70, overflowY: "auto", boxShadow: "0 12px 36px rgba(0,0,0,0.4)", overscrollBehavior: "contain" }}>
+          {/* Champ de recherche collant */}
+          {showSearch && (
+            <div style={{ position: "sticky", top: 0, zIndex: 1, padding: 8, background: "var(--vd-dropdown-bg)", borderBottom: "1px solid var(--vd-glass-border-color)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 10, background: "var(--vd-filter-bg-inactive)", border: "1px solid var(--vd-filter-border-inactive)" }}>
+                <Search size={14} style={{ flexShrink: 0, color: "var(--muted-foreground)" }} />
+                <input
+                  autoFocus
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                  placeholder={tCarte("itinerary.searchPlaceholder")}
+                  style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", color: "var(--foreground)", fontSize: 13 }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Option "Ma position" mise en avant */}
           {(userLocation || onSelectGps) && (
             <button
               onClick={() => {
                 if (userLocation) onChange({ type: "gps", label: tCarte("itinerary.myPosition") });
                 else onSelectGps?.();
-                setOpen(false);
+                closeDropdown();
               }}
-              style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "transparent", border: "none", borderBottom: "1px solid var(--vd-glass-border-color)", color: "#4488FF", fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "left" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(68,136,255,0.14)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isGps ? "rgba(68,136,255,0.10)" : "transparent"; }}
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: isGps ? "rgba(68,136,255,0.10)" : "transparent", border: "none", borderBottom: "1px solid var(--vd-glass-border-color)", color: "#4488FF", fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "left" }}
             >
-              <MapPin size={14} style={{ flexShrink: 0 }} />
-              {tCarte("itinerary.myPosition")}
+              <span style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(68,136,255,0.16)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <LocateFixed size={14} />
+              </span>
+              <span style={{ flex: 1 }}>{tCarte("itinerary.myPosition")}</span>
+              {isGps && <Check size={16} style={{ flexShrink: 0 }} />}
             </button>
           )}
-          {allPois.map(poi => {
-            const cat = MARKER_CATEGORIES[poi.category];
+
+          {/* Liste des POI filtrés */}
+          {filteredPois.map(poi => {
+            const poiCat = MARKER_CATEGORIES[poi.category];
+            const selected = value?.type === "poi" && value.poi.id === poi.id;
             return (
-              <button key={poi.id} onClick={() => { onChange({ type: "poi", poi }); setOpen(false); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "transparent", border: "none", borderBottom: "1px solid var(--vd-inner-tint)", color: "var(--foreground)", fontSize: 12, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: cat.color, flexShrink: 0 }} />
-                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{localize(poi, "name", locale)}</span>
+              <button
+                key={poi.id}
+                onClick={() => { onChange({ type: "poi", poi }); closeDropdown(); }}
+                onMouseEnter={hoverOn}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = selected ? `rgba(${hexToRgb(poiCat.color)}, 0.10)` : "transparent"; }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: selected ? `rgba(${hexToRgb(poiCat.color)}, 0.10)` : "transparent", border: "none", borderBottom: "1px solid var(--vd-inner-tint)", color: "var(--foreground)", fontSize: 13, fontWeight: 500, cursor: "pointer", textAlign: "left" }}
+              >
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: poiCat.color, flexShrink: 0 }} />
+                <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{localize(poi, "name", locale)}</span>
+                  <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted-foreground)" }}>{poiCat.label}</span>
+                </span>
+                {selected && <Check size={15} style={{ flexShrink: 0, color: poiCat.color }} />}
               </button>
             );
           })}
-        </div>
+
+          {/* État vide */}
+          {filteredPois.length === 0 && (
+            <div style={{ padding: "16px 14px", textAlign: "center", color: "var(--muted-foreground)", fontSize: 12 }}>
+              {tCarte("itinerary.noResult")}
+            </div>
+          )}
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -162,24 +291,31 @@ interface BottomSheetProps {
   site: POI | null;
   userLocation: UserLocation | null;
   onClose: () => void;
-  onNavigateFromTo: (from: RoutePoint, to: RoutePoint) => void;
+  onNavigateFromTo: (from: RoutePoint, to: RoutePoint, mode?: TravelMode) => void;
   allPois: POI[];
   /** Déclenche la demande de géolocalisation (geste utilisateur) */
   onRequestLocation: () => void;
-  gpsLoading: boolean;
   /** Dernière demande de géolocalisation refusée par l'utilisateur */
   permissionDenied: boolean;
   /** Incrémenté par le parent pour ouvrir directement le panneau itinéraire du site courant */
   openRouteSignal?: number;
+  /** Mode de déplacement actif (marche/vélo/voiture) */
+  travelMode: TravelMode;
+  /** Change le mode de déplacement */
+  onSelectMode: (mode: TravelMode) => void;
+  /** Métriques d'itinéraire par mode (position -> site), calculées par le parent */
+  routePreview: RoutePreview;
 }
 
-export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, allPois, onRequestLocation, gpsLoading, permissionDenied, openRouteSignal = 0 }: BottomSheetProps) {
+export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, allPois, onRequestLocation, permissionDenied, openRouteSignal = 0, travelMode, onSelectMode, routePreview }: BottomSheetProps) {
   const locale = useLocale();
   const tCarte = useTranslations("carte");
   const [showRoutePanel, setShowRoutePanel] = useState(false);
   const [fromPoint, setFromPoint] = useState<RoutePoint | null>(null);
   const [toPoint,   setToPoint]   = useState<RoutePoint | null>(null);
   const [snapIdx,   setSnapIdx]   = useState(0);
+  // Attente d'acquisition GPS pour remplir le champ Départ avec "Ma position"
+  const [awaitingGps, setAwaitingGps] = useState(false);
   // Portal vers body : le conteneur carte (zIndex:1) crée un contexte d'empilement
   // qui plafonnait le sheet sous le BottomNav (z-50)
   const [mounted,   setMounted]   = useState(false);
@@ -236,11 +372,19 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
   }, [offsets[0], offsets[1], offsets[2]]);
 
   const handleOpenRoute = useCallback(() => {
-    setFromPoint(userLocation ? { type: "gps", label: tCarte("itinerary.myPosition") } : null);
+    // Départ = "Ma position" par défaut : si la position est connue, on la place ;
+    // sinon on déclenche la géoloc et le champ affiche l'état d'attente puis se remplit.
+    if (userLocation) {
+      setFromPoint({ type: "gps", label: tCarte("itinerary.myPosition") });
+    } else {
+      setFromPoint(null);
+      setAwaitingGps(true);
+      onRequestLocation();
+    }
     setToPoint(site ? { type: "poi", poi: site } : null);
     setShowRoutePanel(true);
     snapTo(1);
-  }, [userLocation, site, snapTo, tCarte]);
+  }, [userLocation, site, snapTo, tCarte, onRequestLocation]);
 
   // Ouverture du panneau itinéraire pilotée par le parent (CTA du marqueur sans position connue)
   useEffect(() => {
@@ -250,9 +394,6 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
   }, [openRouteSignal]);
 
   // Sélection de "Ma position" sans position connue : on demande la géoloc et on remplit à l'arrivée
-  const [awaitingGps, setAwaitingGps] = useState(false);
-  const prevGpsLoadingRef = useRef(false);
-
   const handleSelectMyPosition = useCallback(() => {
     if (userLocation) {
       setFromPoint({ type: "gps", label: tCarte("itinerary.myPosition") });
@@ -269,18 +410,28 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
     }
   }, [awaitingGps, userLocation, tCarte]);
 
-  // Fin d'acquisition sans position (refus/timeout) : on rend la main au sélecteur
+  // Refus détecté : on dépend directement de permissionDenied plutôt que d'une transition
+  // de gpsLoading, car un refus déjà bloqué par le navigateur fait passer loading true→false
+  // de façon quasi-synchrone (batché dans le même rendu React), rendant la transition invisible
   useEffect(() => {
-    if (prevGpsLoadingRef.current && !gpsLoading && !userLocation) setAwaitingGps(false);
-    prevGpsLoadingRef.current = gpsLoading;
-  }, [gpsLoading, userLocation]);
+    if (awaitingGps && permissionDenied && !userLocation) setAwaitingGps(false);
+  }, [awaitingGps, permissionDenied, userLocation]);
+
+  // Permute départ et arrivée (bouton connecteur du formulaire)
+  const handleSwap = useCallback(() => {
+    setFromPoint(toPoint);
+    setToPoint(fromPoint);
+  }, [fromPoint, toPoint]);
 
   if (!site || !mounted) return null;
 
   const cat  = MARKER_CATEGORIES[site.category];
   const rgb  = hexToRgb(cat.color);
-  const fromLocked = userLocation !== null;
-  const canStart   = fromPoint !== null && toPoint !== null;
+  // Métriques du mode sélectionné (itinéraire position -> site) pour l'en-tête
+  const selectedMetric = routePreview.metrics?.[travelMode] ?? null;
+  // Départ et arrivée sont tous deux éditables : on peut choisir sa position actuelle ou un POI.
+  const canStart     = fromPoint !== null && toPoint !== null;
+  const canSwap      = fromPoint !== null && toPoint !== null;
 
   const handleDragEnd = (_: unknown, info: { velocity: { y: number }; offset: { y: number } }) => {
     const curY = y.get();
@@ -376,15 +527,16 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
           }}
         >
           {/* En-tête catégorie + fermer */}
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "0 20px 0", marginBottom: 14 }}>
-            <div>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "0 20px", marginBottom: 14 }}>
+            <div style={{ minWidth: 0 }}>
               {/* Badge catégorie */}
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: `rgba(${rgb}, 0.12)`, border: `1px solid rgba(${rgb}, 0.28)`, borderRadius: 99, padding: "4px 12px 4px 8px", marginBottom: 10 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: `rgba(${rgb}, 0.10)`, border: `1px solid rgba(${rgb}, 0.30)`, borderRadius: 99, padding: "5px 12px 5px 9px", marginBottom: 12 }}>
                 <span style={{ width: 7, height: 7, borderRadius: "50%", background: cat.color, display: "inline-block", flexShrink: 0 }} />
-                <span style={{ color: cat.color, fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.12em" }}>{cat.label}</span>
+                <span style={{ color: cat.color, fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em" }}>{cat.label}</span>
               </div>
+
               {/* Nom du site */}
-              <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--foreground)", lineHeight: 1.2, letterSpacing: "-0.02em", margin: 0, paddingRight: 40 }}>
+              <h2 style={{ fontSize: 27, fontWeight: 800, color: "var(--foreground)", lineHeight: 1.15, letterSpacing: "-0.02em", margin: 0 }}>
                 {localize(site, "name", locale)}
               </h2>
             </div>
@@ -395,18 +547,43 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
             </button>
           </div>
 
-          {/* Distance */}
+          {/* Sélecteur de modes + distance (itinéraire réel position -> site) */}
           {userLocation && (
-            <div style={{ padding: "0 20px", marginBottom: 14 }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--muted-foreground)", background: "var(--vd-filter-bg-inactive)", border: "1px solid var(--vd-filter-border-inactive)", borderRadius: 99, padding: "4px 12px" }}>
-                <MapPin size={11} style={{ color: cat.color, flexShrink: 0 }} />
-                {formatDistance(userLocation, site)} - {tCarte("itinerary.fromYou")}
+            <div style={{ padding: "0 20px", marginBottom: 16 }}>
+              <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+                {TRAVEL_MODE_ITEMS.map(({ key, Icon, labelKey }) => {
+                  const active = key === travelMode;
+                  const metric = routePreview.metrics?.[key] ?? null;
+                  const timeLabel = routePreview.loading && !metric
+                    ? "..."
+                    : metric
+                      ? `${routePreview.estimated ? "~" : ""}${formatDuration(metric.duration)}`
+                      : "-";
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => onSelectMode(key)}
+                      aria-label={`${tCarte(labelKey)} - ${timeLabel}`}
+                      aria-pressed={active}
+                      style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "9px 4px", borderRadius: 14, cursor: "pointer", background: active ? `rgba(${rgb}, 0.14)` : "var(--vd-filter-bg-inactive)", border: `1px solid ${active ? `rgba(${rgb}, 0.45)` : "var(--vd-filter-border-inactive)"}`, color: active ? cat.color : "var(--muted-foreground)", transition: "background 160ms, border-color 160ms, color 160ms" }}
+                    >
+                      <Icon size={17} style={{ flexShrink: 0 }} />
+                      <span style={{ fontSize: 12, fontWeight: 700 }}>{timeLabel}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Distance du mode sélectionné (identique entre modes : un seul tracé) */}
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--muted-foreground)", background: "var(--vd-filter-bg-inactive)", border: "1px solid var(--vd-filter-border-inactive)", borderRadius: 99, padding: "6px 14px" }}>
+                <MapPin size={13} style={{ color: cat.color, flexShrink: 0 }} />
+                {selectedMetric ? formatDistanceMeters(selectedMetric.distance) : "..."} - {tCarte("itinerary.fromYou")}
+                {routePreview.estimated && ` (${tCarte("itinerary.asCrowFlies")})`}
               </div>
             </div>
           )}
 
-          {/* Séparateur */}
-          <div style={{ height: 1, background: "var(--vd-glass-border-color)", margin: "0 20px 16px" }} />
+          {/* Séparateur dégradé */}
+          <div style={{ height: 1, background: "linear-gradient(to right, transparent, var(--vd-glass-border-color), transparent)", margin: "0 20px 18px" }} />
 
           <div style={{ padding: "0 20px" }}>
             {/* Description */}
@@ -420,7 +597,7 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
             {site.amenities && site.amenities.length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
                 {site.amenities.map(a => (
-                  <span key={a.name} style={{ background: "var(--vd-filter-bg-inactive)", color: "var(--muted-foreground)", border: "1px solid var(--vd-filter-border-inactive)", borderRadius: 99, padding: "3px 10px", fontSize: 11, fontWeight: 500 }}>
+                  <span key={a.name} style={{ background: "var(--vd-filter-bg-inactive)", color: "var(--muted-foreground)", border: "1px solid var(--vd-filter-border-inactive)", borderRadius: 99, padding: "4px 12px", fontSize: 11, fontWeight: 500 }}>
                     {localize(a, "name", locale)}
                   </span>
                 ))}
@@ -429,8 +606,8 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
 
             {/* Panneau itinéraire */}
             {showRoutePanel ? (
-              <div style={{ background: "var(--vd-inner-tint)", border: "1px solid var(--vd-glass-border-color)", borderRadius: 16, padding: "16px 14px" }}>
-                <p style={{ fontSize: 10, fontWeight: 800, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>
+              <div>
+                <p style={{ fontSize: 11, fontWeight: 800, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 14 }}>
                   {tCarte("itinerary.title")}
                 </p>
 
@@ -440,30 +617,38 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
                   value={fromPoint}
                   userLocation={userLocation}
                   allPois={allPois}
-                  readOnly={fromLocked}
                   onChange={setFromPoint}
                   onSelectGps={handleSelectMyPosition}
                   pending={awaitingGps}
                   denied={permissionDenied && !userLocation}
                 />
 
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", margin: "10px 0", gap: 4 }}>
-                  <div style={{ width: 1, height: 18, background: "repeating-linear-gradient(to bottom, #55556a 0px, #55556a 3px, transparent 3px, transparent 6px)" }} />
-                  <ArrowRight size={12} style={{ color: "#55556a" }} />
+                {/* Connecteur - permute départ et arrivée, chevauche les deux champs */}
+                <div style={{ display: "flex", justifyContent: "center", margin: "-10px 0", position: "relative", zIndex: 20, pointerEvents: "none" }}>
+                  <button
+                    onClick={handleSwap}
+                    disabled={!canSwap}
+                    aria-label={tCarte("itinerary.swap")}
+                    style={{ pointerEvents: "auto", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--vd-sheet-body)", border: "1px solid var(--vd-glass-border-color)", color: "var(--muted-foreground)", cursor: canSwap ? "pointer" : "not-allowed", opacity: canSwap ? 1 : 0.5, boxShadow: "0 4px 14px rgba(0,0,0,0.28)", transition: "transform 160ms ease" }}
+                    onMouseEnter={e => { if (canSwap) (e.currentTarget as HTMLButtonElement).style.transform = "rotate(180deg)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = ""; }}
+                  >
+                    <ArrowUpDown size={16} />
+                  </button>
                 </div>
 
-                <RoutePointSelector label={tCarte("itinerary.to")} dotColor="#F56E0F" value={toPoint} userLocation={userLocation} allPois={allPois} onChange={setToPoint} />
+                <RoutePointSelector label={tCarte("itinerary.to")} dotColor={cat.color} value={toPoint} userLocation={userLocation} allPois={allPois} onChange={setToPoint} />
 
-                <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-                  <button onClick={() => setShowRoutePanel(false)} style={{ flex: 1, padding: "11px 0", borderRadius: 12, background: "var(--vd-filter-bg-inactive)", border: "1px solid var(--vd-glass-border-color)", color: "var(--muted-foreground)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+                  <button onClick={() => setShowRoutePanel(false)} style={{ flex: 1, padding: "13px 0", borderRadius: 99, background: "var(--vd-filter-bg-inactive)", border: "1px solid var(--vd-glass-border-color)", color: "var(--foreground)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                     {tCarte("itinerary.cancel")}
                   </button>
                   <button
                     disabled={!canStart}
-                    onClick={() => { if (fromPoint && toPoint) { onNavigateFromTo(fromPoint, toPoint); onClose(); } }}
-                    style={{ flex: 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "11px 0", borderRadius: 12, background: canStart ? `linear-gradient(135deg, ${cat.color}, ${cat.color}CC)` : "rgba(245,110,15,0.20)", border: "none", color: canStart ? "#fff" : "var(--muted-foreground)", fontSize: 14, fontWeight: 800, cursor: canStart ? "pointer" : "not-allowed", transition: "opacity 160ms", boxShadow: canStart ? `0 4px 16px rgba(${rgb}, 0.35)` : "none" }}
+                    onClick={() => { if (fromPoint && toPoint) { onNavigateFromTo(fromPoint, toPoint, travelMode); onClose(); } }}
+                    style={{ flex: 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px 0", borderRadius: 99, background: canStart ? `linear-gradient(135deg, ${cat.color}, ${cat.color}CC)` : "var(--vd-filter-bg-inactive)", border: "none", color: canStart ? "#fff" : "var(--muted-foreground)", fontSize: 14, fontWeight: 800, cursor: canStart ? "pointer" : "not-allowed", transition: "opacity 160ms", boxShadow: canStart ? `0 6px 20px rgba(${rgb}, 0.40)` : "none" }}
                   >
-                    <Navigation size={14} />
+                    <Navigation size={15} />
                     {tCarte("itinerary.start")}
                   </button>
                 </div>
@@ -472,7 +657,7 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
               /* CTA Itinéraire */
               <button
                 onClick={handleOpenRoute}
-                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "16px 20px", borderRadius: 16, cursor: "pointer", border: "none", background: `linear-gradient(135deg, ${cat.color} 0%, ${cat.color}CC 100%)`, color: "#fff", fontSize: 15, fontWeight: 800, letterSpacing: "0.01em", boxShadow: `0 6px 24px rgba(${rgb}, 0.40), inset 0 1px 0 rgba(255,255,255,0.20)`, transition: "filter 150ms ease" }}
+                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "16px 20px", borderRadius: 99, cursor: "pointer", border: "none", background: `linear-gradient(135deg, ${cat.color} 0%, ${cat.color}CC 100%)`, color: "#fff", fontSize: 15, fontWeight: 800, letterSpacing: "0.01em", boxShadow: `0 8px 26px rgba(${rgb}, 0.42), inset 0 1px 0 rgba(255,255,255,0.20)`, transition: "filter 150ms ease" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.filter = "brightness(1.08)"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.filter = ""; }}
               >

@@ -223,7 +223,15 @@
       "myPosition": "Ma position",
       "locating": "Recherche de votre position…",
       "locationDenied": "Position refusée - réessayer",
-      "choosePoi": "Choisir un point..."
+      "choosePoi": "Choisir un point...",
+      "minShort": "min",
+      "swap": "Inverser départ et arrivée",
+      "searchPlaceholder": "Rechercher un lieu…",
+      "noResult": "Aucun résultat",
+      "modeWalk": "À pied",
+      "modeBike": "Vélo",
+      "modeCar": "Voiture",
+      "asCrowFlies": "à vol d'oiseau"
     }
   },
   "avis": {

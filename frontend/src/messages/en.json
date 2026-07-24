@@ -223,7 +223,15 @@
       "myPosition": "My location",
       "locating": "Locating you…",
       "locationDenied": "Location denied - retry",
-      "choosePoi": "Choose a point..."
+      "choosePoi": "Choose a point...",
+      "minShort": "min",
+      "swap": "Swap start and destination",
+      "searchPlaceholder": "Search a place…",
+      "noResult": "No result",
+      "modeWalk": "Walk",
+      "modeBike": "Bike",
+      "modeCar": "Car",
+      "asCrowFlies": "as the crow flies"
     }
   },
   "avis": {
