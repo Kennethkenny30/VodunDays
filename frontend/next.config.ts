@@ -10,6 +10,11 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  // Version du build inlinée côté client (SHA du commit Vercel) pour détecter les nouveaux déploiements
+  env: {
+    NEXT_PUBLIC_APP_VERSION:
+      process.env.VERCEL_GIT_COMMIT_SHA || process.env.NEXT_PUBLIC_APP_VERSION || "dev",
+  },
   turbopack: {
     root: path.resolve(__dirname),
     resolveAlias: {

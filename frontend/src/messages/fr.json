@@ -485,5 +485,10 @@
         "jours": "Jours de Fête"
       }
     }
+  },
+  "pwa": {
+    "updateAvailable": "Nouvelle version disponible",
+    "update": "Mettre à jour",
+    "later": "Plus tard"
   }
 }

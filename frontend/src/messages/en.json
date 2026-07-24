@@ -485,5 +485,10 @@
         "jours": "Festival Days"
       }
     }
+  },
+  "pwa": {
+    "updateAvailable": "New version available",
+    "update": "Update",
+    "later": "Later"
   }
 }
