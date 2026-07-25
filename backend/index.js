@@ -7,7 +7,7 @@ import morgan from "morgan";
 
 import { errorHandler } from "./middlewares/error.middleware.js";
 
-// ─── Modules existants ────────────────────────────────────────────────────────
+// Modules existants
 import authRoutes                  from "./modules/auth/auth.routes.js";
 import sitesRoutes                 from "./modules/sites/sites.routes.js";
 import amenitiesRoutes             from "./modules/amenities/amenities.routes.js";
@@ -24,7 +24,7 @@ import choicesRoutes               from "./modules/choices/choices.routes.js";
 import answersRoutes               from "./modules/answers/answers.routes.js";
 import usersRoutes                 from "./modules/users/users.routes.js";
 
-// ─── Nouveaux modules (Phase 3) ───────────────────────────────────────────────
+// Nouveaux modules (Phase 3)
 import notificationsRoutes from "./modules/notifications/notifications.routes.js";
 import auditRoutes         from "./modules/audit/audit.routes.js";
 import surveyRoutes        from "./modules/survey/survey.routes.js";
@@ -34,20 +34,34 @@ import platformRoutes      from "./modules/platform/platform.routes.js";
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// ─── Middlewares globaux ──────────────────────────────────────────────────────
+// Middlewares globaux
 app.use(helmet());
 
-// Autorise le domaine de production configuré ET tous les déploiements
-// Preview Vercel (URL unique générée à chaque déploiement, ex. vodun-days-xxxx.vercel.app).
+// L'hébergeur place le backend derrière un proxy : sans ça req.protocol et
+// req.ip reflètent le proxy et non le client.
+app.set("trust proxy", 1);
+
+// En production, le navigateur passe par le proxy Next (/api/backend) et
+// n'atteint jamais ce serveur directement : le CORS ne concerne donc plus que
+// d'éventuels appels directs. On autorise le domaine configuré et les
+// déploiements Preview Vercel (URL unique générée à chaque déploiement).
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3001";
+const isOriginAllowed = (origin) => {
+  if (origin === FRONTEND_URL) return true;
+  try {
+    return /\.vercel\.app$/.test(new URL(origin).hostname);
+  } catch {
+    return false;
+  }
+};
 app.use(
   cors({
     origin: (origin, callback) => {
+      // Pas d'Origin : appel serveur à serveur (proxy Next, outils CLI).
       if (!origin) return callback(null, true);
-      if (origin === FRONTEND_URL || /\.vercel\.app$/.test(new URL(origin).hostname)) {
-        return callback(null, true);
-      }
-      callback(new Error("Not allowed by CORS"));
+      // On ne remonte pas d'erreur : la lever produirait un 500 sans en-têtes
+      // CORS. On refuse simplement les en-têtes, le navigateur bloquera.
+      return callback(null, isOriginAllowed(origin));
     },
     credentials: true, // indispensable pour les cookies HttpOnly
   })
@@ -57,7 +71,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cookieParser()); // lecture des cookies HttpOnly
 
-// ─── Routes API ───────────────────────────────────────────────────────────────
+// Routes API
 
 // Auth
 app.use("/api/auth",                   authRoutes);
@@ -87,12 +101,12 @@ app.use("/api/survey",                 surveyRoutes);
 app.use("/api/urgences",               urgencesRoutes);
 app.use("/api/platform",               platformRoutes);
 
-// ─── 404 ──────────────────────────────────────────────────────────────────────
+// 404
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route introuvable" });
 });
 
-// ─── Gestionnaire d'erreurs global (toujours en dernier) ─────────────────────
+// Gestionnaire d'erreurs global (toujours en dernier)
 app.use(errorHandler);
 
 app.listen(PORT, () => {

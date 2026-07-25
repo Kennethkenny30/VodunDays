@@ -22,12 +22,14 @@ const COOKIE_NAME = "vd_token"
 const PROTECTED_ROUTES = ["/admin", "/superadmin"]
 const PUBLIC_ROUTES    = ["/connexion"]
 
-/** Lit le champ `role` du payload JWT sans vérifier la signature. */
-function decodeRole(token: string): string | null {
+type TokenPayload = { role?: string; exp?: number }
+
+/** Lit le payload JWT sans vérifier la signature. */
+function decodePayload(token: string): TokenPayload | null {
   try {
     const part    = token.split(".")[1]
     const decoded = atob(part.replace(/-/g, "+").replace(/_/g, "/"))
-    return (JSON.parse(decoded) as { role?: string }).role ?? null
+    return JSON.parse(decoded) as TokenPayload
   } catch {
     return null
   }
@@ -35,7 +37,15 @@ function decodeRole(token: string): string | null {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const token = request.cookies.get(COOKIE_NAME)?.value
+  const rawToken = request.cookies.get(COOKIE_NAME)?.value
+
+  const payload = rawToken ? decodePayload(rawToken) : null
+
+  // Un token expiré doit être traité comme absent. Sinon le middleware renvoie
+  // indéfiniment vers le dashboard, où le premier appel API répond 401 et
+  // redirige vers /connexion : la page se recharge en boucle.
+  const expired = !payload || (typeof payload.exp === "number" && payload.exp * 1000 <= Date.now())
+  const token   = expired ? undefined : rawToken
 
   const isProtected = PROTECTED_ROUTES.some((r) => pathname.startsWith(r))
   const isPublic    = PUBLIC_ROUTES.some((r) => pathname.startsWith(r))
@@ -44,11 +54,20 @@ export function middleware(request: NextRequest) {
   if (isProtected && !token) {
     const loginUrl = new URL("/connexion", request.url)
     loginUrl.searchParams.set("redirect", pathname)
-    return NextResponse.redirect(loginUrl)
+    const response = NextResponse.redirect(loginUrl)
+    if (rawToken) response.cookies.delete(COOKIE_NAME)
+    return response
+  }
+
+  // Cookie périmé sur une route non protégée : on le purge au passage.
+  if (rawToken && expired) {
+    const response = NextResponse.next()
+    response.cookies.delete(COOKIE_NAME)
+    return response
   }
 
   if (token) {
-    const role = decodeRole(token)
+    const role = payload?.role ?? null
 
     // Déjà connecté → tente d'accéder à /connexion
     if (isPublic) {

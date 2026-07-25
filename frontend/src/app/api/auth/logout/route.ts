@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-
-function getBackendBase() {
-  const raw = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"
-  return raw.replace(/\/api$/, "")
-}
+import { getBackendOrigin } from "@/lib/api/backend-url"
 
 export async function POST(request: NextRequest) {
-  await fetch(`${getBackendBase()}/api/auth/logout`, {
+  // Le backend identifie la session via le Bearer, comme le proxy /api/backend :
+  // le cookie du domaine frontend ne lui est d'aucune utilité.
+  const token = request.cookies.get("vd_token")?.value
+  await fetch(`${getBackendOrigin()}/api/auth/logout`, {
     method:  "POST",
-    headers: { Cookie: request.headers.get("cookie") || "" },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   }).catch(() => {})
 
   const response = NextResponse.json({ success: true, message: "Deconnecte" })

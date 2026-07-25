@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-
-function getBackendBase() {
-  const raw = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"
-  return raw.replace(/\/api$/, "")
-}
+import { getBackendOrigin } from "@/lib/api/backend-url"
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
@@ -11,7 +7,7 @@ export async function POST(request: NextRequest) {
   let data: Record<string, unknown>
   let status = 500
   try {
-    const backendRes = await fetch(`${getBackendBase()}/api/auth/login`, {
+    const backendRes = await fetch(`${getBackendOrigin()}/api/auth/login`, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify(body),
@@ -30,10 +26,14 @@ export async function POST(request: NextRequest) {
   if (data.success && typeof data.data === "object" && data.data !== null) {
     const token = (data.data as Record<string, unknown>).token
     if (typeof token === "string") {
+      // "lax" plutôt que "strict" : en strict, arriver sur le site depuis un lien
+      // externe n'envoie pas le cookie, et le middleware redirige un utilisateur
+      // pourtant connecté vers /connexion. Lax bloque toujours les requêtes
+      // cross-site non-GET, donc la protection CSRF reste équivalente ici.
       response.cookies.set("vd_token", token, {
         httpOnly: true,
         secure:   process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         maxAge:   7 * 24 * 60 * 60,
         path:     "/",
       })

@@ -8,7 +8,8 @@
  *    (id, email, role, firstname, lastname) dans sessionStorage
  *    pour affichage immédiat sans re-fetch.
  *  - Si sessionStorage est vide (ex: nouvel onglet, rafraîchissement),
- *    on re-fetch via GET /api/auth/me (le cookie est envoyé automatiquement).
+ *    on re-fetch via GET /auth/me à travers le proxy same-origin, qui
+ *    transmet le cookie au backend.
  */
 
 import type { User } from "@/lib/types/api"
@@ -20,7 +21,7 @@ export type SessionUser = Pick<
   "id" | "email" | "role" | "firstname" | "lastname" | "phone"
 >
 
-// ─── Écriture ─────────────────────────────────────────────────────────────────
+// Écriture
 
 /** Sauvegarde les infos utilisateur dans sessionStorage après login. */
 export function saveSession(user: SessionUser): void {
@@ -28,7 +29,7 @@ export function saveSession(user: SessionUser): void {
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(user))
 }
 
-// ─── Lecture ──────────────────────────────────────────────────────────────────
+// Lecture
 
 /** Retourne l'utilisateur depuis sessionStorage, ou null si absent. */
 export function getSession(): SessionUser | null {
@@ -41,7 +42,7 @@ export function getSession(): SessionUser | null {
   }
 }
 
-// ─── Suppression ──────────────────────────────────────────────────────────────
+// Suppression
 
 /** Vide la session locale. Le cookie est supprimé par POST /api/auth/logout. */
 export function clearSession(): void {
@@ -49,7 +50,7 @@ export function clearSession(): void {
   sessionStorage.removeItem(SESSION_KEY)
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// Helpers
 
 /** Retourne vrai si l'utilisateur a l'un des rôles fournis. */
 export function hasRole(

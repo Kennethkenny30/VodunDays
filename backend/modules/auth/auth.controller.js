@@ -1,26 +1,31 @@
 import { successResponse } from "../../utils/response.js";
 import * as authService from "./auth.service.js";
 
-// ─── Helpers cookie ────────────────────────────────────────────────────────────
+// Helpers cookie
 
 const COOKIE_NAME = "vd_token";
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 jours en ms
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  path: "/",
+};
+
 function setAuthCookie(res, token) {
-  res.cookie(COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: COOKIE_MAX_AGE,
-    path: "/",
-  });
+  res.cookie(COOKIE_NAME, token, { ...COOKIE_OPTIONS, maxAge: COOKIE_MAX_AGE });
 }
 
 function clearAuthCookie(res) {
-  res.clearCookie(COOKIE_NAME, { path: "/" });
+  // Les attributs doivent correspondre à ceux de setAuthCookie, sinon le
+  // navigateur ne supprime pas le cookie.
+  res.clearCookie(COOKIE_NAME, COOKIE_OPTIONS);
 }
 
-// ─── Controllers ──────────────────────────────────────────────────────────────
+// Controllers
 
 // POST /api/auth/register  (SUPER_ADMIN uniquement via middleware)
 export const register = async (req, res, next) => {

@@ -2,15 +2,13 @@ import type { User, UpdateMePayload } from "@/lib/types/api"
 import type { SessionUser } from "./session"
 import { getApiBase } from "@/lib/api/client"
 
-const API_BASE = getApiBase()
-
 type AuthResponse<T> = {
   success: boolean
   message: string
   data: T
 }
 
-// ─── Login ────────────────────────────────────────────────────────────────────
+// Login
 
 export type LoginPayload = {
   email: string
@@ -34,7 +32,7 @@ export async function loginUser(
   return res.json()
 }
 
-// ─── Logout ───────────────────────────────────────────────────────────────────
+// Logout
 
 export async function logoutUser(): Promise<void> {
   // Route BFF : efface le cookie frontend et appelle le logout backend
@@ -43,23 +41,32 @@ export async function logoutUser(): Promise<void> {
   }).catch(() => {})
 }
 
-// ─── Me ───────────────────────────────────────────────────────────────────────
+// Me
 
 /**
  * Récupère l'utilisateur connecté depuis le cookie.
  * Appelé au montage des pages protégées si sessionStorage est vide.
+ *
+ * Le statut HTTP est remonté pour que l'appelant distingue un vrai refus
+ * d'authentification (401/403) d'une panne passagère du backend : seul le
+ * premier cas doit détruire la session.
  */
-export async function getMe(): Promise<AuthResponse<SessionUser>> {
-  const res = await fetch(`${API_BASE}/auth/me`, {
+export async function getMe(): Promise<AuthResponse<SessionUser> & { status: number }> {
+  const res = await fetch(`${getApiBase()}/auth/me`, {
     method: "GET",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
   })
-  return res.json()
+  const json = await res.json().catch(() => ({
+    success: false,
+    message: "Erreur reseau",
+    data: null,
+  }))
+  return { ...json, status: res.status }
 }
 
 export async function updateMe(payload: UpdateMePayload): Promise<AuthResponse<{ user: SessionUser }>> {
-  const res = await fetch(`${API_BASE}/auth/me`, {
+  const res = await fetch(`${getApiBase()}/auth/me`, {
     method: "PATCH",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

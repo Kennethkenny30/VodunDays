@@ -82,13 +82,16 @@ export function TransitionSplash({
         className="flex flex-col items-center justify-center gap-6"
         style={{ marginTop: "-120px" }}
       >
+        {/* Logotype horizontal : dimensions intrinsèques en props pour un ratio
+            exact, largeur pilotée en CSS avec h-auto. Pas d'arrondi, il rognerait
+            le lettrage. */}
         <Image
-          src="/images/logo.png"
+          src="/images/vodundays_logo2.png"
           alt="Vodun Days logo"
-          width={280}
-          height={280}
+          width={169}
+          height={118}
           priority
-          className="w-24 sm:w-32 md:w-40 lg:w-48 rounded-full"
+          className="w-28 sm:w-36 md:w-44 h-auto"
         />
 
         <div className="relative flex h-20 w-80 flex-col items-center justify-center overflow-visible">
