@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -136,11 +136,13 @@ function Stepper({
   steps,
   stepIndex,
   onJump,
+  registerCircleRef,
   t,
 }: {
   steps: StepId[];
   stepIndex: number;
   onJump: (index: number) => void;
+  registerCircleRef: (index: number, el: HTMLButtonElement | null) => void;
   t: ReturnType<typeof useTranslations>;
 }) {
   const fillPercent = (stepIndex / (steps.length - 1)) * 100;
@@ -160,6 +162,7 @@ function Stepper({
             return (
               <button
                 key={id}
+                ref={(el) => registerCircleRef(i, el)}
                 type="button"
                 disabled={state !== "done"}
                 onClick={() => onJump(i)}
@@ -264,6 +267,16 @@ export function ConfigWizard({
   const [error, setError] = useState<string | null>(null);
   const [notifDenied, setNotifDenied] = useState(false);
 
+  // Position horizontale du bubble tail, mesuree en pixels par rapport
+  // au conteneur de la carte pour suivre precisement le cercle actif.
+  const cardStageRef = useRef<HTMLDivElement>(null);
+  const circleRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const [tailX, setTailX] = useState<number | null>(null);
+
+  const registerCircleRef = (index: number, el: HTMLButtonElement | null) => {
+    circleRefs.current[index] = el;
+  };
+
   const stepId = STEPS[stepIndex];
   const isLastStep = stepIndex === STEPS.length - 1;
 
@@ -278,6 +291,22 @@ export function ConfigWizard({
       default:               return false;
     }
   })();
+
+  // Mesure la position du cercle actif du stepper pour y faire pointer
+  // le bubble tail sous la carte, de facon reactive au responsive.
+  useLayoutEffect(() => {
+    const measure = () => {
+      const container = cardStageRef.current;
+      const circle = circleRefs.current[stepIndex];
+      if (!container || !circle) return;
+      const containerRect = container.getBoundingClientRect();
+      const circleRect = circle.getBoundingClientRect();
+      setTailX(circleRect.left + circleRect.width / 2 - containerRect.left);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [stepIndex]);
 
   const handleNotificationsToggle = async (checked: boolean) => {
     // Optimiste : on affiche l'etat demande tout de suite.
@@ -371,18 +400,19 @@ export function ConfigWizard({
         </AnimatePresence>
       </div>
 
-      <AnimatePresence mode="wait" custom={direction}>
-        <motion.div
-          key={stepId}
-          custom={direction}
-          variants={slideVariants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{ duration: 0.3, ease: EASE }}
-        >
-          <GlassCard innerClassName="p-5">
-            {stepId === "language" && (
+      <div ref={cardStageRef} className="relative">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={stepId}
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.3, ease: EASE }}
+          >
+            <GlassCard innerClassName="p-5">
+              {stepId === "language" && (
               <div className="space-y-2" role="radiogroup">
                 <OptionRow
                   label={t("language.fr")}
@@ -538,6 +568,28 @@ export function ConfigWizard({
         </motion.div>
       </AnimatePresence>
 
+        {tailX !== null && (
+          <motion.div
+            className="absolute z-10 pointer-events-none"
+            style={{ top: "100%", left: 0 }}
+            animate={{ x: tailX }}
+            transition={{ type: "spring", stiffness: 260, damping: 28, mass: 0.6 }}
+          >
+            <div
+              className="-translate-x-1/2"
+              style={{
+                width: 0,
+                height: 0,
+                borderLeft: "9px solid transparent",
+                borderRight: "9px solid transparent",
+                borderTop: "10px solid rgba(255,255,255,0.10)",
+                filter: "drop-shadow(0 3px 4px rgba(0,0,0,0.25))",
+              }}
+            />
+          </motion.div>
+        )}
+      </div>
+
       <AnimatePresence>
         {error && (
           <motion.p
@@ -552,7 +604,7 @@ export function ConfigWizard({
         )}
       </AnimatePresence>
 
-      <Stepper steps={STEPS} stepIndex={stepIndex} onJump={jumpTo} t={t} />
+      <Stepper steps={STEPS} stepIndex={stepIndex} onJump={jumpTo} registerCircleRef={registerCircleRef} t={t} />
       <TipBanner stepId={stepId} text={t(`${stepId}.tip`)} />
 
       <div className="flex items-center gap-2 mt-4">
