@@ -23,6 +23,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { WeatherData } from "@/lib/types";
 import { useTranslations, useLocale } from "next-intl";
 import { localize } from "@/lib/i18n/localize";
+import { getOrCreateFestivalierUuid } from "@/lib/festivalier";
 
 // Types
 
@@ -84,18 +85,6 @@ export interface DynamicIslandProps {
 // Config
 
 const API_BASE = getApiBase();
-
-// UUID festivalier persisté
-
-function getOrCreateUUID(): string {
-  if (typeof window === "undefined") return crypto.randomUUID();
-  let uuid = localStorage.getItem("vd_uuid");
-  if (!uuid) {
-    uuid = crypto.randomUUID();
-    localStorage.setItem("vd_uuid", uuid);
-  }
-  return uuid;
-}
 
 // Valeurs par défaut
 
@@ -828,7 +817,7 @@ function EmergencyView({ onClose, onSent }: { onClose: () => void; onSent: (req:
     const timeStr = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
     const body: Record<string, unknown> = {
-      uuid:        getOrCreateUUID(),
+      uuid:        getOrCreateFestivalierUuid(),
       displayName: form.name,
       type:        TYPE_TO_DB[form.type!] ?? "OTHER",
       description: form.description,
@@ -1524,7 +1513,7 @@ export function WeatherWidget({
     if (pollingRef.current) clearInterval(pollingRef.current);
     pollingRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`${API_BASE}/urgences/track/${getOrCreateUUID()}`, { credentials: "include" });
+        const res = await fetch(`${API_BASE}/urgences/track/${getOrCreateFestivalierUuid()}`, { credentials: "include" });
         if (!res.ok) return;
         const json = await res.json();
         if (!json.success || !json.data) return;

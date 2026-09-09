@@ -79,6 +79,16 @@ export type Choices = $Result.DefaultSelection<Prisma.$ChoicesPayload>
  */
 export type Answers = $Result.DefaultSelection<Prisma.$AnswersPayload>
 /**
+ * Model Festivaliers
+ * 
+ */
+export type Festivaliers = $Result.DefaultSelection<Prisma.$FestivaliersPayload>
+/**
+ * Model PushSubscriptions
+ * 
+ */
+export type PushSubscriptions = $Result.DefaultSelection<Prisma.$PushSubscriptionsPayload>
+/**
  * Model Users
  * 
  */
@@ -129,6 +139,37 @@ export const QuestionKind: {
 
 export type QuestionKind = (typeof QuestionKind)[keyof typeof QuestionKind]
 
+
+export const Gender: {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE',
+  UNDISCLOSED: 'UNDISCLOSED'
+};
+
+export type Gender = (typeof Gender)[keyof typeof Gender]
+
+
+export const AgeRange: {
+  UNDER_18: 'UNDER_18',
+  FROM_18_TO_24: 'FROM_18_TO_24',
+  FROM_25_TO_34: 'FROM_25_TO_34',
+  FROM_35_TO_44: 'FROM_35_TO_44',
+  FROM_45_TO_54: 'FROM_45_TO_54',
+  FROM_55_AND_ABOVE: 'FROM_55_AND_ABOVE'
+};
+
+export type AgeRange = (typeof AgeRange)[keyof typeof AgeRange]
+
+
+export const FestivalEdition: {
+  FIRST: 'FIRST',
+  SECOND: 'SECOND',
+  THIRD: 'THIRD',
+  FOURTH_AND_ABOVE: 'FOURTH_AND_ABOVE'
+};
+
+export type FestivalEdition = (typeof FestivalEdition)[keyof typeof FestivalEdition]
+
 }
 
 export type MarkerCategory = $Enums.MarkerCategory
@@ -138,6 +179,18 @@ export const MarkerCategory: typeof $Enums.MarkerCategory
 export type QuestionKind = $Enums.QuestionKind
 
 export const QuestionKind: typeof $Enums.QuestionKind
+
+export type Gender = $Enums.Gender
+
+export const Gender: typeof $Enums.Gender
+
+export type AgeRange = $Enums.AgeRange
+
+export const AgeRange: typeof $Enums.AgeRange
+
+export type FestivalEdition = $Enums.FestivalEdition
+
+export const FestivalEdition: typeof $Enums.FestivalEdition
 
 /**
  * ##  Prisma Client ʲˢ
@@ -386,6 +439,26 @@ export class PrismaClient<
     * ```
     */
   get answers(): Prisma.AnswersDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.festivaliers`: Exposes CRUD operations for the **Festivaliers** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Festivaliers
+    * const festivaliers = await prisma.festivaliers.findMany()
+    * ```
+    */
+  get festivaliers(): Prisma.FestivaliersDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.pushSubscriptions`: Exposes CRUD operations for the **PushSubscriptions** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PushSubscriptions
+    * const pushSubscriptions = await prisma.pushSubscriptions.findMany()
+    * ```
+    */
+  get pushSubscriptions(): Prisma.PushSubscriptionsDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.users`: Exposes CRUD operations for the **Users** model.
@@ -890,6 +963,8 @@ export namespace Prisma {
     Questions_impressions: 'Questions_impressions',
     Choices: 'Choices',
     Answers: 'Answers',
+    Festivaliers: 'Festivaliers',
+    PushSubscriptions: 'PushSubscriptions',
     Users: 'Users',
     Notifications: 'Notifications',
     Alerts: 'Alerts',
@@ -913,7 +988,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "sites" | "amenities" | "eventsTypes" | "events" | "programs" | "artists" | "quiz" | "questionsTypes" | "questions" | "impressions" | "questions_impressions" | "choices" | "answers" | "users" | "notifications" | "alerts" | "alertTimeline" | "auditLogs"
+      modelProps: "sites" | "amenities" | "eventsTypes" | "events" | "programs" | "artists" | "quiz" | "questionsTypes" | "questions" | "impressions" | "questions_impressions" | "choices" | "answers" | "festivaliers" | "pushSubscriptions" | "users" | "notifications" | "alerts" | "alertTimeline" | "auditLogs"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1879,6 +1954,154 @@ export namespace Prisma {
           }
         }
       }
+      Festivaliers: {
+        payload: Prisma.$FestivaliersPayload<ExtArgs>
+        fields: Prisma.FestivaliersFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.FestivaliersFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FestivaliersPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.FestivaliersFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FestivaliersPayload>
+          }
+          findFirst: {
+            args: Prisma.FestivaliersFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FestivaliersPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.FestivaliersFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FestivaliersPayload>
+          }
+          findMany: {
+            args: Prisma.FestivaliersFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FestivaliersPayload>[]
+          }
+          create: {
+            args: Prisma.FestivaliersCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FestivaliersPayload>
+          }
+          createMany: {
+            args: Prisma.FestivaliersCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.FestivaliersCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FestivaliersPayload>[]
+          }
+          delete: {
+            args: Prisma.FestivaliersDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FestivaliersPayload>
+          }
+          update: {
+            args: Prisma.FestivaliersUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FestivaliersPayload>
+          }
+          deleteMany: {
+            args: Prisma.FestivaliersDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.FestivaliersUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.FestivaliersUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FestivaliersPayload>[]
+          }
+          upsert: {
+            args: Prisma.FestivaliersUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FestivaliersPayload>
+          }
+          aggregate: {
+            args: Prisma.FestivaliersAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFestivaliers>
+          }
+          groupBy: {
+            args: Prisma.FestivaliersGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FestivaliersGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.FestivaliersCountArgs<ExtArgs>
+            result: $Utils.Optional<FestivaliersCountAggregateOutputType> | number
+          }
+        }
+      }
+      PushSubscriptions: {
+        payload: Prisma.$PushSubscriptionsPayload<ExtArgs>
+        fields: Prisma.PushSubscriptionsFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PushSubscriptionsFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionsPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PushSubscriptionsFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionsPayload>
+          }
+          findFirst: {
+            args: Prisma.PushSubscriptionsFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionsPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PushSubscriptionsFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionsPayload>
+          }
+          findMany: {
+            args: Prisma.PushSubscriptionsFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionsPayload>[]
+          }
+          create: {
+            args: Prisma.PushSubscriptionsCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionsPayload>
+          }
+          createMany: {
+            args: Prisma.PushSubscriptionsCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PushSubscriptionsCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionsPayload>[]
+          }
+          delete: {
+            args: Prisma.PushSubscriptionsDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionsPayload>
+          }
+          update: {
+            args: Prisma.PushSubscriptionsUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionsPayload>
+          }
+          deleteMany: {
+            args: Prisma.PushSubscriptionsDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PushSubscriptionsUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PushSubscriptionsUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionsPayload>[]
+          }
+          upsert: {
+            args: Prisma.PushSubscriptionsUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionsPayload>
+          }
+          aggregate: {
+            args: Prisma.PushSubscriptionsAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePushSubscriptions>
+          }
+          groupBy: {
+            args: Prisma.PushSubscriptionsGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PushSubscriptionsGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PushSubscriptionsCountArgs<ExtArgs>
+            result: $Utils.Optional<PushSubscriptionsCountAggregateOutputType> | number
+          }
+        }
+      }
       Users: {
         payload: Prisma.$UsersPayload<ExtArgs>
         fields: Prisma.UsersFieldRefs
@@ -2358,6 +2581,8 @@ export namespace Prisma {
     questions_impressions?: Questions_impressionsOmit
     choices?: ChoicesOmit
     answers?: AnswersOmit
+    festivaliers?: FestivaliersOmit
+    pushSubscriptions?: PushSubscriptionsOmit
     users?: UsersOmit
     notifications?: NotificationsOmit
     alerts?: AlertsOmit
@@ -17349,6 +17574,2087 @@ export namespace Prisma {
 
 
   /**
+   * Model Festivaliers
+   */
+
+  export type AggregateFestivaliers = {
+    _count: FestivaliersCountAggregateOutputType | null
+    _min: FestivaliersMinAggregateOutputType | null
+    _max: FestivaliersMaxAggregateOutputType | null
+  }
+
+  export type FestivaliersMinAggregateOutputType = {
+    id: string | null
+    uuid: string | null
+    language: string | null
+    notificationsEnabled: boolean | null
+    gender: $Enums.Gender | null
+    ageRange: $Enums.AgeRange | null
+    nationality: string | null
+    edition: $Enums.FestivalEdition | null
+    onboardingCompletedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FestivaliersMaxAggregateOutputType = {
+    id: string | null
+    uuid: string | null
+    language: string | null
+    notificationsEnabled: boolean | null
+    gender: $Enums.Gender | null
+    ageRange: $Enums.AgeRange | null
+    nationality: string | null
+    edition: $Enums.FestivalEdition | null
+    onboardingCompletedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type FestivaliersCountAggregateOutputType = {
+    id: number
+    uuid: number
+    language: number
+    notificationsEnabled: number
+    gender: number
+    ageRange: number
+    nationality: number
+    edition: number
+    onboardingCompletedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type FestivaliersMinAggregateInputType = {
+    id?: true
+    uuid?: true
+    language?: true
+    notificationsEnabled?: true
+    gender?: true
+    ageRange?: true
+    nationality?: true
+    edition?: true
+    onboardingCompletedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FestivaliersMaxAggregateInputType = {
+    id?: true
+    uuid?: true
+    language?: true
+    notificationsEnabled?: true
+    gender?: true
+    ageRange?: true
+    nationality?: true
+    edition?: true
+    onboardingCompletedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type FestivaliersCountAggregateInputType = {
+    id?: true
+    uuid?: true
+    language?: true
+    notificationsEnabled?: true
+    gender?: true
+    ageRange?: true
+    nationality?: true
+    edition?: true
+    onboardingCompletedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type FestivaliersAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Festivaliers to aggregate.
+     */
+    where?: FestivaliersWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Festivaliers to fetch.
+     */
+    orderBy?: FestivaliersOrderByWithRelationInput | FestivaliersOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: FestivaliersWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Festivaliers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Festivaliers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Festivaliers
+    **/
+    _count?: true | FestivaliersCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: FestivaliersMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: FestivaliersMaxAggregateInputType
+  }
+
+  export type GetFestivaliersAggregateType<T extends FestivaliersAggregateArgs> = {
+        [P in keyof T & keyof AggregateFestivaliers]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateFestivaliers[P]>
+      : GetScalarType<T[P], AggregateFestivaliers[P]>
+  }
+
+
+
+
+  export type FestivaliersGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FestivaliersWhereInput
+    orderBy?: FestivaliersOrderByWithAggregationInput | FestivaliersOrderByWithAggregationInput[]
+    by: FestivaliersScalarFieldEnum[] | FestivaliersScalarFieldEnum
+    having?: FestivaliersScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: FestivaliersCountAggregateInputType | true
+    _min?: FestivaliersMinAggregateInputType
+    _max?: FestivaliersMaxAggregateInputType
+  }
+
+  export type FestivaliersGroupByOutputType = {
+    id: string
+    uuid: string
+    language: string
+    notificationsEnabled: boolean
+    gender: $Enums.Gender
+    ageRange: $Enums.AgeRange
+    nationality: string
+    edition: $Enums.FestivalEdition
+    onboardingCompletedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: FestivaliersCountAggregateOutputType | null
+    _min: FestivaliersMinAggregateOutputType | null
+    _max: FestivaliersMaxAggregateOutputType | null
+  }
+
+  type GetFestivaliersGroupByPayload<T extends FestivaliersGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<FestivaliersGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof FestivaliersGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], FestivaliersGroupByOutputType[P]>
+            : GetScalarType<T[P], FestivaliersGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type FestivaliersSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    uuid?: boolean
+    language?: boolean
+    notificationsEnabled?: boolean
+    gender?: boolean
+    ageRange?: boolean
+    nationality?: boolean
+    edition?: boolean
+    onboardingCompletedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["festivaliers"]>
+
+  export type FestivaliersSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    uuid?: boolean
+    language?: boolean
+    notificationsEnabled?: boolean
+    gender?: boolean
+    ageRange?: boolean
+    nationality?: boolean
+    edition?: boolean
+    onboardingCompletedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["festivaliers"]>
+
+  export type FestivaliersSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    uuid?: boolean
+    language?: boolean
+    notificationsEnabled?: boolean
+    gender?: boolean
+    ageRange?: boolean
+    nationality?: boolean
+    edition?: boolean
+    onboardingCompletedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["festivaliers"]>
+
+  export type FestivaliersSelectScalar = {
+    id?: boolean
+    uuid?: boolean
+    language?: boolean
+    notificationsEnabled?: boolean
+    gender?: boolean
+    ageRange?: boolean
+    nationality?: boolean
+    edition?: boolean
+    onboardingCompletedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type FestivaliersOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "uuid" | "language" | "notificationsEnabled" | "gender" | "ageRange" | "nationality" | "edition" | "onboardingCompletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["festivaliers"]>
+
+  export type $FestivaliersPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Festivaliers"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      uuid: string
+      language: string
+      notificationsEnabled: boolean
+      gender: $Enums.Gender
+      ageRange: $Enums.AgeRange
+      nationality: string
+      edition: $Enums.FestivalEdition
+      onboardingCompletedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["festivaliers"]>
+    composites: {}
+  }
+
+  type FestivaliersGetPayload<S extends boolean | null | undefined | FestivaliersDefaultArgs> = $Result.GetResult<Prisma.$FestivaliersPayload, S>
+
+  type FestivaliersCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<FestivaliersFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: FestivaliersCountAggregateInputType | true
+    }
+
+  export interface FestivaliersDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Festivaliers'], meta: { name: 'Festivaliers' } }
+    /**
+     * Find zero or one Festivaliers that matches the filter.
+     * @param {FestivaliersFindUniqueArgs} args - Arguments to find a Festivaliers
+     * @example
+     * // Get one Festivaliers
+     * const festivaliers = await prisma.festivaliers.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends FestivaliersFindUniqueArgs>(args: SelectSubset<T, FestivaliersFindUniqueArgs<ExtArgs>>): Prisma__FestivaliersClient<$Result.GetResult<Prisma.$FestivaliersPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Festivaliers that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {FestivaliersFindUniqueOrThrowArgs} args - Arguments to find a Festivaliers
+     * @example
+     * // Get one Festivaliers
+     * const festivaliers = await prisma.festivaliers.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends FestivaliersFindUniqueOrThrowArgs>(args: SelectSubset<T, FestivaliersFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FestivaliersClient<$Result.GetResult<Prisma.$FestivaliersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Festivaliers that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FestivaliersFindFirstArgs} args - Arguments to find a Festivaliers
+     * @example
+     * // Get one Festivaliers
+     * const festivaliers = await prisma.festivaliers.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends FestivaliersFindFirstArgs>(args?: SelectSubset<T, FestivaliersFindFirstArgs<ExtArgs>>): Prisma__FestivaliersClient<$Result.GetResult<Prisma.$FestivaliersPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Festivaliers that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FestivaliersFindFirstOrThrowArgs} args - Arguments to find a Festivaliers
+     * @example
+     * // Get one Festivaliers
+     * const festivaliers = await prisma.festivaliers.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends FestivaliersFindFirstOrThrowArgs>(args?: SelectSubset<T, FestivaliersFindFirstOrThrowArgs<ExtArgs>>): Prisma__FestivaliersClient<$Result.GetResult<Prisma.$FestivaliersPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Festivaliers that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FestivaliersFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Festivaliers
+     * const festivaliers = await prisma.festivaliers.findMany()
+     * 
+     * // Get first 10 Festivaliers
+     * const festivaliers = await prisma.festivaliers.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const festivaliersWithIdOnly = await prisma.festivaliers.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends FestivaliersFindManyArgs>(args?: SelectSubset<T, FestivaliersFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FestivaliersPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Festivaliers.
+     * @param {FestivaliersCreateArgs} args - Arguments to create a Festivaliers.
+     * @example
+     * // Create one Festivaliers
+     * const Festivaliers = await prisma.festivaliers.create({
+     *   data: {
+     *     // ... data to create a Festivaliers
+     *   }
+     * })
+     * 
+     */
+    create<T extends FestivaliersCreateArgs>(args: SelectSubset<T, FestivaliersCreateArgs<ExtArgs>>): Prisma__FestivaliersClient<$Result.GetResult<Prisma.$FestivaliersPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Festivaliers.
+     * @param {FestivaliersCreateManyArgs} args - Arguments to create many Festivaliers.
+     * @example
+     * // Create many Festivaliers
+     * const festivaliers = await prisma.festivaliers.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends FestivaliersCreateManyArgs>(args?: SelectSubset<T, FestivaliersCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Festivaliers and returns the data saved in the database.
+     * @param {FestivaliersCreateManyAndReturnArgs} args - Arguments to create many Festivaliers.
+     * @example
+     * // Create many Festivaliers
+     * const festivaliers = await prisma.festivaliers.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Festivaliers and only return the `id`
+     * const festivaliersWithIdOnly = await prisma.festivaliers.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends FestivaliersCreateManyAndReturnArgs>(args?: SelectSubset<T, FestivaliersCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FestivaliersPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Festivaliers.
+     * @param {FestivaliersDeleteArgs} args - Arguments to delete one Festivaliers.
+     * @example
+     * // Delete one Festivaliers
+     * const Festivaliers = await prisma.festivaliers.delete({
+     *   where: {
+     *     // ... filter to delete one Festivaliers
+     *   }
+     * })
+     * 
+     */
+    delete<T extends FestivaliersDeleteArgs>(args: SelectSubset<T, FestivaliersDeleteArgs<ExtArgs>>): Prisma__FestivaliersClient<$Result.GetResult<Prisma.$FestivaliersPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Festivaliers.
+     * @param {FestivaliersUpdateArgs} args - Arguments to update one Festivaliers.
+     * @example
+     * // Update one Festivaliers
+     * const festivaliers = await prisma.festivaliers.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends FestivaliersUpdateArgs>(args: SelectSubset<T, FestivaliersUpdateArgs<ExtArgs>>): Prisma__FestivaliersClient<$Result.GetResult<Prisma.$FestivaliersPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Festivaliers.
+     * @param {FestivaliersDeleteManyArgs} args - Arguments to filter Festivaliers to delete.
+     * @example
+     * // Delete a few Festivaliers
+     * const { count } = await prisma.festivaliers.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends FestivaliersDeleteManyArgs>(args?: SelectSubset<T, FestivaliersDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Festivaliers.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FestivaliersUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Festivaliers
+     * const festivaliers = await prisma.festivaliers.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends FestivaliersUpdateManyArgs>(args: SelectSubset<T, FestivaliersUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Festivaliers and returns the data updated in the database.
+     * @param {FestivaliersUpdateManyAndReturnArgs} args - Arguments to update many Festivaliers.
+     * @example
+     * // Update many Festivaliers
+     * const festivaliers = await prisma.festivaliers.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Festivaliers and only return the `id`
+     * const festivaliersWithIdOnly = await prisma.festivaliers.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends FestivaliersUpdateManyAndReturnArgs>(args: SelectSubset<T, FestivaliersUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FestivaliersPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Festivaliers.
+     * @param {FestivaliersUpsertArgs} args - Arguments to update or create a Festivaliers.
+     * @example
+     * // Update or create a Festivaliers
+     * const festivaliers = await prisma.festivaliers.upsert({
+     *   create: {
+     *     // ... data to create a Festivaliers
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Festivaliers we want to update
+     *   }
+     * })
+     */
+    upsert<T extends FestivaliersUpsertArgs>(args: SelectSubset<T, FestivaliersUpsertArgs<ExtArgs>>): Prisma__FestivaliersClient<$Result.GetResult<Prisma.$FestivaliersPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Festivaliers.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FestivaliersCountArgs} args - Arguments to filter Festivaliers to count.
+     * @example
+     * // Count the number of Festivaliers
+     * const count = await prisma.festivaliers.count({
+     *   where: {
+     *     // ... the filter for the Festivaliers we want to count
+     *   }
+     * })
+    **/
+    count<T extends FestivaliersCountArgs>(
+      args?: Subset<T, FestivaliersCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], FestivaliersCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Festivaliers.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FestivaliersAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends FestivaliersAggregateArgs>(args: Subset<T, FestivaliersAggregateArgs>): Prisma.PrismaPromise<GetFestivaliersAggregateType<T>>
+
+    /**
+     * Group by Festivaliers.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {FestivaliersGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends FestivaliersGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: FestivaliersGroupByArgs['orderBy'] }
+        : { orderBy?: FestivaliersGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, FestivaliersGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFestivaliersGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Festivaliers model
+   */
+  readonly fields: FestivaliersFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Festivaliers.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__FestivaliersClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Festivaliers model
+   */
+  interface FestivaliersFieldRefs {
+    readonly id: FieldRef<"Festivaliers", 'String'>
+    readonly uuid: FieldRef<"Festivaliers", 'String'>
+    readonly language: FieldRef<"Festivaliers", 'String'>
+    readonly notificationsEnabled: FieldRef<"Festivaliers", 'Boolean'>
+    readonly gender: FieldRef<"Festivaliers", 'Gender'>
+    readonly ageRange: FieldRef<"Festivaliers", 'AgeRange'>
+    readonly nationality: FieldRef<"Festivaliers", 'String'>
+    readonly edition: FieldRef<"Festivaliers", 'FestivalEdition'>
+    readonly onboardingCompletedAt: FieldRef<"Festivaliers", 'DateTime'>
+    readonly createdAt: FieldRef<"Festivaliers", 'DateTime'>
+    readonly updatedAt: FieldRef<"Festivaliers", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Festivaliers findUnique
+   */
+  export type FestivaliersFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Festivaliers
+     */
+    select?: FestivaliersSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Festivaliers
+     */
+    omit?: FestivaliersOmit<ExtArgs> | null
+    /**
+     * Filter, which Festivaliers to fetch.
+     */
+    where: FestivaliersWhereUniqueInput
+  }
+
+  /**
+   * Festivaliers findUniqueOrThrow
+   */
+  export type FestivaliersFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Festivaliers
+     */
+    select?: FestivaliersSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Festivaliers
+     */
+    omit?: FestivaliersOmit<ExtArgs> | null
+    /**
+     * Filter, which Festivaliers to fetch.
+     */
+    where: FestivaliersWhereUniqueInput
+  }
+
+  /**
+   * Festivaliers findFirst
+   */
+  export type FestivaliersFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Festivaliers
+     */
+    select?: FestivaliersSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Festivaliers
+     */
+    omit?: FestivaliersOmit<ExtArgs> | null
+    /**
+     * Filter, which Festivaliers to fetch.
+     */
+    where?: FestivaliersWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Festivaliers to fetch.
+     */
+    orderBy?: FestivaliersOrderByWithRelationInput | FestivaliersOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Festivaliers.
+     */
+    cursor?: FestivaliersWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Festivaliers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Festivaliers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Festivaliers.
+     */
+    distinct?: FestivaliersScalarFieldEnum | FestivaliersScalarFieldEnum[]
+  }
+
+  /**
+   * Festivaliers findFirstOrThrow
+   */
+  export type FestivaliersFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Festivaliers
+     */
+    select?: FestivaliersSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Festivaliers
+     */
+    omit?: FestivaliersOmit<ExtArgs> | null
+    /**
+     * Filter, which Festivaliers to fetch.
+     */
+    where?: FestivaliersWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Festivaliers to fetch.
+     */
+    orderBy?: FestivaliersOrderByWithRelationInput | FestivaliersOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Festivaliers.
+     */
+    cursor?: FestivaliersWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Festivaliers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Festivaliers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Festivaliers.
+     */
+    distinct?: FestivaliersScalarFieldEnum | FestivaliersScalarFieldEnum[]
+  }
+
+  /**
+   * Festivaliers findMany
+   */
+  export type FestivaliersFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Festivaliers
+     */
+    select?: FestivaliersSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Festivaliers
+     */
+    omit?: FestivaliersOmit<ExtArgs> | null
+    /**
+     * Filter, which Festivaliers to fetch.
+     */
+    where?: FestivaliersWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Festivaliers to fetch.
+     */
+    orderBy?: FestivaliersOrderByWithRelationInput | FestivaliersOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Festivaliers.
+     */
+    cursor?: FestivaliersWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Festivaliers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Festivaliers.
+     */
+    skip?: number
+    distinct?: FestivaliersScalarFieldEnum | FestivaliersScalarFieldEnum[]
+  }
+
+  /**
+   * Festivaliers create
+   */
+  export type FestivaliersCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Festivaliers
+     */
+    select?: FestivaliersSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Festivaliers
+     */
+    omit?: FestivaliersOmit<ExtArgs> | null
+    /**
+     * The data needed to create a Festivaliers.
+     */
+    data: XOR<FestivaliersCreateInput, FestivaliersUncheckedCreateInput>
+  }
+
+  /**
+   * Festivaliers createMany
+   */
+  export type FestivaliersCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Festivaliers.
+     */
+    data: FestivaliersCreateManyInput | FestivaliersCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Festivaliers createManyAndReturn
+   */
+  export type FestivaliersCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Festivaliers
+     */
+    select?: FestivaliersSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Festivaliers
+     */
+    omit?: FestivaliersOmit<ExtArgs> | null
+    /**
+     * The data used to create many Festivaliers.
+     */
+    data: FestivaliersCreateManyInput | FestivaliersCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Festivaliers update
+   */
+  export type FestivaliersUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Festivaliers
+     */
+    select?: FestivaliersSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Festivaliers
+     */
+    omit?: FestivaliersOmit<ExtArgs> | null
+    /**
+     * The data needed to update a Festivaliers.
+     */
+    data: XOR<FestivaliersUpdateInput, FestivaliersUncheckedUpdateInput>
+    /**
+     * Choose, which Festivaliers to update.
+     */
+    where: FestivaliersWhereUniqueInput
+  }
+
+  /**
+   * Festivaliers updateMany
+   */
+  export type FestivaliersUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Festivaliers.
+     */
+    data: XOR<FestivaliersUpdateManyMutationInput, FestivaliersUncheckedUpdateManyInput>
+    /**
+     * Filter which Festivaliers to update
+     */
+    where?: FestivaliersWhereInput
+    /**
+     * Limit how many Festivaliers to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Festivaliers updateManyAndReturn
+   */
+  export type FestivaliersUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Festivaliers
+     */
+    select?: FestivaliersSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Festivaliers
+     */
+    omit?: FestivaliersOmit<ExtArgs> | null
+    /**
+     * The data used to update Festivaliers.
+     */
+    data: XOR<FestivaliersUpdateManyMutationInput, FestivaliersUncheckedUpdateManyInput>
+    /**
+     * Filter which Festivaliers to update
+     */
+    where?: FestivaliersWhereInput
+    /**
+     * Limit how many Festivaliers to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Festivaliers upsert
+   */
+  export type FestivaliersUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Festivaliers
+     */
+    select?: FestivaliersSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Festivaliers
+     */
+    omit?: FestivaliersOmit<ExtArgs> | null
+    /**
+     * The filter to search for the Festivaliers to update in case it exists.
+     */
+    where: FestivaliersWhereUniqueInput
+    /**
+     * In case the Festivaliers found by the `where` argument doesn't exist, create a new Festivaliers with this data.
+     */
+    create: XOR<FestivaliersCreateInput, FestivaliersUncheckedCreateInput>
+    /**
+     * In case the Festivaliers was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<FestivaliersUpdateInput, FestivaliersUncheckedUpdateInput>
+  }
+
+  /**
+   * Festivaliers delete
+   */
+  export type FestivaliersDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Festivaliers
+     */
+    select?: FestivaliersSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Festivaliers
+     */
+    omit?: FestivaliersOmit<ExtArgs> | null
+    /**
+     * Filter which Festivaliers to delete.
+     */
+    where: FestivaliersWhereUniqueInput
+  }
+
+  /**
+   * Festivaliers deleteMany
+   */
+  export type FestivaliersDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Festivaliers to delete
+     */
+    where?: FestivaliersWhereInput
+    /**
+     * Limit how many Festivaliers to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Festivaliers without action
+   */
+  export type FestivaliersDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Festivaliers
+     */
+    select?: FestivaliersSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Festivaliers
+     */
+    omit?: FestivaliersOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PushSubscriptions
+   */
+
+  export type AggregatePushSubscriptions = {
+    _count: PushSubscriptionsCountAggregateOutputType | null
+    _min: PushSubscriptionsMinAggregateOutputType | null
+    _max: PushSubscriptionsMaxAggregateOutputType | null
+  }
+
+  export type PushSubscriptionsMinAggregateOutputType = {
+    id: string | null
+    uuid: string | null
+    endpoint: string | null
+    p256dh: string | null
+    auth: string | null
+    createdAt: Date | null
+  }
+
+  export type PushSubscriptionsMaxAggregateOutputType = {
+    id: string | null
+    uuid: string | null
+    endpoint: string | null
+    p256dh: string | null
+    auth: string | null
+    createdAt: Date | null
+  }
+
+  export type PushSubscriptionsCountAggregateOutputType = {
+    id: number
+    uuid: number
+    endpoint: number
+    p256dh: number
+    auth: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type PushSubscriptionsMinAggregateInputType = {
+    id?: true
+    uuid?: true
+    endpoint?: true
+    p256dh?: true
+    auth?: true
+    createdAt?: true
+  }
+
+  export type PushSubscriptionsMaxAggregateInputType = {
+    id?: true
+    uuid?: true
+    endpoint?: true
+    p256dh?: true
+    auth?: true
+    createdAt?: true
+  }
+
+  export type PushSubscriptionsCountAggregateInputType = {
+    id?: true
+    uuid?: true
+    endpoint?: true
+    p256dh?: true
+    auth?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type PushSubscriptionsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PushSubscriptions to aggregate.
+     */
+    where?: PushSubscriptionsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushSubscriptions to fetch.
+     */
+    orderBy?: PushSubscriptionsOrderByWithRelationInput | PushSubscriptionsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PushSubscriptionsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushSubscriptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushSubscriptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PushSubscriptions
+    **/
+    _count?: true | PushSubscriptionsCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PushSubscriptionsMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PushSubscriptionsMaxAggregateInputType
+  }
+
+  export type GetPushSubscriptionsAggregateType<T extends PushSubscriptionsAggregateArgs> = {
+        [P in keyof T & keyof AggregatePushSubscriptions]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePushSubscriptions[P]>
+      : GetScalarType<T[P], AggregatePushSubscriptions[P]>
+  }
+
+
+
+
+  export type PushSubscriptionsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PushSubscriptionsWhereInput
+    orderBy?: PushSubscriptionsOrderByWithAggregationInput | PushSubscriptionsOrderByWithAggregationInput[]
+    by: PushSubscriptionsScalarFieldEnum[] | PushSubscriptionsScalarFieldEnum
+    having?: PushSubscriptionsScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PushSubscriptionsCountAggregateInputType | true
+    _min?: PushSubscriptionsMinAggregateInputType
+    _max?: PushSubscriptionsMaxAggregateInputType
+  }
+
+  export type PushSubscriptionsGroupByOutputType = {
+    id: string
+    uuid: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    createdAt: Date
+    _count: PushSubscriptionsCountAggregateOutputType | null
+    _min: PushSubscriptionsMinAggregateOutputType | null
+    _max: PushSubscriptionsMaxAggregateOutputType | null
+  }
+
+  type GetPushSubscriptionsGroupByPayload<T extends PushSubscriptionsGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PushSubscriptionsGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PushSubscriptionsGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PushSubscriptionsGroupByOutputType[P]>
+            : GetScalarType<T[P], PushSubscriptionsGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PushSubscriptionsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    uuid?: boolean
+    endpoint?: boolean
+    p256dh?: boolean
+    auth?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["pushSubscriptions"]>
+
+  export type PushSubscriptionsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    uuid?: boolean
+    endpoint?: boolean
+    p256dh?: boolean
+    auth?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["pushSubscriptions"]>
+
+  export type PushSubscriptionsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    uuid?: boolean
+    endpoint?: boolean
+    p256dh?: boolean
+    auth?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["pushSubscriptions"]>
+
+  export type PushSubscriptionsSelectScalar = {
+    id?: boolean
+    uuid?: boolean
+    endpoint?: boolean
+    p256dh?: boolean
+    auth?: boolean
+    createdAt?: boolean
+  }
+
+  export type PushSubscriptionsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "uuid" | "endpoint" | "p256dh" | "auth" | "createdAt", ExtArgs["result"]["pushSubscriptions"]>
+
+  export type $PushSubscriptionsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PushSubscriptions"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      uuid: string
+      endpoint: string
+      p256dh: string
+      auth: string
+      createdAt: Date
+    }, ExtArgs["result"]["pushSubscriptions"]>
+    composites: {}
+  }
+
+  type PushSubscriptionsGetPayload<S extends boolean | null | undefined | PushSubscriptionsDefaultArgs> = $Result.GetResult<Prisma.$PushSubscriptionsPayload, S>
+
+  type PushSubscriptionsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PushSubscriptionsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PushSubscriptionsCountAggregateInputType | true
+    }
+
+  export interface PushSubscriptionsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PushSubscriptions'], meta: { name: 'PushSubscriptions' } }
+    /**
+     * Find zero or one PushSubscriptions that matches the filter.
+     * @param {PushSubscriptionsFindUniqueArgs} args - Arguments to find a PushSubscriptions
+     * @example
+     * // Get one PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscriptions.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PushSubscriptionsFindUniqueArgs>(args: SelectSubset<T, PushSubscriptionsFindUniqueArgs<ExtArgs>>): Prisma__PushSubscriptionsClient<$Result.GetResult<Prisma.$PushSubscriptionsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PushSubscriptions that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PushSubscriptionsFindUniqueOrThrowArgs} args - Arguments to find a PushSubscriptions
+     * @example
+     * // Get one PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscriptions.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PushSubscriptionsFindUniqueOrThrowArgs>(args: SelectSubset<T, PushSubscriptionsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PushSubscriptionsClient<$Result.GetResult<Prisma.$PushSubscriptionsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PushSubscriptions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionsFindFirstArgs} args - Arguments to find a PushSubscriptions
+     * @example
+     * // Get one PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscriptions.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PushSubscriptionsFindFirstArgs>(args?: SelectSubset<T, PushSubscriptionsFindFirstArgs<ExtArgs>>): Prisma__PushSubscriptionsClient<$Result.GetResult<Prisma.$PushSubscriptionsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PushSubscriptions that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionsFindFirstOrThrowArgs} args - Arguments to find a PushSubscriptions
+     * @example
+     * // Get one PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscriptions.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PushSubscriptionsFindFirstOrThrowArgs>(args?: SelectSubset<T, PushSubscriptionsFindFirstOrThrowArgs<ExtArgs>>): Prisma__PushSubscriptionsClient<$Result.GetResult<Prisma.$PushSubscriptionsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PushSubscriptions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionsFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscriptions.findMany()
+     * 
+     * // Get first 10 PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscriptions.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const pushSubscriptionsWithIdOnly = await prisma.pushSubscriptions.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PushSubscriptionsFindManyArgs>(args?: SelectSubset<T, PushSubscriptionsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushSubscriptionsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PushSubscriptions.
+     * @param {PushSubscriptionsCreateArgs} args - Arguments to create a PushSubscriptions.
+     * @example
+     * // Create one PushSubscriptions
+     * const PushSubscriptions = await prisma.pushSubscriptions.create({
+     *   data: {
+     *     // ... data to create a PushSubscriptions
+     *   }
+     * })
+     * 
+     */
+    create<T extends PushSubscriptionsCreateArgs>(args: SelectSubset<T, PushSubscriptionsCreateArgs<ExtArgs>>): Prisma__PushSubscriptionsClient<$Result.GetResult<Prisma.$PushSubscriptionsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PushSubscriptions.
+     * @param {PushSubscriptionsCreateManyArgs} args - Arguments to create many PushSubscriptions.
+     * @example
+     * // Create many PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscriptions.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PushSubscriptionsCreateManyArgs>(args?: SelectSubset<T, PushSubscriptionsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PushSubscriptions and returns the data saved in the database.
+     * @param {PushSubscriptionsCreateManyAndReturnArgs} args - Arguments to create many PushSubscriptions.
+     * @example
+     * // Create many PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscriptions.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PushSubscriptions and only return the `id`
+     * const pushSubscriptionsWithIdOnly = await prisma.pushSubscriptions.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PushSubscriptionsCreateManyAndReturnArgs>(args?: SelectSubset<T, PushSubscriptionsCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushSubscriptionsPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PushSubscriptions.
+     * @param {PushSubscriptionsDeleteArgs} args - Arguments to delete one PushSubscriptions.
+     * @example
+     * // Delete one PushSubscriptions
+     * const PushSubscriptions = await prisma.pushSubscriptions.delete({
+     *   where: {
+     *     // ... filter to delete one PushSubscriptions
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PushSubscriptionsDeleteArgs>(args: SelectSubset<T, PushSubscriptionsDeleteArgs<ExtArgs>>): Prisma__PushSubscriptionsClient<$Result.GetResult<Prisma.$PushSubscriptionsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PushSubscriptions.
+     * @param {PushSubscriptionsUpdateArgs} args - Arguments to update one PushSubscriptions.
+     * @example
+     * // Update one PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscriptions.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PushSubscriptionsUpdateArgs>(args: SelectSubset<T, PushSubscriptionsUpdateArgs<ExtArgs>>): Prisma__PushSubscriptionsClient<$Result.GetResult<Prisma.$PushSubscriptionsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PushSubscriptions.
+     * @param {PushSubscriptionsDeleteManyArgs} args - Arguments to filter PushSubscriptions to delete.
+     * @example
+     * // Delete a few PushSubscriptions
+     * const { count } = await prisma.pushSubscriptions.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PushSubscriptionsDeleteManyArgs>(args?: SelectSubset<T, PushSubscriptionsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PushSubscriptions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscriptions.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PushSubscriptionsUpdateManyArgs>(args: SelectSubset<T, PushSubscriptionsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PushSubscriptions and returns the data updated in the database.
+     * @param {PushSubscriptionsUpdateManyAndReturnArgs} args - Arguments to update many PushSubscriptions.
+     * @example
+     * // Update many PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscriptions.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PushSubscriptions and only return the `id`
+     * const pushSubscriptionsWithIdOnly = await prisma.pushSubscriptions.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PushSubscriptionsUpdateManyAndReturnArgs>(args: SelectSubset<T, PushSubscriptionsUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushSubscriptionsPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PushSubscriptions.
+     * @param {PushSubscriptionsUpsertArgs} args - Arguments to update or create a PushSubscriptions.
+     * @example
+     * // Update or create a PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscriptions.upsert({
+     *   create: {
+     *     // ... data to create a PushSubscriptions
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PushSubscriptions we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PushSubscriptionsUpsertArgs>(args: SelectSubset<T, PushSubscriptionsUpsertArgs<ExtArgs>>): Prisma__PushSubscriptionsClient<$Result.GetResult<Prisma.$PushSubscriptionsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PushSubscriptions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionsCountArgs} args - Arguments to filter PushSubscriptions to count.
+     * @example
+     * // Count the number of PushSubscriptions
+     * const count = await prisma.pushSubscriptions.count({
+     *   where: {
+     *     // ... the filter for the PushSubscriptions we want to count
+     *   }
+     * })
+    **/
+    count<T extends PushSubscriptionsCountArgs>(
+      args?: Subset<T, PushSubscriptionsCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PushSubscriptionsCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PushSubscriptions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PushSubscriptionsAggregateArgs>(args: Subset<T, PushSubscriptionsAggregateArgs>): Prisma.PrismaPromise<GetPushSubscriptionsAggregateType<T>>
+
+    /**
+     * Group by PushSubscriptions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionsGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PushSubscriptionsGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PushSubscriptionsGroupByArgs['orderBy'] }
+        : { orderBy?: PushSubscriptionsGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PushSubscriptionsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPushSubscriptionsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PushSubscriptions model
+   */
+  readonly fields: PushSubscriptionsFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PushSubscriptions.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PushSubscriptionsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PushSubscriptions model
+   */
+  interface PushSubscriptionsFieldRefs {
+    readonly id: FieldRef<"PushSubscriptions", 'String'>
+    readonly uuid: FieldRef<"PushSubscriptions", 'String'>
+    readonly endpoint: FieldRef<"PushSubscriptions", 'String'>
+    readonly p256dh: FieldRef<"PushSubscriptions", 'String'>
+    readonly auth: FieldRef<"PushSubscriptions", 'String'>
+    readonly createdAt: FieldRef<"PushSubscriptions", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PushSubscriptions findUnique
+   */
+  export type PushSubscriptionsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscriptions
+     */
+    select?: PushSubscriptionsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscriptions
+     */
+    omit?: PushSubscriptionsOmit<ExtArgs> | null
+    /**
+     * Filter, which PushSubscriptions to fetch.
+     */
+    where: PushSubscriptionsWhereUniqueInput
+  }
+
+  /**
+   * PushSubscriptions findUniqueOrThrow
+   */
+  export type PushSubscriptionsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscriptions
+     */
+    select?: PushSubscriptionsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscriptions
+     */
+    omit?: PushSubscriptionsOmit<ExtArgs> | null
+    /**
+     * Filter, which PushSubscriptions to fetch.
+     */
+    where: PushSubscriptionsWhereUniqueInput
+  }
+
+  /**
+   * PushSubscriptions findFirst
+   */
+  export type PushSubscriptionsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscriptions
+     */
+    select?: PushSubscriptionsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscriptions
+     */
+    omit?: PushSubscriptionsOmit<ExtArgs> | null
+    /**
+     * Filter, which PushSubscriptions to fetch.
+     */
+    where?: PushSubscriptionsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushSubscriptions to fetch.
+     */
+    orderBy?: PushSubscriptionsOrderByWithRelationInput | PushSubscriptionsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PushSubscriptions.
+     */
+    cursor?: PushSubscriptionsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushSubscriptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushSubscriptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PushSubscriptions.
+     */
+    distinct?: PushSubscriptionsScalarFieldEnum | PushSubscriptionsScalarFieldEnum[]
+  }
+
+  /**
+   * PushSubscriptions findFirstOrThrow
+   */
+  export type PushSubscriptionsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscriptions
+     */
+    select?: PushSubscriptionsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscriptions
+     */
+    omit?: PushSubscriptionsOmit<ExtArgs> | null
+    /**
+     * Filter, which PushSubscriptions to fetch.
+     */
+    where?: PushSubscriptionsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushSubscriptions to fetch.
+     */
+    orderBy?: PushSubscriptionsOrderByWithRelationInput | PushSubscriptionsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PushSubscriptions.
+     */
+    cursor?: PushSubscriptionsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushSubscriptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushSubscriptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PushSubscriptions.
+     */
+    distinct?: PushSubscriptionsScalarFieldEnum | PushSubscriptionsScalarFieldEnum[]
+  }
+
+  /**
+   * PushSubscriptions findMany
+   */
+  export type PushSubscriptionsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscriptions
+     */
+    select?: PushSubscriptionsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscriptions
+     */
+    omit?: PushSubscriptionsOmit<ExtArgs> | null
+    /**
+     * Filter, which PushSubscriptions to fetch.
+     */
+    where?: PushSubscriptionsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushSubscriptions to fetch.
+     */
+    orderBy?: PushSubscriptionsOrderByWithRelationInput | PushSubscriptionsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PushSubscriptions.
+     */
+    cursor?: PushSubscriptionsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushSubscriptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushSubscriptions.
+     */
+    skip?: number
+    distinct?: PushSubscriptionsScalarFieldEnum | PushSubscriptionsScalarFieldEnum[]
+  }
+
+  /**
+   * PushSubscriptions create
+   */
+  export type PushSubscriptionsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscriptions
+     */
+    select?: PushSubscriptionsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscriptions
+     */
+    omit?: PushSubscriptionsOmit<ExtArgs> | null
+    /**
+     * The data needed to create a PushSubscriptions.
+     */
+    data: XOR<PushSubscriptionsCreateInput, PushSubscriptionsUncheckedCreateInput>
+  }
+
+  /**
+   * PushSubscriptions createMany
+   */
+  export type PushSubscriptionsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PushSubscriptions.
+     */
+    data: PushSubscriptionsCreateManyInput | PushSubscriptionsCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PushSubscriptions createManyAndReturn
+   */
+  export type PushSubscriptionsCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscriptions
+     */
+    select?: PushSubscriptionsSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscriptions
+     */
+    omit?: PushSubscriptionsOmit<ExtArgs> | null
+    /**
+     * The data used to create many PushSubscriptions.
+     */
+    data: PushSubscriptionsCreateManyInput | PushSubscriptionsCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PushSubscriptions update
+   */
+  export type PushSubscriptionsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscriptions
+     */
+    select?: PushSubscriptionsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscriptions
+     */
+    omit?: PushSubscriptionsOmit<ExtArgs> | null
+    /**
+     * The data needed to update a PushSubscriptions.
+     */
+    data: XOR<PushSubscriptionsUpdateInput, PushSubscriptionsUncheckedUpdateInput>
+    /**
+     * Choose, which PushSubscriptions to update.
+     */
+    where: PushSubscriptionsWhereUniqueInput
+  }
+
+  /**
+   * PushSubscriptions updateMany
+   */
+  export type PushSubscriptionsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PushSubscriptions.
+     */
+    data: XOR<PushSubscriptionsUpdateManyMutationInput, PushSubscriptionsUncheckedUpdateManyInput>
+    /**
+     * Filter which PushSubscriptions to update
+     */
+    where?: PushSubscriptionsWhereInput
+    /**
+     * Limit how many PushSubscriptions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PushSubscriptions updateManyAndReturn
+   */
+  export type PushSubscriptionsUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscriptions
+     */
+    select?: PushSubscriptionsSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscriptions
+     */
+    omit?: PushSubscriptionsOmit<ExtArgs> | null
+    /**
+     * The data used to update PushSubscriptions.
+     */
+    data: XOR<PushSubscriptionsUpdateManyMutationInput, PushSubscriptionsUncheckedUpdateManyInput>
+    /**
+     * Filter which PushSubscriptions to update
+     */
+    where?: PushSubscriptionsWhereInput
+    /**
+     * Limit how many PushSubscriptions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PushSubscriptions upsert
+   */
+  export type PushSubscriptionsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscriptions
+     */
+    select?: PushSubscriptionsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscriptions
+     */
+    omit?: PushSubscriptionsOmit<ExtArgs> | null
+    /**
+     * The filter to search for the PushSubscriptions to update in case it exists.
+     */
+    where: PushSubscriptionsWhereUniqueInput
+    /**
+     * In case the PushSubscriptions found by the `where` argument doesn't exist, create a new PushSubscriptions with this data.
+     */
+    create: XOR<PushSubscriptionsCreateInput, PushSubscriptionsUncheckedCreateInput>
+    /**
+     * In case the PushSubscriptions was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PushSubscriptionsUpdateInput, PushSubscriptionsUncheckedUpdateInput>
+  }
+
+  /**
+   * PushSubscriptions delete
+   */
+  export type PushSubscriptionsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscriptions
+     */
+    select?: PushSubscriptionsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscriptions
+     */
+    omit?: PushSubscriptionsOmit<ExtArgs> | null
+    /**
+     * Filter which PushSubscriptions to delete.
+     */
+    where: PushSubscriptionsWhereUniqueInput
+  }
+
+  /**
+   * PushSubscriptions deleteMany
+   */
+  export type PushSubscriptionsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PushSubscriptions to delete
+     */
+    where?: PushSubscriptionsWhereInput
+    /**
+     * Limit how many PushSubscriptions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PushSubscriptions without action
+   */
+  export type PushSubscriptionsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscriptions
+     */
+    select?: PushSubscriptionsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscriptions
+     */
+    omit?: PushSubscriptionsOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model Users
    */
 
@@ -23159,6 +25465,35 @@ export namespace Prisma {
   export type AnswersScalarFieldEnum = (typeof AnswersScalarFieldEnum)[keyof typeof AnswersScalarFieldEnum]
 
 
+  export const FestivaliersScalarFieldEnum: {
+    id: 'id',
+    uuid: 'uuid',
+    language: 'language',
+    notificationsEnabled: 'notificationsEnabled',
+    gender: 'gender',
+    ageRange: 'ageRange',
+    nationality: 'nationality',
+    edition: 'edition',
+    onboardingCompletedAt: 'onboardingCompletedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type FestivaliersScalarFieldEnum = (typeof FestivaliersScalarFieldEnum)[keyof typeof FestivaliersScalarFieldEnum]
+
+
+  export const PushSubscriptionsScalarFieldEnum: {
+    id: 'id',
+    uuid: 'uuid',
+    endpoint: 'endpoint',
+    p256dh: 'p256dh',
+    auth: 'auth',
+    createdAt: 'createdAt'
+  };
+
+  export type PushSubscriptionsScalarFieldEnum = (typeof PushSubscriptionsScalarFieldEnum)[keyof typeof PushSubscriptionsScalarFieldEnum]
+
+
   export const UsersScalarFieldEnum: {
     id: 'id',
     email: 'email',
@@ -23374,6 +25709,48 @@ export namespace Prisma {
    * Reference to a field of type 'QuestionKind[]'
    */
   export type ListEnumQuestionKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QuestionKind[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Gender'
+   */
+  export type EnumGenderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Gender'>
+    
+
+
+  /**
+   * Reference to a field of type 'Gender[]'
+   */
+  export type ListEnumGenderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Gender[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'AgeRange'
+   */
+  export type EnumAgeRangeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AgeRange'>
+    
+
+
+  /**
+   * Reference to a field of type 'AgeRange[]'
+   */
+  export type ListEnumAgeRangeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AgeRange[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'FestivalEdition'
+   */
+  export type EnumFestivalEditionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FestivalEdition'>
+    
+
+
+  /**
+   * Reference to a field of type 'FestivalEdition[]'
+   */
+  export type ListEnumFestivalEditionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FestivalEdition[]'>
     
 
 
@@ -24298,6 +26675,145 @@ export namespace Prisma {
     questionId?: StringWithAggregatesFilter<"Answers"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Answers"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Answers"> | Date | string
+  }
+
+  export type FestivaliersWhereInput = {
+    AND?: FestivaliersWhereInput | FestivaliersWhereInput[]
+    OR?: FestivaliersWhereInput[]
+    NOT?: FestivaliersWhereInput | FestivaliersWhereInput[]
+    id?: StringFilter<"Festivaliers"> | string
+    uuid?: StringFilter<"Festivaliers"> | string
+    language?: StringFilter<"Festivaliers"> | string
+    notificationsEnabled?: BoolFilter<"Festivaliers"> | boolean
+    gender?: EnumGenderFilter<"Festivaliers"> | $Enums.Gender
+    ageRange?: EnumAgeRangeFilter<"Festivaliers"> | $Enums.AgeRange
+    nationality?: StringFilter<"Festivaliers"> | string
+    edition?: EnumFestivalEditionFilter<"Festivaliers"> | $Enums.FestivalEdition
+    onboardingCompletedAt?: DateTimeNullableFilter<"Festivaliers"> | Date | string | null
+    createdAt?: DateTimeFilter<"Festivaliers"> | Date | string
+    updatedAt?: DateTimeFilter<"Festivaliers"> | Date | string
+  }
+
+  export type FestivaliersOrderByWithRelationInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    language?: SortOrder
+    notificationsEnabled?: SortOrder
+    gender?: SortOrder
+    ageRange?: SortOrder
+    nationality?: SortOrder
+    edition?: SortOrder
+    onboardingCompletedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FestivaliersWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    uuid?: string
+    AND?: FestivaliersWhereInput | FestivaliersWhereInput[]
+    OR?: FestivaliersWhereInput[]
+    NOT?: FestivaliersWhereInput | FestivaliersWhereInput[]
+    language?: StringFilter<"Festivaliers"> | string
+    notificationsEnabled?: BoolFilter<"Festivaliers"> | boolean
+    gender?: EnumGenderFilter<"Festivaliers"> | $Enums.Gender
+    ageRange?: EnumAgeRangeFilter<"Festivaliers"> | $Enums.AgeRange
+    nationality?: StringFilter<"Festivaliers"> | string
+    edition?: EnumFestivalEditionFilter<"Festivaliers"> | $Enums.FestivalEdition
+    onboardingCompletedAt?: DateTimeNullableFilter<"Festivaliers"> | Date | string | null
+    createdAt?: DateTimeFilter<"Festivaliers"> | Date | string
+    updatedAt?: DateTimeFilter<"Festivaliers"> | Date | string
+  }, "id" | "uuid">
+
+  export type FestivaliersOrderByWithAggregationInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    language?: SortOrder
+    notificationsEnabled?: SortOrder
+    gender?: SortOrder
+    ageRange?: SortOrder
+    nationality?: SortOrder
+    edition?: SortOrder
+    onboardingCompletedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: FestivaliersCountOrderByAggregateInput
+    _max?: FestivaliersMaxOrderByAggregateInput
+    _min?: FestivaliersMinOrderByAggregateInput
+  }
+
+  export type FestivaliersScalarWhereWithAggregatesInput = {
+    AND?: FestivaliersScalarWhereWithAggregatesInput | FestivaliersScalarWhereWithAggregatesInput[]
+    OR?: FestivaliersScalarWhereWithAggregatesInput[]
+    NOT?: FestivaliersScalarWhereWithAggregatesInput | FestivaliersScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Festivaliers"> | string
+    uuid?: StringWithAggregatesFilter<"Festivaliers"> | string
+    language?: StringWithAggregatesFilter<"Festivaliers"> | string
+    notificationsEnabled?: BoolWithAggregatesFilter<"Festivaliers"> | boolean
+    gender?: EnumGenderWithAggregatesFilter<"Festivaliers"> | $Enums.Gender
+    ageRange?: EnumAgeRangeWithAggregatesFilter<"Festivaliers"> | $Enums.AgeRange
+    nationality?: StringWithAggregatesFilter<"Festivaliers"> | string
+    edition?: EnumFestivalEditionWithAggregatesFilter<"Festivaliers"> | $Enums.FestivalEdition
+    onboardingCompletedAt?: DateTimeNullableWithAggregatesFilter<"Festivaliers"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Festivaliers"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Festivaliers"> | Date | string
+  }
+
+  export type PushSubscriptionsWhereInput = {
+    AND?: PushSubscriptionsWhereInput | PushSubscriptionsWhereInput[]
+    OR?: PushSubscriptionsWhereInput[]
+    NOT?: PushSubscriptionsWhereInput | PushSubscriptionsWhereInput[]
+    id?: StringFilter<"PushSubscriptions"> | string
+    uuid?: StringFilter<"PushSubscriptions"> | string
+    endpoint?: StringFilter<"PushSubscriptions"> | string
+    p256dh?: StringFilter<"PushSubscriptions"> | string
+    auth?: StringFilter<"PushSubscriptions"> | string
+    createdAt?: DateTimeFilter<"PushSubscriptions"> | Date | string
+  }
+
+  export type PushSubscriptionsOrderByWithRelationInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PushSubscriptionsWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    endpoint?: string
+    AND?: PushSubscriptionsWhereInput | PushSubscriptionsWhereInput[]
+    OR?: PushSubscriptionsWhereInput[]
+    NOT?: PushSubscriptionsWhereInput | PushSubscriptionsWhereInput[]
+    uuid?: StringFilter<"PushSubscriptions"> | string
+    p256dh?: StringFilter<"PushSubscriptions"> | string
+    auth?: StringFilter<"PushSubscriptions"> | string
+    createdAt?: DateTimeFilter<"PushSubscriptions"> | Date | string
+  }, "id" | "endpoint">
+
+  export type PushSubscriptionsOrderByWithAggregationInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    createdAt?: SortOrder
+    _count?: PushSubscriptionsCountOrderByAggregateInput
+    _max?: PushSubscriptionsMaxOrderByAggregateInput
+    _min?: PushSubscriptionsMinOrderByAggregateInput
+  }
+
+  export type PushSubscriptionsScalarWhereWithAggregatesInput = {
+    AND?: PushSubscriptionsScalarWhereWithAggregatesInput | PushSubscriptionsScalarWhereWithAggregatesInput[]
+    OR?: PushSubscriptionsScalarWhereWithAggregatesInput[]
+    NOT?: PushSubscriptionsScalarWhereWithAggregatesInput | PushSubscriptionsScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PushSubscriptions"> | string
+    uuid?: StringWithAggregatesFilter<"PushSubscriptions"> | string
+    endpoint?: StringWithAggregatesFilter<"PushSubscriptions"> | string
+    p256dh?: StringWithAggregatesFilter<"PushSubscriptions"> | string
+    auth?: StringWithAggregatesFilter<"PushSubscriptions"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"PushSubscriptions"> | Date | string
   }
 
   export type UsersWhereInput = {
@@ -25686,6 +28202,167 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type FestivaliersCreateInput = {
+    id?: string
+    uuid: string
+    language: string
+    notificationsEnabled?: boolean
+    gender: $Enums.Gender
+    ageRange: $Enums.AgeRange
+    nationality: string
+    edition: $Enums.FestivalEdition
+    onboardingCompletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FestivaliersUncheckedCreateInput = {
+    id?: string
+    uuid: string
+    language: string
+    notificationsEnabled?: boolean
+    gender: $Enums.Gender
+    ageRange: $Enums.AgeRange
+    nationality: string
+    edition: $Enums.FestivalEdition
+    onboardingCompletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FestivaliersUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    notificationsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+    ageRange?: EnumAgeRangeFieldUpdateOperationsInput | $Enums.AgeRange
+    nationality?: StringFieldUpdateOperationsInput | string
+    edition?: EnumFestivalEditionFieldUpdateOperationsInput | $Enums.FestivalEdition
+    onboardingCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FestivaliersUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    notificationsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+    ageRange?: EnumAgeRangeFieldUpdateOperationsInput | $Enums.AgeRange
+    nationality?: StringFieldUpdateOperationsInput | string
+    edition?: EnumFestivalEditionFieldUpdateOperationsInput | $Enums.FestivalEdition
+    onboardingCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FestivaliersCreateManyInput = {
+    id?: string
+    uuid: string
+    language: string
+    notificationsEnabled?: boolean
+    gender: $Enums.Gender
+    ageRange: $Enums.AgeRange
+    nationality: string
+    edition: $Enums.FestivalEdition
+    onboardingCompletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FestivaliersUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    notificationsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+    ageRange?: EnumAgeRangeFieldUpdateOperationsInput | $Enums.AgeRange
+    nationality?: StringFieldUpdateOperationsInput | string
+    edition?: EnumFestivalEditionFieldUpdateOperationsInput | $Enums.FestivalEdition
+    onboardingCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FestivaliersUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    language?: StringFieldUpdateOperationsInput | string
+    notificationsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+    ageRange?: EnumAgeRangeFieldUpdateOperationsInput | $Enums.AgeRange
+    nationality?: StringFieldUpdateOperationsInput | string
+    edition?: EnumFestivalEditionFieldUpdateOperationsInput | $Enums.FestivalEdition
+    onboardingCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushSubscriptionsCreateInput = {
+    id?: string
+    uuid: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    createdAt?: Date | string
+  }
+
+  export type PushSubscriptionsUncheckedCreateInput = {
+    id?: string
+    uuid: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    createdAt?: Date | string
+  }
+
+  export type PushSubscriptionsUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushSubscriptionsUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushSubscriptionsCreateManyInput = {
+    id?: string
+    uuid: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    createdAt?: Date | string
+  }
+
+  export type PushSubscriptionsUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushSubscriptionsUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UsersCreateInput = {
     id?: string
     email: string
@@ -26946,6 +29623,27 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type EnumGenderFilter<$PrismaModel = never> = {
+    equals?: $Enums.Gender | EnumGenderFieldRefInput<$PrismaModel>
+    in?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel>
+    not?: NestedEnumGenderFilter<$PrismaModel> | $Enums.Gender
+  }
+
+  export type EnumAgeRangeFilter<$PrismaModel = never> = {
+    equals?: $Enums.AgeRange | EnumAgeRangeFieldRefInput<$PrismaModel>
+    in?: $Enums.AgeRange[] | ListEnumAgeRangeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AgeRange[] | ListEnumAgeRangeFieldRefInput<$PrismaModel>
+    not?: NestedEnumAgeRangeFilter<$PrismaModel> | $Enums.AgeRange
+  }
+
+  export type EnumFestivalEditionFilter<$PrismaModel = never> = {
+    equals?: $Enums.FestivalEdition | EnumFestivalEditionFieldRefInput<$PrismaModel>
+    in?: $Enums.FestivalEdition[] | ListEnumFestivalEditionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FestivalEdition[] | ListEnumFestivalEditionFieldRefInput<$PrismaModel>
+    not?: NestedEnumFestivalEditionFilter<$PrismaModel> | $Enums.FestivalEdition
+  }
+
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -26955,6 +29653,119 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type FestivaliersCountOrderByAggregateInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    language?: SortOrder
+    notificationsEnabled?: SortOrder
+    gender?: SortOrder
+    ageRange?: SortOrder
+    nationality?: SortOrder
+    edition?: SortOrder
+    onboardingCompletedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FestivaliersMaxOrderByAggregateInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    language?: SortOrder
+    notificationsEnabled?: SortOrder
+    gender?: SortOrder
+    ageRange?: SortOrder
+    nationality?: SortOrder
+    edition?: SortOrder
+    onboardingCompletedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type FestivaliersMinOrderByAggregateInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    language?: SortOrder
+    notificationsEnabled?: SortOrder
+    gender?: SortOrder
+    ageRange?: SortOrder
+    nationality?: SortOrder
+    edition?: SortOrder
+    onboardingCompletedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumGenderWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Gender | EnumGenderFieldRefInput<$PrismaModel>
+    in?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel>
+    not?: NestedEnumGenderWithAggregatesFilter<$PrismaModel> | $Enums.Gender
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumGenderFilter<$PrismaModel>
+    _max?: NestedEnumGenderFilter<$PrismaModel>
+  }
+
+  export type EnumAgeRangeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AgeRange | EnumAgeRangeFieldRefInput<$PrismaModel>
+    in?: $Enums.AgeRange[] | ListEnumAgeRangeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AgeRange[] | ListEnumAgeRangeFieldRefInput<$PrismaModel>
+    not?: NestedEnumAgeRangeWithAggregatesFilter<$PrismaModel> | $Enums.AgeRange
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAgeRangeFilter<$PrismaModel>
+    _max?: NestedEnumAgeRangeFilter<$PrismaModel>
+  }
+
+  export type EnumFestivalEditionWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FestivalEdition | EnumFestivalEditionFieldRefInput<$PrismaModel>
+    in?: $Enums.FestivalEdition[] | ListEnumFestivalEditionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FestivalEdition[] | ListEnumFestivalEditionFieldRefInput<$PrismaModel>
+    not?: NestedEnumFestivalEditionWithAggregatesFilter<$PrismaModel> | $Enums.FestivalEdition
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFestivalEditionFilter<$PrismaModel>
+    _max?: NestedEnumFestivalEditionFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type PushSubscriptionsCountOrderByAggregateInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PushSubscriptionsMaxOrderByAggregateInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PushSubscriptionsMinOrderByAggregateInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type AlertTimelineListRelationFilter = {
@@ -27010,20 +29821,6 @@ export namespace Prisma {
     createdBy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type NotificationsCountOrderByAggregateInput = {
@@ -28069,6 +30866,22 @@ export namespace Prisma {
     update?: XOR<XOR<QuestionsUpdateToOneWithWhereWithoutAnswersInput, QuestionsUpdateWithoutAnswersInput>, QuestionsUncheckedUpdateWithoutAnswersInput>
   }
 
+  export type EnumGenderFieldUpdateOperationsInput = {
+    set?: $Enums.Gender
+  }
+
+  export type EnumAgeRangeFieldUpdateOperationsInput = {
+    set?: $Enums.AgeRange
+  }
+
+  export type EnumFestivalEditionFieldUpdateOperationsInput = {
+    set?: $Enums.FestivalEdition
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
   export type AlertTimelineCreateNestedManyWithoutUserInput = {
     create?: XOR<AlertTimelineCreateWithoutUserInput, AlertTimelineUncheckedCreateWithoutUserInput> | AlertTimelineCreateWithoutUserInput[] | AlertTimelineUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AlertTimelineCreateOrConnectWithoutUserInput | AlertTimelineCreateOrConnectWithoutUserInput[]
@@ -28081,10 +30894,6 @@ export namespace Prisma {
     connectOrCreate?: AlertTimelineCreateOrConnectWithoutUserInput | AlertTimelineCreateOrConnectWithoutUserInput[]
     createMany?: AlertTimelineCreateManyUserInputEnvelope
     connect?: AlertTimelineWhereUniqueInput | AlertTimelineWhereUniqueInput[]
-  }
-
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
   }
 
   export type AlertTimelineUpdateManyWithoutUserNestedInput = {
@@ -28429,6 +31238,27 @@ export namespace Prisma {
     _max?: NestedEnumQuestionKindFilter<$PrismaModel>
   }
 
+  export type NestedEnumGenderFilter<$PrismaModel = never> = {
+    equals?: $Enums.Gender | EnumGenderFieldRefInput<$PrismaModel>
+    in?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel>
+    not?: NestedEnumGenderFilter<$PrismaModel> | $Enums.Gender
+  }
+
+  export type NestedEnumAgeRangeFilter<$PrismaModel = never> = {
+    equals?: $Enums.AgeRange | EnumAgeRangeFieldRefInput<$PrismaModel>
+    in?: $Enums.AgeRange[] | ListEnumAgeRangeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AgeRange[] | ListEnumAgeRangeFieldRefInput<$PrismaModel>
+    not?: NestedEnumAgeRangeFilter<$PrismaModel> | $Enums.AgeRange
+  }
+
+  export type NestedEnumFestivalEditionFilter<$PrismaModel = never> = {
+    equals?: $Enums.FestivalEdition | EnumFestivalEditionFieldRefInput<$PrismaModel>
+    in?: $Enums.FestivalEdition[] | ListEnumFestivalEditionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FestivalEdition[] | ListEnumFestivalEditionFieldRefInput<$PrismaModel>
+    not?: NestedEnumFestivalEditionFilter<$PrismaModel> | $Enums.FestivalEdition
+  }
+
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -28438,6 +31268,36 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedEnumGenderWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Gender | EnumGenderFieldRefInput<$PrismaModel>
+    in?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel>
+    not?: NestedEnumGenderWithAggregatesFilter<$PrismaModel> | $Enums.Gender
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumGenderFilter<$PrismaModel>
+    _max?: NestedEnumGenderFilter<$PrismaModel>
+  }
+
+  export type NestedEnumAgeRangeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AgeRange | EnumAgeRangeFieldRefInput<$PrismaModel>
+    in?: $Enums.AgeRange[] | ListEnumAgeRangeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AgeRange[] | ListEnumAgeRangeFieldRefInput<$PrismaModel>
+    not?: NestedEnumAgeRangeWithAggregatesFilter<$PrismaModel> | $Enums.AgeRange
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAgeRangeFilter<$PrismaModel>
+    _max?: NestedEnumAgeRangeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumFestivalEditionWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FestivalEdition | EnumFestivalEditionFieldRefInput<$PrismaModel>
+    in?: $Enums.FestivalEdition[] | ListEnumFestivalEditionFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FestivalEdition[] | ListEnumFestivalEditionFieldRefInput<$PrismaModel>
+    not?: NestedEnumFestivalEditionWithAggregatesFilter<$PrismaModel> | $Enums.FestivalEdition
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFestivalEditionFilter<$PrismaModel>
+    _max?: NestedEnumFestivalEditionFilter<$PrismaModel>
   }
 
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {

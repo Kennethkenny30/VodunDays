@@ -1,5 +1,6 @@
 import prisma from "../../prisma/prisma.client.js";
 import { translateFields } from "../../utils/translate.js";
+import { sendToAll } from "../push/push.service.js";
 
 export const findAll = async ({ target, status, page = 1, limit = 20 } = {}) => {
   const where = {};
@@ -41,7 +42,7 @@ export const create = async ({ title, message, target = "ALL", targetId, schedul
   if (messageEn === undefined && message) toTranslate.push({ field: "message", text: message });
   const translated = await translateFields(toTranslate);
 
-  return prisma.notifications.create({
+  const notification = await prisma.notifications.create({
     data: {
       title,
       message,
@@ -54,6 +55,21 @@ export const create = async ({ title, message, target = "ALL", targetId, schedul
       messageEn:   messageEn ?? translated.messageEn ?? null,
     },
   });
+
+  // Envoi push immediat uniquement. Une notification planifiee (scheduledAt)
+  // reste en PENDING : il n'y a pas de worker/cron dans ce projet pour la
+  // declencher automatiquement a l'heure prevue - a ajouter separement si besoin.
+  // Le ciblage (target/targetId) n'est pas encore applique au push, qui part
+  // en broadcast vers tous les abonnements actifs.
+  if (notification.status === "SENT") {
+    try {
+      await sendToAll({ title: notification.title, message: notification.message });
+    } catch (error) {
+      console.error("[notifications] echec envoi push:", error.message);
+    }
+  }
+
+  return notification;
 };
 
 export const update = async (id, { status, sentAt } = {}) => {

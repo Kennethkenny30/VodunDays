@@ -14,6 +14,7 @@ import { FestivalPlannerProvider } from "@/providers/FestivalPlannerProvider";
 import { useWeather }              from "@/hooks/useWeather";
 import type { Program, ProgramType } from "@/lib/types";
 import { PwaInstallPrompt }        from "@/components/pwa-install-prompt";
+import { OnboardingFlow }          from "@/components/onboarding/OnboardingFlow";
 import { getApiBase }              from "@/lib/api/client";
 import { getFestivalStartDate }    from "@/lib/festival";
 
@@ -292,6 +293,7 @@ function ProgrammeContent() {
 
       </div>
 
+      <OnboardingFlow />
       <PwaInstallPrompt />
       <BottomNav />
     </motion.div>

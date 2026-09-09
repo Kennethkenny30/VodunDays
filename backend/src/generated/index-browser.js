@@ -255,6 +255,29 @@ exports.Prisma.AnswersScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.FestivaliersScalarFieldEnum = {
+  id: 'id',
+  uuid: 'uuid',
+  language: 'language',
+  notificationsEnabled: 'notificationsEnabled',
+  gender: 'gender',
+  ageRange: 'ageRange',
+  nationality: 'nationality',
+  edition: 'edition',
+  onboardingCompletedAt: 'onboardingCompletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PushSubscriptionsScalarFieldEnum = {
+  id: 'id',
+  uuid: 'uuid',
+  endpoint: 'endpoint',
+  p256dh: 'p256dh',
+  auth: 'auth',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.UsersScalarFieldEnum = {
   id: 'id',
   email: 'email',
@@ -362,6 +385,28 @@ exports.QuestionKind = exports.$Enums.QuestionKind = {
   TEXT: 'TEXT'
 };
 
+exports.Gender = exports.$Enums.Gender = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE',
+  UNDISCLOSED: 'UNDISCLOSED'
+};
+
+exports.AgeRange = exports.$Enums.AgeRange = {
+  UNDER_18: 'UNDER_18',
+  FROM_18_TO_24: 'FROM_18_TO_24',
+  FROM_25_TO_34: 'FROM_25_TO_34',
+  FROM_35_TO_44: 'FROM_35_TO_44',
+  FROM_45_TO_54: 'FROM_45_TO_54',
+  FROM_55_AND_ABOVE: 'FROM_55_AND_ABOVE'
+};
+
+exports.FestivalEdition = exports.$Enums.FestivalEdition = {
+  FIRST: 'FIRST',
+  SECOND: 'SECOND',
+  THIRD: 'THIRD',
+  FOURTH_AND_ABOVE: 'FOURTH_AND_ABOVE'
+};
+
 exports.Prisma.ModelName = {
   Sites: 'Sites',
   Amenities: 'Amenities',
@@ -376,6 +421,8 @@ exports.Prisma.ModelName = {
   Questions_impressions: 'Questions_impressions',
   Choices: 'Choices',
   Answers: 'Answers',
+  Festivaliers: 'Festivaliers',
+  PushSubscriptions: 'PushSubscriptions',
   Users: 'Users',
   Notifications: 'Notifications',
   Alerts: 'Alerts',

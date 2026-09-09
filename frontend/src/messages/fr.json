@@ -383,20 +383,50 @@
       "home": "Retour à l'accueil"
     },
     "types": {
-      "MEDICAL": { "label": "Urgence médicale", "desc": "Malaise, blessure, besoin de soins" },
-      "SECURITY": { "label": "Sécurité", "desc": "Agression, vol, comportement suspect" },
-      "FIRE": { "label": "Incendie", "desc": "Fumée, flammes, danger immédiat" },
-      "LOST": { "label": "Personne perdue", "desc": "Enfant ou personne égarée" },
-      "TECHNICAL": { "label": "Problème technique", "desc": "Panne, infrastructure, équipement" },
-      "OTHER": { "label": "Autre", "desc": "Autre type de signalement" }
+      "MEDICAL": {
+        "label": "Urgence médicale",
+        "desc": "Malaise, blessure, besoin de soins"
+      },
+      "SECURITY": {
+        "label": "Sécurité",
+        "desc": "Agression, vol, comportement suspect"
+      },
+      "FIRE": {
+        "label": "Incendie",
+        "desc": "Fumée, flammes, danger immédiat"
+      },
+      "LOST": {
+        "label": "Personne perdue",
+        "desc": "Enfant ou personne égarée"
+      },
+      "TECHNICAL": {
+        "label": "Problème technique",
+        "desc": "Panne, infrastructure, équipement"
+      },
+      "OTHER": {
+        "label": "Autre",
+        "desc": "Autre type de signalement"
+      }
     }
   },
   "admin": {
     "quizTemplates": {
-      "festival": { "title": "Festival général", "description": "Satisfaction globale du festival" },
-      "allEvents": { "title": "Tous les événements", "description": "Feedback artistique général" },
-      "allSites": { "title": "Tous les sites", "description": "Feedback sur les espaces du festival" },
-      "event": { "title": "Événement spécifique", "description": "Feedback sur un événement précis" }
+      "festival": {
+        "title": "Festival général",
+        "description": "Satisfaction globale du festival"
+      },
+      "allEvents": {
+        "title": "Tous les événements",
+        "description": "Feedback artistique général"
+      },
+      "allSites": {
+        "title": "Tous les sites",
+        "description": "Feedback sur les espaces du festival"
+      },
+      "event": {
+        "title": "Événement spécifique",
+        "description": "Feedback sur un événement précis"
+      }
     }
   },
   "enums": {
@@ -490,5 +520,105 @@
     "updateAvailable": "Nouvelle version disponible",
     "update": "Mettre à jour",
     "later": "Plus tard"
+  },
+  "onboarding": {
+    "config": {
+      "progressLabel": "Étape {current} / {total}",
+      "stepper": {
+        "language": "Langue",
+        "notifications": "Notifs",
+        "gender": "Profil",
+        "ageRange": "Âge",
+        "nationality": "Pays",
+        "edition": "Édition"
+      },
+      "language": {
+        "title": "Choisissez votre langue",
+        "subtitle": "L'application s'affichera dans cette langue.",
+        "fr": "Français",
+        "en": "English",
+        "tip": "Astuce : vous pourrez changer de langue à tout moment dans les réglages."
+      },
+      "notifications": {
+        "title": "Restez informé",
+        "subtitle": "Alertes programme, urgences et annonces en direct du festival.",
+        "toggleLabel": "Notifications",
+        "enableHint": "Recommandé pour ne rien manquer",
+        "permissionDenied": "Les notifications sont bloquées dans les réglages de votre navigateur ou de votre appareil.",
+        "tip": "Astuce : vous pourrez désactiver cette option à tout moment dans les réglages."
+      },
+      "gender": {
+        "title": "Vous êtes...",
+        "subtitle": "Cette information nous aide à mieux connaître notre public.",
+        "male": "Un homme",
+        "female": "Une femme",
+        "undisclosed": "Je préfère ne pas répondre",
+        "tip": "Astuce : cette information reste anonyme et n'est jamais partagée."
+      },
+      "ageRange": {
+        "title": "Quelle est votre tranche d'âge ?",
+        "subtitle": "Utile pour adapter le contenu du festival.",
+        "underEighteen": "Moins de 18 ans",
+        "eighteenToTwentyFour": "18 - 24 ans",
+        "twentyFiveToThirtyFour": "25 - 34 ans",
+        "thirtyFiveToFortyFour": "35 - 44 ans",
+        "fortyFiveToFiftyFour": "45 - 54 ans",
+        "fiftyFiveAndAbove": "55 ans et plus",
+        "tip": "Astuce : cette info nous aide juste à mieux adapter votre expérience."
+      },
+      "nationality": {
+        "title": "D'où venez-vous ?",
+        "subtitle": "Recherchez votre pays dans la liste.",
+        "searchPlaceholder": "Rechercher un pays...",
+        "empty": "Aucun pays trouvé.",
+        "trigger": "Sélectionner un pays",
+        "tip": "Astuce : vous ne trouvez pas votre pays ? Choisissez le plus proche."
+      },
+      "edition": {
+        "title": "Combien d'éditions de Vodun Days avez-vous déjà vécues ?",
+        "subtitle": "Cela nous aide à adapter votre expérience du festival.",
+        "first": "C'est ma 1ère édition",
+        "second": "C'est ma 2ème édition",
+        "third": "C'est ma 3ème édition",
+        "fourthAndAbove": "4 éditions ou plus",
+        "tip": "Astuce : première fois ? Pas de souci, on s'occupe de vous."
+      },
+      "submitError": "Une erreur est survenue, veuillez réessayer.",
+      "finish": "Terminer"
+    },
+    "showcase": {
+      "title": "Découvrez l'application",
+      "subtitle": "Tout ce qu'il vous faut pour vivre le festival.",
+      "skip": "Passer",
+      "next": "Suivant",
+      "done": "C'est parti",
+      "features": {
+        "programme": {
+          "title": "Programme en direct",
+          "description": "Suivez les événements du festival en temps réel, jour par jour."
+        },
+        "carte": {
+          "title": "Carte interactive",
+          "description": "Repérez les scènes, stands et sites autour de vous."
+        },
+        "urgences": {
+          "title": "Signalement d'urgence",
+          "description": "Alertez les équipes de sécurité en un geste en cas de besoin."
+        },
+        "avis": {
+          "title": "Votre avis compte",
+          "description": "Partagez vos impressions et aidez-nous à améliorer le festival."
+        },
+        "notifications": {
+          "title": "Notifications",
+          "description": "Recevez les annonces importantes sans rien manquer."
+        }
+      }
+    },
+    "thanks": {
+      "title": "Merci !",
+      "subtitle": "Bon festival, profitez de chaque instant.",
+      "cta": "Découvrir le programme"
+    }
   }
 }

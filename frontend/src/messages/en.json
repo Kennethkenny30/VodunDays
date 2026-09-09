@@ -383,20 +383,50 @@
       "home": "Back to home"
     },
     "types": {
-      "MEDICAL": { "label": "Medical emergency", "desc": "Fainting, injury, need for care" },
-      "SECURITY": { "label": "Security", "desc": "Assault, theft, suspicious behavior" },
-      "FIRE": { "label": "Fire", "desc": "Smoke, flames, immediate danger" },
-      "LOST": { "label": "Lost person", "desc": "Lost child or person" },
-      "TECHNICAL": { "label": "Technical issue", "desc": "Breakdown, infrastructure, equipment" },
-      "OTHER": { "label": "Other", "desc": "Other type of report" }
+      "MEDICAL": {
+        "label": "Medical emergency",
+        "desc": "Fainting, injury, need for care"
+      },
+      "SECURITY": {
+        "label": "Security",
+        "desc": "Assault, theft, suspicious behavior"
+      },
+      "FIRE": {
+        "label": "Fire",
+        "desc": "Smoke, flames, immediate danger"
+      },
+      "LOST": {
+        "label": "Lost person",
+        "desc": "Lost child or person"
+      },
+      "TECHNICAL": {
+        "label": "Technical issue",
+        "desc": "Breakdown, infrastructure, equipment"
+      },
+      "OTHER": {
+        "label": "Other",
+        "desc": "Other type of report"
+      }
     }
   },
   "admin": {
     "quizTemplates": {
-      "festival": { "title": "General festival", "description": "Overall festival satisfaction" },
-      "allEvents": { "title": "All events", "description": "General artistic feedback" },
-      "allSites": { "title": "All sites", "description": "Feedback on festival spaces" },
-      "event": { "title": "Specific event", "description": "Feedback on a specific event" }
+      "festival": {
+        "title": "General festival",
+        "description": "Overall festival satisfaction"
+      },
+      "allEvents": {
+        "title": "All events",
+        "description": "General artistic feedback"
+      },
+      "allSites": {
+        "title": "All sites",
+        "description": "Feedback on festival spaces"
+      },
+      "event": {
+        "title": "Specific event",
+        "description": "Feedback on a specific event"
+      }
     }
   },
   "enums": {
@@ -490,5 +520,105 @@
     "updateAvailable": "New version available",
     "update": "Update",
     "later": "Later"
+  },
+  "onboarding": {
+    "config": {
+      "progressLabel": "Step {current} / {total}",
+      "stepper": {
+        "language": "Language",
+        "notifications": "Notifs",
+        "gender": "Profile",
+        "ageRange": "Age",
+        "nationality": "Country",
+        "edition": "Edition"
+      },
+      "language": {
+        "title": "Choose your language",
+        "subtitle": "The app will be displayed in this language.",
+        "fr": "Français",
+        "en": "English",
+        "tip": "Tip: you can change the language anytime in settings."
+      },
+      "notifications": {
+        "title": "Stay informed",
+        "subtitle": "Programme alerts, emergencies and live festival announcements.",
+        "toggleLabel": "Notifications",
+        "enableHint": "Recommended so you don't miss anything",
+        "permissionDenied": "Notifications are blocked in your browser or device settings.",
+        "tip": "Tip: you can turn this off anytime in settings."
+      },
+      "gender": {
+        "title": "You are...",
+        "subtitle": "This helps us better understand our audience.",
+        "male": "A man",
+        "female": "A woman",
+        "undisclosed": "Prefer not to say",
+        "tip": "Tip: this info stays anonymous and is never shared."
+      },
+      "ageRange": {
+        "title": "What is your age range?",
+        "subtitle": "Helps us tailor the festival content.",
+        "underEighteen": "Under 18",
+        "eighteenToTwentyFour": "18 - 24",
+        "twentyFiveToThirtyFour": "25 - 34",
+        "thirtyFiveToFortyFour": "35 - 44",
+        "fortyFiveToFiftyFour": "45 - 54",
+        "fiftyFiveAndAbove": "55 and above",
+        "tip": "Tip: we only use this to improve your experience."
+      },
+      "nationality": {
+        "title": "Where are you from?",
+        "subtitle": "Search for your country in the list.",
+        "searchPlaceholder": "Search a country...",
+        "empty": "No country found.",
+        "trigger": "Select a country",
+        "tip": "Tip: can't find your country? Pick the closest match."
+      },
+      "edition": {
+        "title": "Which edition is this for you?",
+        "subtitle": "The number of times you've been to Vodun Days.",
+        "first": "My 1st edition",
+        "second": "My 2nd edition",
+        "third": "My 3rd edition",
+        "fourthAndAbove": "4th edition or more",
+        "tip": "Tip: first time? We've got you covered."
+      },
+      "submitError": "Something went wrong, try again.",
+      "finish": "Finish"
+    },
+    "showcase": {
+      "title": "Discover the app",
+      "subtitle": "Everything you need to experience the festival.",
+      "skip": "Skip",
+      "next": "Next",
+      "done": "Let's go",
+      "features": {
+        "programme": {
+          "title": "Live programme",
+          "description": "Follow festival events in real time, day by day."
+        },
+        "carte": {
+          "title": "Interactive map",
+          "description": "Locate stages, stands and sites around you."
+        },
+        "urgences": {
+          "title": "Emergency reporting",
+          "description": "Alert security teams in one tap when needed."
+        },
+        "avis": {
+          "title": "Your feedback matters",
+          "description": "Share your impressions and help us improve the festival."
+        },
+        "notifications": {
+          "title": "Notifications",
+          "description": "Get important announcements without missing a thing."
+        }
+      }
+    },
+    "thanks": {
+      "title": "Thank you!",
+      "subtitle": "Enjoy the festival, live every moment.",
+      "cta": "Discover the programme"
+    }
   }
 }

@@ -17,6 +17,8 @@ import {
 import { cn } from '@/lib/utils';
 import { setLocale } from '@/i18n/actions';
 import type { Locale } from '@/i18n/locale';
+import { getOrCreateFestivalierUuid } from '@/lib/festivalier';
+import { enablePush, disablePush } from '@/lib/push';
 
 type ModalKey = 'notif' | 'version' | 'about' | 'help' | 'privacy' | 'contact' | null;
 type FaqItem = { q: string; a: string };
@@ -422,6 +424,26 @@ export default function ParametresPage() {
   const [modal, setModal] = useState<ModalKey>(null);
   const close = () => setModal(null);
 
+  // Synchronise l'etat affiche avec le vrai statut d'abonnement push du
+  // navigateur au chargement, plutot que d'afficher une valeur figee.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.ready
+      .then((reg) => reg.pushManager.getSubscription())
+      .then((sub) => setNotifOn(!!sub))
+      .catch(() => {});
+  }, []);
+
+  const handleNotifChange = async (checked: boolean) => {
+    setNotifOn(checked);
+    if (checked) {
+      const result = await enablePush(getOrCreateFestivalierUuid());
+      if (!result.ok) setNotifOn(false);
+    } else {
+      await disablePush();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-vd-page-bg">
       <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at top, rgba(245,110,15,0.08), transparent 60%)' }} />
@@ -499,7 +521,7 @@ export default function ParametresPage() {
         </motion.div>
       </main>
 
-      <NotifModal   open={modal === 'notif'}   onClose={close} on={notifOn} setOn={setNotifOn} />
+      <NotifModal   open={modal === 'notif'}   onClose={close} on={notifOn} setOn={handleNotifChange} />
       <VersionModal open={modal === 'version'} onClose={close} />
       <AboutModal   open={modal === 'about'}   onClose={close} />
       <HelpModal    open={modal === 'help'}    onClose={close} />

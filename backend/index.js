@@ -30,6 +30,8 @@ import auditRoutes         from "./modules/audit/audit.routes.js";
 import surveyRoutes        from "./modules/survey/survey.routes.js";
 import urgencesRoutes      from "./modules/urgences/urgences.routes.js";
 import platformRoutes      from "./modules/platform/platform.routes.js";
+import onboardingRoutes    from "./modules/onboarding/onboarding.routes.js";
+import pushRoutes          from "./modules/push/push.routes.js";
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -100,6 +102,8 @@ app.use("/api/audit",                  auditRoutes);
 app.use("/api/survey",                 surveyRoutes);
 app.use("/api/urgences",               urgencesRoutes);
 app.use("/api/platform",               platformRoutes);
+app.use("/api/onboarding",             onboardingRoutes);
+app.use("/api/push",                   pushRoutes);
 
 // 404
 app.use((req, res) => {

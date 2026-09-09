@@ -27,6 +27,28 @@ enum QuestionKind {
   TEXT
 }
 
+enum Gender {
+  MALE
+  FEMALE
+  UNDISCLOSED
+}
+
+enum AgeRange {
+  UNDER_18
+  FROM_18_TO_24
+  FROM_25_TO_34
+  FROM_35_TO_44
+  FROM_45_TO_54
+  FROM_55_AND_ABOVE
+}
+
+enum FestivalEdition {
+  FIRST
+  SECOND
+  THIRD
+  FOURTH_AND_ABOVE
+}
+
 model Sites {
   id          String         @id @default(uuid())
   name        String
@@ -199,6 +221,40 @@ model Answers {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   question   Questions @relation(fields: [questionId], references: [id])
+}
+
+// Profil festivalier anonyme, rempli via le pop-up d'onboarding a la
+// premiere ouverture de l'app. Sert aux statistiques d'audience.
+model Festivaliers {
+  id                    String          @id @default(uuid())
+  // uuid festivalier cote client (localStorage vd_uuid), meme identifiant
+  // que celui utilise dans Answers.uuid
+  uuid                  String          @unique
+  language              String
+  notificationsEnabled  Boolean         @default(true)
+  gender                Gender
+  ageRange              AgeRange
+  nationality           String
+  edition               FestivalEdition
+  onboardingCompletedAt DateTime?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@index([createdAt])
+}
+
+// Abonnement push navigateur (Web Push API), un festivalier peut avoir
+// plusieurs abonnements actifs (plusieurs appareils/navigateurs).
+model PushSubscriptions {
+  id        String   @id @default(uuid())
+  // meme uuid festivalier que Festivaliers.uuid / Answers.uuid
+  uuid      String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([uuid])
 }
 
 model Users {

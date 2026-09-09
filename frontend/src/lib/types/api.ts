@@ -1,4 +1,3 @@
-
 export type ApiResponse<T> = {
   success: boolean
   message: string
@@ -379,4 +378,42 @@ export type SurveyComment = {
   event: string
   uuid: string | null
   createdAt: string
+}
+
+// Onboarding festivalier - profil demographique anonyme
+
+export type Gender = "MALE" | "FEMALE" | "UNDISCLOSED"
+
+export type AgeRange =
+  | "UNDER_18"
+  | "FROM_18_TO_24"
+  | "FROM_25_TO_34"
+  | "FROM_35_TO_44"
+  | "FROM_45_TO_54"
+  | "FROM_55_AND_ABOVE"
+
+export type FestivalEdition = "FIRST" | "SECOND" | "THIRD" | "FOURTH_AND_ABOVE"
+
+export type Festivalier = {
+  id: string
+  uuid: string
+  language: string
+  notificationsEnabled: boolean
+  gender: Gender
+  ageRange: AgeRange
+  // Code pays ISO 3166-1 alpha-2
+  nationality: string
+  edition: FestivalEdition
+  onboardingCompletedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type FestivalierPayload = {
+  language: string
+  notificationsEnabled: boolean
+  gender: Gender
+  ageRange: AgeRange
+  nationality: string
+  edition: FestivalEdition
 }

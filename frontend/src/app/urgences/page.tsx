@@ -7,20 +7,11 @@ import { useTranslations } from "next-intl";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { createAlert } from "@/lib/api/urgences";
 import type { AlertType } from "@/lib/types/api";
+import { getOrCreateFestivalierUuid } from "@/lib/festivalier";
 import {
   ArrowLeft, X, HeartPulse, Shield, Flame, UserX, Wrench, MessageCircle,
   CheckCircle, Phone, RotateCcw, Home, Loader2,
 } from "lucide-react";
-
-function getFestivalierUuid(): string {
-  if (typeof window === "undefined") return "";
-  let id = localStorage.getItem("vd_uuid");
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem("vd_uuid", id);
-  }
-  return id;
-}
 
 type AlertTypeConfig = {
   type: AlertType;
@@ -52,7 +43,7 @@ export default function UrgencesPage() {
   const [error, setError]               = useState<string | null>(null);
   const [uuid, setUuid]                 = useState("");
 
-  useEffect(() => { setUuid(getFestivalierUuid()); }, []);
+  useEffect(() => { setUuid(getOrCreateFestivalierUuid()); }, []);
 
   const selectedConfig = ALERT_TYPE_CONFIG.find((c) => c.type === selectedType);
 
