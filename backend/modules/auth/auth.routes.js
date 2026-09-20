@@ -16,7 +16,7 @@ const registerSchema = Joi.object({
   lastname: Joi.string().required(),
   phone: Joi.string().optional().allow(""),
   // Seul un SUPER_ADMIN peut créer un compte, et peut choisir le rôle
-  role: Joi.string().valid("SUPER_ADMIN", "ADMIN").optional(),
+  role: Joi.string().valid("SUPER_ADMIN", "ADMIN", "INSTAD").optional(),
 });
 
 const loginSchema = Joi.object({

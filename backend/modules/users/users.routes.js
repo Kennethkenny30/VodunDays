@@ -9,7 +9,7 @@ const router = Router();
 
 const updateSchema = Joi.object({
   email:     Joi.string().email().optional(),
-  role:      Joi.string().valid("SUPER_ADMIN", "ADMIN").optional(),
+  role:      Joi.string().valid("SUPER_ADMIN", "ADMIN", "INSTAD").optional(),
   active:    Joi.boolean().optional(),
   firstname: Joi.string().optional(),
   lastname:  Joi.string().optional(),

@@ -11,7 +11,7 @@ export const findAll = async (filters = {}) => {
     include: {
       site: true,
       eventType: true,
-      programs: true,
+      programs: { include: { artists: true } },
       artists: true,
       quizzes: true,
     },
@@ -25,7 +25,7 @@ export const findById = async (id) => {
     include: {
       site: true,
       eventType: true,
-      programs: true,
+      programs: { include: { artists: true } },
       artists: true,
       quizzes: true,
     },

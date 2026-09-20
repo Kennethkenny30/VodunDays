@@ -46,3 +46,21 @@ export const remove = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getZone = async (req, res, next) => {
+  try {
+    const result = await sitesService.getZone(req.params.id);
+    return successResponse(res, result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateZone = async (req, res, next) => {
+  try {
+    const result = await sitesService.updateZone(req.params.id, req.body);
+    return successResponse(res, result, "Zone mise à jour avec succès");
+  } catch (error) {
+    next(error);
+  }
+};

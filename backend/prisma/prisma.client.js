@@ -1,6 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import "dotenv/config";
-import { PrismaClient } from "../src/generated/client.js";
+import { Prisma, PrismaClient } from "../src/generated/client.js";
 
 // 1. Setup the adapter
 // connectionTimeoutMillis : abandon si le pool ne repond pas en 10 s
@@ -15,3 +15,4 @@ const prisma = new PrismaClient({ adapter });
 
 // 3. export global prisma client
 export default prisma;
+export { Prisma };

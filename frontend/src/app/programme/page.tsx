@@ -44,6 +44,7 @@ type BackendProgram = {
   id:        string;
   startTime: string;
   endTime:   string;
+  artists?:  { id: string; name: string; imageUrl?: string | null; genre?: string | null }[];
 };
 
 type BackendSite = {
@@ -151,6 +152,7 @@ function mapEventToPrograms(event: BackendEvent): Program[] {
       siteId,
       siteLat,
       siteLng,
+      artists: program.artists,
     };
   });
 }
@@ -197,9 +199,13 @@ function ProgrammeContent() {
         if (json.success && Array.isArray(json.data)) {
           const mapped = json.data.flatMap((e: BackendEvent) => mapEventToPrograms(e));
           setPrograms(mapped);
+        } else if (!res.ok) {
+          console.error(`GET /events a échoué (${res.status}) :`, json.message ?? json);
         }
-      } catch {
-        // fallback silencieux
+      } catch (error) {
+        // Erreur visible en console pour le diagnostic - l'UI reste silencieuse
+        // (liste vide + message "aucun programme"), pas de crash pour l'utilisateur.
+        console.error("Impossible de charger les événements :", error);
       } finally {
         setLoading(false);
       }
@@ -268,7 +274,7 @@ function ProgrammeContent() {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <DayFilter activeDay={activeDay} onDayChange={setActiveDay} totalDays={3} />
+          <DayFilter activeDay={activeDay} onDayChange={setActiveDay} totalDays={7} />
         </motion.div>
 
         <motion.div variants={itemVariants} className="mt-6">

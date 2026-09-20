@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
@@ -10,23 +10,48 @@ interface DayFilterProps {
   totalDays?: number;
 }
 
+// Nombre de boutons affiches en meme temps, quel que soit totalDays -
+// c'est ce qui garde le composant compact comme la version d'origine.
+const VISIBLE_COUNT = 3;
+
 export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterProps) {
   const t = useTranslations("programme");
-  const days = Array.from({ length: totalDays }, (_, i) => i + 1);
-  const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const allDays = Array.from({ length: totalDays }, (_, i) => i + 1);
+  // Cle par numero de jour (pas par index) : la fenetre se decale, donc la
+  // position d'un jour dans la liste rendue change, mais pas son numero.
+  const btnRefs = useRef<Record<number, HTMLButtonElement | null>>({});
+  // Ne focus le bouton apres changement de jour que si ce changement vient
+  // du clavier - pas au montage, pas sur un clic souris (deja focus par le navigateur).
+  const pendingKeyboardFocus = useRef(false);
 
-  // Navigation clavier du tablist : flèches (avec boucle), Home/End
+  // Fenetre de VISIBLE_COUNT jours centree sur le jour actif quand possible,
+  // et clampee aux bornes [1, totalDays] sinon (ex: jour 7 -> [5,6,7]).
+  const windowSize = Math.min(VISIBLE_COUNT, totalDays);
+  let windowStart = activeDay - 1;
+  windowStart = Math.max(1, windowStart);
+  windowStart = Math.min(windowStart, totalDays - windowSize + 1);
+  const visibleDays = Array.from({ length: windowSize }, (_, i) => windowStart + i);
+
+  useEffect(() => {
+    if (pendingKeyboardFocus.current) {
+      btnRefs.current[activeDay]?.focus();
+      pendingKeyboardFocus.current = false;
+    }
+  }, [activeDay]);
+
+  // Navigation clavier : parcourt tous les jours du festival (pas seulement
+  // ceux actuellement visibles) - la fenetre suit automatiquement au rendu suivant.
   function handleKeyDown(e: React.KeyboardEvent) {
-    const idx = days.indexOf(activeDay);
+    const idx = allDays.indexOf(activeDay);
     let next: number | null = null;
-    if      (e.key === "ArrowRight") next = (idx + 1) % days.length;
-    else if (e.key === "ArrowLeft")  next = (idx - 1 + days.length) % days.length;
+    if      (e.key === "ArrowRight") next = (idx + 1) % allDays.length;
+    else if (e.key === "ArrowLeft")  next = (idx - 1 + allDays.length) % allDays.length;
     else if (e.key === "Home")       next = 0;
-    else if (e.key === "End")        next = days.length - 1;
+    else if (e.key === "End")        next = allDays.length - 1;
     if (next === null) return;
     e.preventDefault();
-    onDayChange(days[next]);
-    btnRefs.current[next]?.focus();
+    pendingKeyboardFocus.current = true;
+    onDayChange(allDays[next]);
   }
 
   return (
@@ -36,21 +61,23 @@ export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterPr
       aria-label={t("dayFilter")}
       onKeyDown={handleKeyDown}
     >
-      {/* Principe morphic : seuls les boutons ont un style, pas le wrapper */}
+      {/* Principe morphic : seuls les boutons ont un style, pas le wrapper.
+          Fenetre fixe de VISIBLE_COUNT jours : la taille du composant ne
+          bouge jamais, seul le contenu de la fenetre change selon le jour actif. */}
       <div className="flex items-center overflow-hidden rounded-full">
-        {days.map((day, index) => {
+        {visibleDays.map((day, index) => {
           const isActive     = activeDay === day;
           const isFirst      = index === 0;
-          const isLast       = index === days.length - 1;
-          const prevDay      = index > 0 ? days[index - 1] : null;
-          const nextDay      = index < days.length - 1 ? days[index + 1] : null;
+          const isLast       = index === visibleDays.length - 1;
+          const prevDay      = index > 0 ? visibleDays[index - 1] : null;
+          const nextDay      = index < visibleDays.length - 1 ? visibleDays[index + 1] : null;
           const isPrevActive = prevDay !== null && activeDay === prevDay;
           const isNextActive = nextDay !== null && activeDay === nextDay;
 
           return (
             <button
               key={day}
-              ref={(el) => { btnRefs.current[index] = el; }}
+              ref={(el) => { btnRefs.current[day] = el; }}
               role="tab"
               aria-selected={isActive}
               tabIndex={isActive ? 0 : -1}
@@ -61,24 +88,22 @@ export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterPr
                 borderColor: "var(--vd-dayfilter-border)",
               }}
               className={cn(
-                // Fond glass identique sur tous les boutons (aligné sur ARModeSwitcher)
                 "relative flex items-center justify-center min-h-11 p-2 px-5 text-sm",
                 "transition-all duration-300 select-none active:scale-[0.96]",
                 "backdrop-blur-xl border",
 
-                // Actif : se détache du flux avec mx + rounded + orange
+                // Actif : se detache du flux avec mx + rounded + orange
                 isActive && cn(
                   "mx-2 rounded-full font-bold",
                   "text-[#F56E0F]",
                   "shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]",
                 ),
 
-                // Inactif : coins adaptés selon voisinage (morphic)
+                // Inactif : coins adaptes selon voisinage (morphic)
                 !isActive && cn(
                   "font-semibold text-muted-foreground hover:text-foreground",
                   (isPrevActive || isFirst) ? "rounded-l-full" : "rounded-l-none",
                   (isNextActive || isLast)  ? "rounded-r-full" : "rounded-r-none",
-                  // Pas de bordure sur les bords partagés entre segments accolés (évite le trait double)
                   !isFirst && !isPrevActive && "border-l-0",
                   !isLast  && !isNextActive && "border-r-0",
                   "shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]",

@@ -262,7 +262,7 @@ export function ConfigWizard({
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notifDenied, setNotifDenied] = useState(false);
+  const [notifError, setNotifError] = useState<"denied" | "generic" | null>(null);
 
   const stepId = STEPS[stepIndex];
   const isLastStep = stepIndex === STEPS.length - 1;
@@ -282,14 +282,14 @@ export function ConfigWizard({
   const handleNotificationsToggle = async (checked: boolean) => {
     // Optimiste : on affiche l'etat demande tout de suite.
     setDraft((d) => ({ ...d, notificationsEnabled: checked }));
-    setNotifDenied(false);
+    setNotifError(null);
 
     if (checked) {
       const result = await enablePush(uuid);
       if (!result.ok) {
-        // Permission refusee ou navigateur incompatible : on revient a l'etat reel.
+        // Echec (permission refusee, ou erreur navigateur) : on revient a l'etat reel.
         setDraft((d) => ({ ...d, notificationsEnabled: false }));
-        if (result.reason === "denied") setNotifDenied(true);
+        setNotifError(result.reason === "denied" ? "denied" : "generic");
       }
     } else {
       await disablePush();
@@ -446,7 +446,7 @@ export function ConfigWizard({
                   />
                 </div>
                 <AnimatePresence>
-                  {notifDenied && (
+                  {notifError && (
                     <motion.p
                       initial={{ opacity: 0, height: 0, marginTop: 0 }}
                       animate={{ opacity: 1, height: "auto", marginTop: 8 }}
@@ -454,7 +454,7 @@ export function ConfigWizard({
                       transition={{ duration: 0.2, ease: EASE }}
                       className="text-[12px] text-red-400 overflow-hidden"
                     >
-                      {t("notifications.permissionDenied")}
+                      {t(notifError === "denied" ? "notifications.permissionDenied" : "notifications.genericError")}
                     </motion.p>
                   )}
                 </AnimatePresence>

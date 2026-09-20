@@ -83,10 +83,25 @@ const adminNav = [
   },
 ]
 
+const instadNav = [
+  {
+    group: "Vue d'ensemble",
+    items: [
+      { label: "Dashboard", icon: IconDashboard, href: "/instad" },
+    ],
+  },
+  {
+    group: "Enquêtes",
+    items: [
+      { label: "Questionnaires", icon: IconStar, href: "/instad/questionnaires" },
+    ],
+  },
+]
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function isActiveLink(href: string, pathname: string) {
-  if (href === "/superadmin" || href === "/admin") {
+  if (href === "/superadmin" || href === "/admin" || href === "/instad") {
     return pathname === href
   }
   return pathname === href || pathname.startsWith(href + "/")
@@ -171,8 +186,9 @@ interface SidebarContentProps {
 
 function SidebarContent({ role, collapsed, onToggle, showToggle = false, onLogout }: SidebarContentProps) {
   const pathname = usePathname()
-  const navConfig = role === "SUPER_ADMIN" ? superAdminNav : adminNav
-  const homeHref = role === "SUPER_ADMIN" ? "/superadmin" : "/admin"
+  const navConfig = role === "SUPER_ADMIN" ? superAdminNav : role === "INSTAD" ? instadNav : adminNav
+  const homeHref  = role === "SUPER_ADMIN" ? "/superadmin" : role === "INSTAD" ? "/instad" : "/admin"
+  const roleLabel = role === "SUPER_ADMIN" ? "Super Admin" : role === "INSTAD" ? "INStaD" : "Admin Culture"
 
   return (
     <div className="flex h-full flex-col">
@@ -205,7 +221,7 @@ function SidebarContent({ role, collapsed, onToggle, showToggle = false, onLogou
                 Vodun Days
               </p>
               <p className="truncate text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                {role === "SUPER_ADMIN" ? "Super Admin" : "Admin Culture"}
+                {roleLabel}
               </p>
             </motion.div>
           )}
@@ -324,7 +340,9 @@ export function DashboardSidebar() {
   }
 
   // Rôle lu depuis la session - jamais depuis le pathname
-  const role: UserRole = user?.role === "SUPER_ADMIN" ? "SUPER_ADMIN" : "ADMIN"
+  const role: UserRole =
+    user?.role === "SUPER_ADMIN" ? "SUPER_ADMIN" :
+    user?.role === "INSTAD"      ? "INSTAD"      : "ADMIN"
 
   return (
     <>

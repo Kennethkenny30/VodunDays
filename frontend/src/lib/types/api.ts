@@ -4,7 +4,7 @@ export type ApiResponse<T> = {
   data: T
 }
 
-export type UserRole = "SUPER_ADMIN" | "ADMIN"
+export type UserRole = "SUPER_ADMIN" | "ADMIN" | "INSTAD"
 
 export type User = {
   id: string
@@ -48,6 +48,7 @@ export type MarkerCategory =
   | "TRANSPORT"
   | "ASSISTANCE"
   | "PRA"
+  | "SCENE"
 
 // ─── Site ─────────────────────────────────────────────────────────────────────
 
@@ -71,12 +72,21 @@ export type Site = {
   amenities?: Amenity[]
   events?: Event[]
   _count?: { events: number }
+  // Zone géographique du site (polygone PostGIS), en GeoJSON - null si non dessinée
+  zoneGeo?: GeoJSONPolygon | null
   // Champs i18n EN (optionnels, repli sur FR si null)
   nameEn?:        string | null
   descriptionEn?: string | null
   typeEn?:        string | null
   arLabelEn?:     string | null
   arContentEn?:   string | null
+}
+
+// ─── Zone géographique (zoneGeo) ────────────────────────────────────────────
+
+export type GeoJSONPolygon = {
+  type: "Polygon"
+  coordinates: number[][][]
 }
 
 export type SiteCreatePayload = {
@@ -155,20 +165,44 @@ export type Program = {
   eventId: string
   createdAt: string
   updatedAt: string
+  artists?: Artist[]
 }
 
 export type ProgramCreatePayload = {
   startTime: string
   endTime: string
   eventId: string
+  artistIds?: string[]
 }
 
 export type Artist = {
   id: string
   name: string
   eventId: string
+  bio?:          string | null
+  bioEn?:        string | null
+  imageUrl?:     string | null
+  genre?:        string | null
+  instagramUrl?: string | null
+  spotifyUrl?:   string | null
+  websiteUrl?:   string | null
+  order?:        number | null
   createdAt: string
   updatedAt: string
+  programs?: Program[]
+}
+
+export type ArtistCreatePayload = {
+  name: string
+  eventId: string
+  bio?:          string | null
+  bioEn?:        string | null
+  imageUrl?:     string | null
+  genre?:        string | null
+  instagramUrl?: string | null
+  spotifyUrl?:   string | null
+  websiteUrl?:   string | null
+  order?:        number | null
 }
 
 export type Quiz = {

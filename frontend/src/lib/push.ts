@@ -35,12 +35,7 @@ export async function enablePush(uuid: string): Promise<EnablePushResult> {
   try {
     const registration = await navigator.serviceWorker.ready;
     const existing = await registration.pushManager.getSubscription();
-    const subscription =
-      existing ??
-      (await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey),
-      }));
+    const subscription = existing ?? (await subscribeWithRetry(registration, vapidKey));
 
     const json = subscription.toJSON();
     if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {
@@ -56,8 +51,41 @@ export async function enablePush(uuid: string): Promise<EnablePushResult> {
     });
 
     return res.success ? { ok: true } : { ok: false, reason: "error" };
-  } catch {
+  } catch (error) {
+    // Erreur visible en console plutot qu'avalee silencieusement : sans ca,
+    // un echec de subscribe() (frequent juste apres un unsubscribe() sur
+    // Android/iOS, le temps que le service push cote navigateur se libere)
+    // se traduisait par un toggle qui revient a off sans aucune trace.
+    console.error("[push] enablePush a echoue:", error);
     return { ok: false, reason: "error" };
+  }
+}
+
+// Un pushManager.subscribe() juste apres un unsubscribe() peut echouer sur
+// Android (InvalidStateError) et iOS (AbortError) le temps que le service
+// push du navigateur libere vraiment l'ancien abonnement. On retente une
+// fois apres avoir force le nettoyage d'un eventuel abonnement fantome.
+async function subscribeWithRetry(
+  registration: ServiceWorkerRegistration,
+  vapidKey: string
+): Promise<PushSubscription> {
+  try {
+    return await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapidKey),
+    });
+  } catch (firstError) {
+    console.warn("[push] premier subscribe() echoue, nouvelle tentative:", firstError);
+
+    const lingering = await registration.pushManager.getSubscription();
+    if (lingering) await lingering.unsubscribe();
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    return registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapidKey),
+    });
   }
 }
 
@@ -72,8 +100,9 @@ export async function disablePush(): Promise<void> {
     const endpoint = subscription.endpoint;
     await subscription.unsubscribe();
     await unsubscribeFromPush(endpoint);
-  } catch {
-    // Rien a faire : au pire l'abonnement reste orphelin cote serveur,
-    // il sera nettoye au prochain envoi (410/404 gere par le backend).
+  } catch (error) {
+    console.error("[push] disablePush a echoue:", error);
+    // Au pire l'abonnement reste orphelin cote serveur, il sera nettoye
+    // au prochain envoi (410/404 gere par le backend).
   }
 }

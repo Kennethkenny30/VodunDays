@@ -26,8 +26,37 @@ function buildQuizFilter(eventId, scope) {
   return {};
 }
 
-export const getStats = async ({ eventId, scope } = {}) => {
+// Construit la liste des uuid de festivaliers correspondant aux filtres
+// démographiques (genre, tranche d'âge, nationalité) - null si aucun filtre
+// démographique n'est actif (pas de restriction à appliquer).
+export async function resolveDemographicUuids({ gender, ageRange, nationality }) {
+  if (!gender && !ageRange && !nationality) return null;
+  const where = {};
+  if (gender)      where.gender      = gender;
+  if (ageRange)    where.ageRange    = ageRange;
+  if (nationality) where.nationality = nationality;
+  const festivaliers = await prisma.festivaliers.findMany({ where, select: { uuid: true } });
+  return festivaliers.map((f) => f.uuid);
+}
+
+export const getStats = async ({ eventId, scope, from, to, gender, ageRange, nationality } = {}) => {
   const quizFilter = buildQuizFilter(eventId, scope);
+
+  const createdAt = {};
+  if (from) createdAt.gte = new Date(from);
+  if (to)   createdAt.lte = new Date(to);
+
+  const demographicUuids = await resolveDemographicUuids({ gender, ageRange, nationality });
+  // Filtre actif sans aucun festivalier correspondant : aucune réponse ne peut matcher
+  if (demographicUuids !== null && demographicUuids.length === 0) {
+    return {
+      averageRating: 0,
+      totalResponses: 0,
+      satisfactionRate: 0,
+      ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      trend: [],
+    };
+  }
 
   const ratingAnswers = await prisma.answers.findMany({
     where: {
@@ -35,6 +64,8 @@ export const getStats = async ({ eventId, scope } = {}) => {
         ...quizFilter,
         questionType: { types: { contains: RATING_TYPE_KEYWORD, mode: "insensitive" } },
       },
+      ...(Object.keys(createdAt).length > 0 ? { createdAt } : {}),
+      ...(demographicUuids !== null ? { uuid: { in: demographicUuids } } : {}),
     },
     select: { response: true, createdAt: true },
   });

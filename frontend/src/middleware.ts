@@ -2,10 +2,11 @@
  * Middleware Next.js - Protection des routes dashboard
  *
  * Logique :
- *  - /admin/*      → accessible aux rôles ADMIN et SUPER_ADMIN
- *                    (si SUPER_ADMIN → redirigé vers /superadmin)
+ *  - /admin/*      → accessible uniquement au rôle ADMIN
  *  - /superadmin/* → accessible uniquement au rôle SUPER_ADMIN
- *                    (si ADMIN → redirigé vers /admin)
+ *  - /instad/*     → accessible aux rôles INSTAD et SUPER_ADMIN
+ *                    (supervision - l'INStaD ne crée jamais son propre compte,
+ *                    seul un SUPER_ADMIN peut créer/attribuer ce rôle)
  *  - /connexion    → redirige vers le bon dashboard si déjà connecté
  *
  * Le cookie HttpOnly "vd_token" est accessible dans l'Edge Runtime.
@@ -19,10 +20,17 @@ import type { NextRequest } from "next/server"
 
 const COOKIE_NAME = "vd_token"
 
-const PROTECTED_ROUTES = ["/admin", "/superadmin"]
+const PROTECTED_ROUTES = ["/admin", "/superadmin", "/instad"]
 const PUBLIC_ROUTES    = ["/connexion"]
 
 type TokenPayload = { role?: string; exp?: number }
+
+/** Tableau de bord par défaut selon le rôle. */
+function destinationFor(role: string | null): string {
+  if (role === "SUPER_ADMIN") return "/superadmin"
+  if (role === "INSTAD")      return "/instad"
+  return "/admin"
+}
 
 /** Lit le payload JWT sans vérifier la signature. */
 function decodePayload(token: string): TokenPayload | null {
@@ -71,18 +79,22 @@ export function middleware(request: NextRequest) {
 
     // Déjà connecté → tente d'accéder à /connexion
     if (isPublic) {
-      const dest = role === "SUPER_ADMIN" ? "/superadmin" : "/admin"
-      return NextResponse.redirect(new URL(dest, request.url))
+      return NextResponse.redirect(new URL(destinationFor(role), request.url))
     }
 
-    // SUPER_ADMIN sur /admin/* → renvoyer vers /superadmin
-    if (pathname.startsWith("/admin") && role === "SUPER_ADMIN") {
-      return NextResponse.redirect(new URL("/superadmin", request.url))
+    // /admin/* : réservé au rôle ADMIN
+    if (pathname.startsWith("/admin") && role !== "ADMIN") {
+      return NextResponse.redirect(new URL(destinationFor(role), request.url))
     }
 
-    // ADMIN (ou rôle inconnu) sur /superadmin/* → renvoyer vers /admin
+    // /superadmin/* : réservé au rôle SUPER_ADMIN
     if (pathname.startsWith("/superadmin") && role !== "SUPER_ADMIN") {
-      return NextResponse.redirect(new URL("/admin", request.url))
+      return NextResponse.redirect(new URL(destinationFor(role), request.url))
+    }
+
+    // /instad/* : réservé à l'INStaD, avec supervision possible du SUPER_ADMIN
+    if (pathname.startsWith("/instad") && role !== "INSTAD" && role !== "SUPER_ADMIN") {
+      return NextResponse.redirect(new URL(destinationFor(role), request.url))
     }
   }
 

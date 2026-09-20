@@ -47,6 +47,7 @@ function Breadcrumbs() {
   const labels: Record<string, string> = {
     superadmin:    "Super Admin",
     admin:         "Admin Culture",
+    instad:        "INStaD",
     config:        "Configuration",
     sites:         "Sites",
     roles:         "Rôles",
@@ -227,7 +228,9 @@ function NotificationsBell() {
   const [notifications, setNotifications] = useState<{ id: string; title: string; message: string; createdAt: string }[]>([])
   const [open, setOpen] = useState(false)
   const { user } = useSession()
-  const notifHref = user?.role === "SUPER_ADMIN" ? "/superadmin" : "/admin/notifications"
+  const notifHref =
+    user?.role === "SUPER_ADMIN" ? "/superadmin" :
+    user?.role === "INSTAD"      ? "/instad"   : "/admin/notifications"
 
   useEffect(() => {
     let mounted = true

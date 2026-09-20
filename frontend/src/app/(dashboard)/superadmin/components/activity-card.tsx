@@ -36,6 +36,8 @@ const MODULE_LABELS: Record<string, string> = {
   notifications:     "Notifications",
   programs:          "Créneaux",
   answers:           "Réponses",
+  modules:           "Modules",
+  incidents:         "Incidents",
 }
 
 const MODULE_FILTERS = [
@@ -47,6 +49,8 @@ const MODULE_FILTERS = [
   { value: "urgences",      label: "Urgences"      },
   { value: "users",         label: "Utilisateurs"  },
   { value: "sites",         label: "Sites"         },
+  { value: "modules",       label: "Modules"       },
+  { value: "incidents",     label: "Incidents"     },
 ]
 
 // Intervalle de rafraîchissement automatique (30 secondes)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { cn } from "@/lib/utils"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
@@ -10,18 +10,21 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Map, Bell, Navigation, Video, Wrench, Info } from "lucide-react"
+import { Map, Bell, Navigation, Video, Wrench, Info, Loader2 } from "lucide-react"
+import { toast } from "sonner"
+import { getPlatformSettings, updatePlatformSetting } from "@/lib/api/platform"
 
 interface ModulesCardProps {
   className?: string
 }
 
-const defaultModules = [
+// Métadonnées d'affichage uniquement (icône, libellé, tooltip) - l'état
+// enabled réel vient de PlatformSettings côté API, plus de localStorage.
+const MODULE_META = [
   {
     id: "map",
     label: "Carte interactive",
     icon: Map,
-    enabled: true,
     danger: false,
     tooltip: "Carte MapLibre des sites du festival - désactiver masque la carte pour tous les utilisateurs",
   },
@@ -29,7 +32,6 @@ const defaultModules = [
     id: "push",
     label: "Notifications push",
     icon: Bell,
-    enabled: true,
     danger: false,
     tooltip: "Envoi de notifications push via FCM - désactiver stoppe toutes les notifications sortantes",
   },
@@ -37,7 +39,6 @@ const defaultModules = [
     id: "gps",
     label: "Tracking GPS",
     icon: Navigation,
-    enabled: true,
     danger: false,
     tooltip: "Géolocalisation des festivaliers en temps réel - désactiver coupe la localisation",
   },
@@ -45,7 +46,6 @@ const defaultModules = [
     id: "video",
     label: "Highlights vidéo",
     icon: Video,
-    enabled: false,
     danger: false,
     tooltip: "Section vidéos et replays dans l'application - module en développement",
   },
@@ -53,11 +53,10 @@ const defaultModules = [
     id: "maintenance",
     label: "Mode maintenance",
     icon: Wrench,
-    enabled: false,
     danger: true,
     tooltip: "Attention : passe toute l'application en maintenance - les utilisateurs verront une page d'indisponibilité",
   },
-]
+] as const
 
 const impactMap: Record<string, { enable: string; disable: string }> = {
   map: {
@@ -82,37 +81,44 @@ const impactMap: Record<string, { enable: string; disable: string }> = {
   },
 }
 
-const LS_KEY = "superadmin_modules"
-
 export function ModulesCard({ className }: ModulesCardProps) {
-  const [modules, setModules] = useState(defaultModules)
+  const [loading,  setLoading]  = useState(true)
+  const [enabled,  setEnabled]  = useState<Record<string, boolean>>({})
+  const [pending,  setPending]  = useState<string | null>(null)
 
-  // Hydratation post-mount depuis localStorage
-  useEffect(() => {
+  const fetchSettings = useCallback(async () => {
     try {
-      const saved = localStorage.getItem(LS_KEY)
-      if (!saved) return
-      const parsed: { id: string; enabled: boolean }[] = JSON.parse(saved)
-      setModules(defaultModules.map((m) => ({
-        ...m,
-        enabled: parsed.find((p) => p.id === m.id)?.enabled ?? m.enabled,
-      })))
+      const res = await getPlatformSettings()
+      if (res.success) {
+        const modulesOnly = res.data.filter((s) => s.family === "modules")
+        setEnabled(Object.fromEntries(modulesOnly.map((s) => [s.key, s.enabled])))
+      }
     } catch {
-      // données corrompues - on repart des défauts
+      toast.error("Impossible de charger l'état des modules")
+    } finally {
+      setLoading(false)
     }
   }, [])
 
-  const handleToggle = (id: string, newValue: boolean) => {
-    setModules((prev) => {
-      const next = prev.map((m) => (m.id === id ? { ...m, enabled: newValue } : m))
-      try {
-        localStorage.setItem(LS_KEY, JSON.stringify(next.map((m) => ({ id: m.id, enabled: m.enabled }))))
-      } catch { /* quota dépassé - non critique */ }
-      return next
-    })
+  useEffect(() => { fetchSettings() }, [fetchSettings])
+
+  const handleToggle = async (id: string, newValue: boolean) => {
+    setPending(id)
+    try {
+      const res = await updatePlatformSetting(id, newValue)
+      if (res.success) {
+        setEnabled((prev) => ({ ...prev, [id]: newValue }))
+      } else {
+        toast.error(res.message || "Échec de la mise à jour du module")
+      }
+    } catch {
+      toast.error("Erreur réseau - le module n'a pas été modifié")
+    } finally {
+      setPending(null)
+    }
   }
 
-  const enabledCount = modules.filter((m) => m.enabled).length
+  const enabledCount = MODULE_META.filter((m) => enabled[m.id]).length
 
   return (
     <div className={cn("glass-card p-5", className)}>
@@ -125,84 +131,97 @@ export function ModulesCard({ className }: ModulesCardProps) {
               variant="outline"
               className="text-[10px] tabular-nums border-white/15 text-muted-foreground cursor-default"
             >
-              {enabledCount}/{modules.length}
+              {enabledCount}/{MODULE_META.length}
             </Badge>
           </TooltipTrigger>
           <TooltipContent side="left" className="text-xs">
-            {enabledCount} module{enabledCount > 1 ? "s" : ""} activé{enabledCount > 1 ? "s" : ""} sur {modules.length}
+            {enabledCount} module{enabledCount > 1 ? "s" : ""} activé{enabledCount > 1 ? "s" : ""} sur {MODULE_META.length}
           </TooltipContent>
         </Tooltip>
       </div>
 
-      {/* Liste modules */}
-      <div className="space-y-1">
-        {modules.map((module) => (
-          <div
-            key={module.id}
-            className={cn(
-              "flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors",
-              module.danger
-                ? "hover:bg-destructive/8"
-                : "hover:bg-white/5"
-            )}
-          >
-            {/* Icône + label + info */}
-            <div className="flex items-center gap-2.5 min-w-0">
-              <module.icon
+      {loading ? (
+        <div className="flex items-center justify-center py-8 text-muted-foreground gap-2">
+          <Loader2 className="size-4 animate-spin" />
+          <span className="text-xs">Chargement...</span>
+        </div>
+      ) : (
+        <div className="space-y-1">
+          {MODULE_META.map((module) => {
+            const isEnabled = enabled[module.id] ?? false
+            return (
+              <div
+                key={module.id}
                 className={cn(
-                  "size-4 shrink-0",
+                  "flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors",
                   module.danger
-                    ? "text-destructive"
-                    : module.enabled
-                    ? "text-foreground"
-                    : "text-muted-foreground"
-                )}
-              />
-              <span
-                className={cn(
-                  "text-sm truncate",
-                  module.danger
-                    ? "text-destructive font-medium"
-                    : module.enabled
-                    ? "text-foreground"
-                    : "text-muted-foreground"
+                    ? "hover:bg-destructive/8"
+                    : "hover:bg-white/5"
                 )}
               >
-                {module.label}
-              </span>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="size-3 shrink-0 text-muted-foreground/40 hover:text-muted-foreground cursor-help transition-colors" />
-                </TooltipTrigger>
-                <TooltipContent side="right" className="text-xs max-w-[220px]">
-                  {module.tooltip}
-                </TooltipContent>
-              </Tooltip>
-            </div>
-
-            {/* Toggle avec ConfirmDialog */}
-            <ConfirmDialog
-              title={module.enabled ? `Désactiver ${module.label.toLowerCase()}` : `Activer ${module.label.toLowerCase()}`}
-              description={impactMap[module.id]?.[module.enabled ? "disable" : "enable"] ?? ""}
-              confirmLabel={module.enabled ? "Désactiver" : "Activer"}
-              variant={module.enabled || module.danger ? "destructive" : "default"}
-              onConfirm={() => handleToggle(module.id, !module.enabled)}
-              trigger={
-                <div className="shrink-0 ml-3">
-                  <Switch
-                    id={module.id}
-                    checked={module.enabled}
+                {/* Icône + label + info */}
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <module.icon
                     className={cn(
-                      "data-[state=checked]:bg-[var(--vd-gold)]",
-                      module.danger && "data-[state=checked]:bg-destructive"
+                      "size-4 shrink-0",
+                      module.danger
+                        ? "text-destructive"
+                        : isEnabled
+                        ? "text-foreground"
+                        : "text-muted-foreground"
                     )}
                   />
+                  <span
+                    className={cn(
+                      "text-sm truncate",
+                      module.danger
+                        ? "text-destructive font-medium"
+                        : isEnabled
+                        ? "text-foreground"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    {module.label}
+                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="size-3 shrink-0 text-muted-foreground/40 hover:text-muted-foreground cursor-help transition-colors" />
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="text-xs max-w-[220px]">
+                      {module.tooltip}
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-              }
-            />
-          </div>
-        ))}
-      </div>
+
+                {/* Toggle avec ConfirmDialog */}
+                <ConfirmDialog
+                  title={isEnabled ? `Désactiver ${module.label.toLowerCase()}` : `Activer ${module.label.toLowerCase()}`}
+                  description={impactMap[module.id]?.[isEnabled ? "disable" : "enable"] ?? ""}
+                  confirmLabel={isEnabled ? "Désactiver" : "Activer"}
+                  variant={isEnabled || module.danger ? "destructive" : "default"}
+                  onConfirm={() => handleToggle(module.id, !isEnabled)}
+                  trigger={
+                    <div className="shrink-0 ml-3">
+                      {pending === module.id ? (
+                        <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                      ) : (
+                        <Switch
+                          id={module.id}
+                          checked={isEnabled}
+                          className={cn(
+                            "data-[state=checked]:bg-[var(--vd-gold)]",
+                            module.danger && "data-[state=checked]:bg-destructive"
+                          )}
+                        />
+                      )}
+                    </div>
+                  }
+                />
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

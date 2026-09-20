@@ -8,7 +8,7 @@ import {
   MarkerPopup,
   useMap,
 } from "@/components/ui/map";
-import { Landmark, Toilet, Siren, Bus, LifeBuoy, Navigation, Scan } from "lucide-react";
+import { Landmark, Toilet, Siren, Bus, LifeBuoy, Navigation, Scan, Music2 } from "lucide-react";
 import { useLocale } from "next-intl";
 import { MARKER_CATEGORIES, type POI, type MarkerCategory } from "@/lib/markers";
 import { localize } from "@/lib/i18n/localize";
@@ -30,6 +30,7 @@ const CATEGORY_ICONS: Record<
   transport:  Bus,
   assistance: LifeBuoy,
   pra:        Scan,
+  scene:      Music2,
 };
 
 const KEYFRAMES = `

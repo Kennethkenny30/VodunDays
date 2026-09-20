@@ -30,8 +30,11 @@ import auditRoutes         from "./modules/audit/audit.routes.js";
 import surveyRoutes        from "./modules/survey/survey.routes.js";
 import urgencesRoutes      from "./modules/urgences/urgences.routes.js";
 import platformRoutes      from "./modules/platform/platform.routes.js";
+import platformSettingsRoutes from "./modules/platform-settings/platform-settings.routes.js";
 import onboardingRoutes    from "./modules/onboarding/onboarding.routes.js";
 import pushRoutes          from "./modules/push/push.routes.js";
+import presenceRoutes      from "./modules/presence/presence.routes.js";
+import instadRoutes        from "./modules/instad/instad.routes.js";
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -101,9 +104,15 @@ app.use("/api/notifications",          notificationsRoutes);
 app.use("/api/audit",                  auditRoutes);
 app.use("/api/survey",                 surveyRoutes);
 app.use("/api/urgences",               urgencesRoutes);
+// Montée avant /api/platform (plus spécifique) pour ne pas dépendre du
+// comportement de fallthrough d'Express si platform.routes.js venait à
+// définir sa propre route "/settings" un jour.
+app.use("/api/platform/settings",      platformSettingsRoutes);
 app.use("/api/platform",               platformRoutes);
 app.use("/api/onboarding",             onboardingRoutes);
 app.use("/api/push",                   pushRoutes);
+app.use("/api/presence",               presenceRoutes);
+app.use("/api/instad",                 instadRoutes);
 
 // 404
 app.use((req, res) => {

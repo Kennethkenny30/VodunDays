@@ -47,13 +47,16 @@ import {
   X,
   Wifi,
   WifiOff,
+  Music2,
+  Users2,
 } from "lucide-react"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { toast } from "sonner"
 import { createEvent, updateEvent } from "@/lib/api/events"
 import { createEventType } from "@/lib/api/event-types"
-import { createProgram, deleteProgram, getPrograms } from "@/lib/api/programs"
+import { createProgram, deleteProgram, getPrograms, updateProgram } from "@/lib/api/programs"
+import { getArtists, createArtist, deleteArtist } from "@/lib/api/catalog"
 import {
   type OfflineDraft,
   getOfflineDrafts,
@@ -62,6 +65,8 @@ import {
   updateOfflineDraft,
 } from "@/lib/offline-drafts"
 import type {
+  Artist,
+  ArtistCreatePayload,
   Event,
   EventCreatePayload,
   EventType,
@@ -85,6 +90,9 @@ const STEPS = [
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface SlotDraft { startTime: string; endTime: string }
+interface ArtistDraft { name: string; genre: string; imageUrl: string | null }
+
+const ARTIST_AVATAR_SIZE = 320
 
 export interface EventModalProps {
   open:                 boolean
@@ -622,7 +630,18 @@ export function EventCreateModal({
   const [slotDraft,     setSlotDraft]     = useState<SlotDraft>({ startTime: "", endTime: "" })
   const [addingSlot,    setAddingSlot]    = useState(false)
   const [removingSlot,  setRemovingSlot]  = useState<string | null>(null)
+  const [assigningSlot, setAssigningSlot] = useState<string | null>(null)
   const [publishing,    setPublishing]    = useState(false)
+
+  // ── Artistes (line-up) ───────────────────────────────────────────────────────
+  const [artists,        setArtists]        = useState<Artist[]>([])
+  const [loadingArtists, setLoadingArtists] = useState(false)
+  const [artistDraft,    setArtistDraft]    = useState<ArtistDraft>({ name: "", genre: "", imageUrl: null })
+  const [addingArtist,   setAddingArtist]   = useState(false)
+  const [removingArtist, setRemovingArtist] = useState<string | null>(null)
+  const [artistImageError,   setArtistImageError]   = useState<string | null>(null)
+  const [artistImageLoading, setArtistImageLoading] = useState(false)
+  const artistFileRef = useRef<HTMLInputElement>(null)
 
   // ── Création inline de type d'événement ───────────────────────────────────
   const [showNewType,    setShowNewType]    = useState(false)
@@ -665,6 +684,9 @@ export function EventCreateModal({
     setCropOffset({ x: 0, y: 0 }); cropOffsetRef.current = { x: 0, y: 0 }
     setCropScale(1); cropScaleRef.current = 1
     setSlotDraft({ startTime: "", endTime: "" })
+    setArtistDraft({ name: "", genre: "", imageUrl: null })
+    setArtistImageError(null)
+    setArtistImageLoading(false)
     setPublishing(false)
     setShowNewType(false)
     setNewTypeName("")
@@ -688,12 +710,19 @@ export function EventCreateModal({
         // Brouillon offline - créneaux déjà dans programs, pas d'appel API
         setSlots(editingEvent.programs ?? [])
         setLoadingSlots(false)
+        setArtists([])
+        setLoadingArtists(false)
       } else {
         setSlots([]); setLoadingSlots(true)
         getPrograms(editingEvent.id)
           .then((res) => { if (res.success) setSlots(res.data ?? []) })
           .catch(() => {})
           .finally(() => setLoadingSlots(false))
+        setArtists([]); setLoadingArtists(true)
+        getArtists(editingEvent.id)
+          .then((res) => { if (res.success) setArtists(res.data ?? []) })
+          .catch(() => {})
+          .finally(() => setLoadingArtists(false))
       }
     } else {
       setStep(1)
@@ -702,6 +731,7 @@ export function EventCreateModal({
       setFormData({ status: "DRAFT" })
       setPublicDesc("")
       setSlots([])
+      setArtists([])
     }
   }, [open, isEdit, editingEvent])
 
@@ -1040,6 +1070,102 @@ export function EventCreateModal({
       else toast.error(res.message)
     } catch { toast.error("Erreur réseau") }
     finally { setRemovingSlot(null) }
+  }
+
+  // ── Artistes (line-up) ───────────────────────────────────────────────────────
+  // Contrairement aux créneaux, un artiste ne peut exister sans événement
+  // persisté côté serveur (eventId requis en base) - indisponible en brouillon
+  // hors ligne tant que l'événement n'a pas été synchronisé.
+  const handleAddArtist = async () => {
+    const name = artistDraft.name.trim()
+    if (!activeEventId || !name || !backendSynced) return
+    setAddingArtist(true)
+    try {
+      const res = await createArtist({
+        eventId: activeEventId,
+        name,
+        genre: artistDraft.genre.trim() || undefined,
+        imageUrl: artistDraft.imageUrl || undefined,
+      } as ArtistCreatePayload)
+      if (res.success && res.data) {
+        setArtists((p) => [...p, res.data])
+        setArtistDraft({ name: "", genre: "", imageUrl: null })
+        setArtistImageError(null)
+        toast.success("Artiste ajouté")
+      } else { toast.error(res.message) }
+    } catch { toast.error("Erreur réseau") }
+    finally { setAddingArtist(false) }
+  }
+
+  // Charge une photo d'artiste : pas de recadrage interactif (contrairement à
+  // la couverture d'événement) - centrage automatique en carré, suffisant
+  // pour un avatar de fiche artiste.
+  const handleArtistImageChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setArtistImageError(null)
+    if (!file.type.startsWith("image/")) { setArtistImageError("Format non supporté - JPEG, PNG ou WebP"); return }
+    if (file.size > MAX_FILE_SIZE)        { setArtistImageError("Fichier trop volumineux (max 5 Mo)");      return }
+
+    setArtistImageLoading(true)
+    const objectUrl = URL.createObjectURL(file)
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => {
+          const { naturalWidth: nw, naturalHeight: nh } = img
+          const side = Math.min(nw, nh)
+          const sx = (nw - side) / 2
+          const sy = (nh - side) / 2
+          const canvas = document.createElement("canvas")
+          canvas.width  = ARTIST_AVATAR_SIZE
+          canvas.height = ARTIST_AVATAR_SIZE
+          const ctx = canvas.getContext("2d")
+          if (!ctx) { reject(new Error("Canvas indisponible")); return }
+          ctx.drawImage(img, sx, sy, side, side, 0, 0, ARTIST_AVATAR_SIZE, ARTIST_AVATAR_SIZE)
+          resolve(canvas.toDataURL("image/jpeg", 0.85))
+        }
+        img.onerror = () => reject(new Error("Image load failed"))
+        img.src = objectUrl
+      })
+      setArtistDraft((p) => ({ ...p, imageUrl: dataUrl }))
+    } catch {
+      setArtistImageError("Impossible de traiter cette image")
+    } finally {
+      setArtistImageLoading(false)
+      URL.revokeObjectURL(objectUrl)
+      if (artistFileRef.current) artistFileRef.current.value = ""
+    }
+  }, [])
+
+  const handleRemoveArtist = async (id: string) => {
+    setRemovingArtist(id)
+    try {
+      const res = await deleteArtist(id)
+      if (res.success) {
+        setArtists((p) => p.filter((a) => a.id !== id))
+        // Retire aussi l'artiste des créneaux affichés localement
+        setSlots((p) => p.map((s) => ({ ...s, artists: s.artists?.filter((a) => a.id !== id) })))
+      } else { toast.error(res.message) }
+    } catch { toast.error("Erreur réseau") }
+    finally { setRemovingArtist(null) }
+  }
+
+  // Bascule un artiste sur un créneau (b2b/collectif : plusieurs possibles)
+  const handleToggleSlotArtist = async (slot: Program, artistId: string) => {
+    const current = slot.artists?.map((a) => a.id) ?? []
+    const nextIds = current.includes(artistId)
+      ? current.filter((id) => id !== artistId)
+      : [...current, artistId]
+
+    setAssigningSlot(slot.id)
+    try {
+      const res = await updateProgram(slot.id, { artistIds: nextIds })
+      if (res.success) {
+        setSlots((p) => p.map((s) => (s.id === slot.id ? res.data : s)))
+      } else { toast.error(res.message) }
+    } catch { toast.error("Erreur réseau") }
+    finally { setAssigningSlot(null) }
   }
 
   const handleFinish = async (publish: boolean) => {
@@ -1547,6 +1673,138 @@ export function EventCreateModal({
                   />
                 </FormField>
 
+                {/* ── Artistes (line-up) ─────────────────────────────── */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-1.5">
+                    <Label className="text-[13px] font-medium text-foreground/80 flex items-center gap-2">
+                      <Music2 className="size-4 text-[var(--vd-gold)]" />
+                      Artistes
+                    </Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="size-3.5 text-muted-foreground/40 hover:text-muted-foreground/70 cursor-help transition-colors" />
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="text-xs max-w-[240px]">
+                        Ajoutez les artistes de cet événement, puis assignez-les à un ou plusieurs créneaux ci-dessous.
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+
+                  {!backendSynced ? (
+                    <p className="text-[12px] text-muted-foreground/50 rounded-xl border border-white/[0.08] bg-white/[0.025] p-3">
+                      Les artistes pourront être ajoutés une fois l&apos;événement synchronisé avec le serveur.
+                    </p>
+                  ) : (
+                    <>
+                      {/* Formulaire ajout artiste */}
+                      <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] p-4 space-y-3">
+                        <div className="flex gap-3">
+                          <button
+                            type="button"
+                            onClick={() => artistFileRef.current?.click()}
+                            disabled={artistImageLoading}
+                            className="relative shrink-0 size-16 rounded-full overflow-hidden border border-white/10 bg-white/[0.04] flex items-center justify-center group hover:border-[var(--vd-gold)]/40 transition-all"
+                          >
+                            {artistImageLoading ? (
+                              <Loader2 className="size-5 animate-spin text-muted-foreground/50" />
+                            ) : artistDraft.imageUrl ? (
+                              <img src={artistDraft.imageUrl} alt="Aperçu" className="absolute inset-0 w-full h-full object-cover" />
+                            ) : (
+                              <ImagePlus className="size-5 text-muted-foreground/40 group-hover:text-[var(--vd-gold)] transition-colors" />
+                            )}
+                          </button>
+                          <input
+                            ref={artistFileRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            className="hidden"
+                            onChange={handleArtistImageChange}
+                          />
+                          <div className="grid grid-cols-2 gap-3 flex-1">
+                            <div className="space-y-1.5">
+                              <Label className="text-[11px] text-muted-foreground/60 font-medium uppercase tracking-wide">Nom</Label>
+                              <Input
+                                value={artistDraft.name}
+                                onChange={(e) => setArtistDraft((p) => ({ ...p, name: e.target.value }))}
+                                placeholder="Nom de l'artiste…"
+                                className="h-9 text-[13px] bg-white/[0.04] border-white/[0.1] rounded-lg"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-[11px] text-muted-foreground/60 font-medium uppercase tracking-wide">Genre musical</Label>
+                              <Input
+                                value={artistDraft.genre}
+                                onChange={(e) => setArtistDraft((p) => ({ ...p, genre: e.target.value }))}
+                                placeholder="Afrobeat, Zouglou…"
+                                className="h-9 text-[13px] bg-white/[0.04] border-white/[0.1] rounded-lg"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        {artistImageError && (
+                          <p className="flex items-center gap-1.5 text-[11px] text-red-400">
+                            <AlertCircle className="size-3 shrink-0" /> {artistImageError}
+                          </p>
+                        )}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleAddArtist}
+                          disabled={addingArtist || !artistDraft.name.trim()}
+                          className="w-full h-9 border-[var(--vd-gold)]/25 text-[var(--vd-gold)] hover:bg-[var(--vd-gold)]/8 hover:border-[var(--vd-gold)]/40 hover:text-[var(--vd-gold)] rounded-lg text-[12px] font-medium transition-all"
+                        >
+                          {addingArtist
+                            ? <><Loader2 className="mr-2 size-3.5 animate-spin" />Ajout…</>
+                            : <><Plus className="mr-2 size-3.5" />Ajouter cet artiste</>}
+                        </Button>
+                      </div>
+
+                      {/* Liste des artistes */}
+                      {loadingArtists ? (
+                        <div className="space-y-2">
+                          {[1, 2].map(i => (
+                            <div key={i} className="h-10 rounded-lg bg-white/[0.04] animate-pulse" />
+                          ))}
+                        </div>
+                      ) : artists.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {artists.map((artist) => (
+                            <div
+                              key={artist.id}
+                              className="flex items-center gap-2 pl-1.5 pr-1.5 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] group hover:border-white/15 transition-all"
+                            >
+                              {artist.imageUrl ? (
+                                <img src={artist.imageUrl} alt="" className="size-5 rounded-full object-cover shrink-0" />
+                              ) : (
+                                <span className="size-5 rounded-full bg-white/[0.06] flex items-center justify-center shrink-0">
+                                  <Users2 className="size-3 text-muted-foreground/50" />
+                                </span>
+                              )}
+                              <span className="text-[12px] text-foreground/80">{artist.name}</span>
+                              {artist.genre && (
+                                <span className="text-[10px] text-muted-foreground/40">· {artist.genre}</span>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveArtist(artist.id)}
+                                disabled={removingArtist === artist.id}
+                                className="size-5 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-40"
+                              >
+                                {removingArtist === artist.id
+                                  ? <Loader2 className="size-3 animate-spin" />
+                                  : <X className="size-3" />}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[12px] text-muted-foreground/40 py-1">Aucun artiste ajouté pour le moment</p>
+                      )}
+                    </>
+                  )}
+                </div>
+
                 {/* ── Créneaux horaires ─────────────────────────────── */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-1.5">
@@ -1626,24 +1884,76 @@ export function EventCreateModal({
                       {slots.map((slot, idx) => (
                         <div
                           key={slot.id}
-                          className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] group hover:border-white/10 transition-all"
+                          className="rounded-xl bg-white/[0.04] border border-white/[0.06] group hover:border-white/10 transition-all"
                         >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <span className="size-5 rounded-md bg-[var(--vd-gold)]/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-[var(--vd-gold)]">
-                              {idx + 1}
-                            </span>
-                            <span className="text-[12px] text-foreground/70 truncate">{formatSlot(slot.startTime, slot.endTime)}</span>
+                          <div className="flex items-center justify-between px-3.5 py-2.5">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span className="size-5 rounded-md bg-[var(--vd-gold)]/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-[var(--vd-gold)]">
+                                {idx + 1}
+                              </span>
+                              <span className="text-[12px] text-foreground/70 truncate">{formatSlot(slot.startTime, slot.endTime)}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSlot(slot.id)}
+                              disabled={removingSlot === slot.id}
+                              className="ml-2 shrink-0 size-7 rounded-lg flex items-center justify-center text-muted-foreground/30 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+                            >
+                              {removingSlot === slot.id
+                                ? <Loader2 className="size-3.5 animate-spin" />
+                                : <Trash2 className="size-3.5" />}
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveSlot(slot.id)}
-                            disabled={removingSlot === slot.id}
-                            className="ml-2 shrink-0 size-7 rounded-lg flex items-center justify-center text-muted-foreground/30 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
-                          >
-                            {removingSlot === slot.id
-                              ? <Loader2 className="size-3.5 animate-spin" />
-                              : <Trash2 className="size-3.5" />}
-                          </button>
+
+                          {/* Assignation des artistes à ce créneau (plusieurs possibles) */}
+                          {backendSynced && artists.length > 0 && (
+                            <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-2.5">
+                              {slot.artists?.map((a) => (
+                                <span key={a.id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--vd-gold)]/10 border border-[var(--vd-gold)]/25 text-[10px] text-[var(--vd-gold)]">
+                                  <Music2 className="size-2.5" />
+                                  {a.name}
+                                </span>
+                              ))}
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <button
+                                    type="button"
+                                    disabled={assigningSlot === slot.id}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-white/10 text-[10px] text-muted-foreground/60 hover:text-foreground hover:border-white/20 transition-all"
+                                  >
+                                    {assigningSlot === slot.id
+                                      ? <Loader2 className="size-2.5 animate-spin" />
+                                      : <Plus className="size-2.5" />}
+                                    Artiste{(slot.artists?.length ?? 0) > 0 ? "s" : ""}
+                                  </button>
+                                </PopoverTrigger>
+                                <PopoverContent align="start" className="w-56 p-2 bg-[#141418] border-white/10">
+                                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground/50 px-1.5 pb-1.5">Assigner à ce créneau</p>
+                                  <div className="space-y-0.5 max-h-48 overflow-y-auto">
+                                    {artists.map((a) => {
+                                      const checked = slot.artists?.some((sa) => sa.id === a.id) ?? false
+                                      return (
+                                        <button
+                                          key={a.id}
+                                          type="button"
+                                          onClick={() => handleToggleSlotArtist(slot, a.id)}
+                                          className="w-full flex items-center gap-2 px-1.5 py-1.5 rounded-md text-[12px] text-foreground/80 hover:bg-white/[0.06] transition-colors"
+                                        >
+                                          <span className={cn(
+                                            "size-3.5 rounded border flex items-center justify-center shrink-0",
+                                            checked ? "bg-[var(--vd-gold)] border-[var(--vd-gold)]" : "border-white/20"
+                                          )}>
+                                            {checked && <CheckCircle2 className="size-3 text-black" />}
+                                          </span>
+                                          <span className="truncate">{a.name}</span>
+                                        </button>
+                                      )
+                                    })}
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                          )}
                         </div>
                       ))}
                       <p className="text-[10px] text-muted-foreground/40 text-center pt-0.5">

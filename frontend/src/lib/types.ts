@@ -65,7 +65,7 @@ export interface Program {
   type: ProgramType;
   startTime: string;
   endTime: string;
-  artists?: unknown;
+  artists?: { id: string; name: string; imageUrl?: string | null; genre?: string | null }[];
   capacity?: number;
   published?: boolean;
   createdAt?: Date;

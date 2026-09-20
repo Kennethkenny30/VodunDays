@@ -1,4 +1,5 @@
 import prisma from "../../prisma/prisma.client.js";
+import * as presenceService from "../presence/presence.service.js";
 
 const SERVER_START = Date.now();
 
@@ -25,6 +26,7 @@ export const getStats = async () => {
     alertsLast24h,
     recentLogins,
     auditLast24h,
+    onlinePresence,
   ] = await Promise.all([
     prisma.users.count(),
     prisma.users.count({ where: { active: true } }),
@@ -41,7 +43,26 @@ export const getStats = async () => {
     prisma.alerts.count({ where: { createdAt: { gte: since24h } } }),
     prisma.users.count({ where: { lastLoging: { gte: since24h } } }),
     prisma.auditLogs.count({ where: { createdAt: { gte: since24h } } }),
+    presenceService.getOnlineNow(),
   ]);
+
+  // Répartition par site, enrichie avec le nom et la catégorie (pour l'affichage)
+  const presenceSiteIds = Object.keys(onlinePresence.bySite);
+  const presenceSites = presenceSiteIds.length > 0
+    ? await prisma.sites.findMany({
+        where:  { id: { in: presenceSiteIds } },
+        select: { id: true, name: true, category: true },
+      })
+    : [];
+  const presenceSiteById = new Map(presenceSites.map((s) => [s.id, s]));
+  const presenceBySite = presenceSiteIds
+    .map((id) => ({
+      siteId:   id,
+      name:     presenceSiteById.get(id)?.name     ?? "Site inconnu",
+      category: presenceSiteById.get(id)?.category ?? null,
+      count:    onlinePresence.bySite[id],
+    }))
+    .sort((a, b) => b.count - a.count);
 
   // Uptime serveur
   const uptimeMs = Date.now() - SERVER_START;
@@ -69,6 +90,12 @@ export const getStats = async () => {
       totalAlerts,
       alertsLast24h,
       auditLast24h,
+    },
+    presence: {
+      windowMinutes: onlinePresence.windowMinutes,
+      onlineNow:     onlinePresence.total,
+      unassigned:    onlinePresence.unassigned,
+      bySite:        presenceBySite,
     },
   };
 };

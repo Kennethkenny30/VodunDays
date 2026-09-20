@@ -41,6 +41,7 @@ const CATEGORY_COLORS: Record<MarkerCategory, string> = {
   TRANSPORT:  "#FFbb00",
   ASSISTANCE: "#AA44FF",
   PRA:        "#00E5CC",
+  SCENE:      "#E91E8C",
 }
 
 // ─── Keyframes ─────────────────────────────────────────────────────────────────

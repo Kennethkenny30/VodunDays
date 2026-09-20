@@ -187,8 +187,16 @@ exports.Prisma.ArtistsScalarFieldEnum = {
   id: 'id',
   name: 'name',
   eventId: 'eventId',
+  bio: 'bio',
+  imageUrl: 'imageUrl',
+  genre: 'genre',
+  instagramUrl: 'instagramUrl',
+  spotifyUrl: 'spotifyUrl',
+  websiteUrl: 'websiteUrl',
+  order: 'order',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  bioEn: 'bioEn'
 };
 
 exports.Prisma.QuizScalarFieldEnum = {
@@ -269,6 +277,15 @@ exports.Prisma.FestivaliersScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PresenceLogScalarFieldEnum = {
+  id: 'id',
+  uuid: 'uuid',
+  siteId: 'siteId',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.PushSubscriptionsScalarFieldEnum = {
   id: 'id',
   uuid: 'uuid',
@@ -332,6 +349,15 @@ exports.Prisma.AlertTimelineScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.PlatformSettingsScalarFieldEnum = {
+  key: 'key',
+  enabled: 'enabled',
+  updatedById: 'updatedById',
+  updatedByName: 'updatedByName',
+  updatedAt: 'updatedAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.AuditLogsScalarFieldEnum = {
   id: 'id',
   action: 'action',
@@ -375,7 +401,8 @@ exports.MarkerCategory = exports.$Enums.MarkerCategory = {
   URGENCES: 'URGENCES',
   TRANSPORT: 'TRANSPORT',
   ASSISTANCE: 'ASSISTANCE',
-  PRA: 'PRA'
+  PRA: 'PRA',
+  SCENE: 'SCENE'
 };
 
 exports.QuestionKind = exports.$Enums.QuestionKind = {
@@ -422,11 +449,13 @@ exports.Prisma.ModelName = {
   Choices: 'Choices',
   Answers: 'Answers',
   Festivaliers: 'Festivaliers',
+  PresenceLog: 'PresenceLog',
   PushSubscriptions: 'PushSubscriptions',
   Users: 'Users',
   Notifications: 'Notifications',
   Alerts: 'Alerts',
   AlertTimeline: 'AlertTimeline',
+  PlatformSettings: 'PlatformSettings',
   AuditLogs: 'AuditLogs'
 };
 

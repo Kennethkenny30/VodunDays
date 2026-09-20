@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { cn } from "@/lib/utils"
 import { StatusPulse } from "@/components/dashboard/status-pulse"
 import { Switch } from "@/components/ui/switch"
@@ -20,8 +20,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Bug, Wrench, Navigation, BellOff, Info } from "lucide-react"
+import { Bug, Wrench, Navigation, BellOff, Info, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { getPlatformSettings, updatePlatformSetting } from "@/lib/api/platform"
 
 interface IncidentCardProps {
   id: string
@@ -31,6 +32,7 @@ interface IncidentCardProps {
   tooltip: string
   impact: string
   enabled: boolean
+  pending: boolean
   onToggle: (enabled: boolean) => void
 }
 
@@ -42,6 +44,7 @@ function IncidentCard({
   tooltip,
   impact,
   enabled,
+  pending,
   onToggle,
 }: IncidentCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -71,9 +74,6 @@ function IncidentCard({
   const handleConfirm = () => {
     onToggle(!enabled)
     setDialogOpen(false)
-    toast.success(enabled ? `${title} désactivé` : `${title} activé`, {
-      duration: enabled ? 3000 : Infinity,
-    })
   }
 
   return (
@@ -141,12 +141,16 @@ function IncidentCard({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="shrink-0">
-                <Switch
-                  id={id}
-                  checked={enabled}
-                  onCheckedChange={() => setDialogOpen(true)}
-                  className="data-[state=checked]:bg-red-500"
-                />
+                {pending ? (
+                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                ) : (
+                  <Switch
+                    id={id}
+                    checked={enabled}
+                    onCheckedChange={() => setDialogOpen(true)}
+                    className="data-[state=checked]:bg-red-500"
+                  />
+                )}
               </div>
             </TooltipTrigger>
             <TooltipContent side="right" className="text-xs">
@@ -192,19 +196,76 @@ interface IncidentCenterProps {
   className?: string
 }
 
+const INCIDENT_META = [
+  {
+    id: "degradedMode",
+    icon: Wrench,
+    title: "Mode dégradé",
+    description: "App statique, sans WebSocket ni temps réel",
+    tooltip: "Bascule l'application en mode statique - désactive les connexions temps réel",
+    impact: "L'application passe en mode statique. Les WebSockets, le GPS et les notifications en temps réel sont coupés.",
+  },
+  {
+    id: "gpsTracking",
+    icon: Navigation,
+    title: "Couper le tracking",
+    description: "Désactive la géolocalisation pour tous les festivaliers",
+    tooltip: "Coupe immédiatement la géolocalisation de tous les utilisateurs actifs",
+    impact: "La géolocalisation est désactivée pour tous les festivaliers connectés. La carte en temps réel ne sera plus mise à jour.",
+  },
+  {
+    id: "pushNotifications",
+    icon: BellOff,
+    title: "Suspendre les push",
+    description: "Stoppe toutes les notifications sortantes",
+    tooltip: "Bloque l'envoi de toutes les notifications push - aucun message ne sera envoyé",
+    impact: "Toutes les notifications push sont suspendues. Les messages en file d'attente ne seront pas délivrés.",
+  },
+] as const
+
 export function IncidentCenter({ className }: IncidentCenterProps) {
-  const [incidents, setIncidents] = useState({
-    degradedMode: false,
-    gpsTracking: false,
-    pushNotifications: false,
-  })
+  const [loading,   setLoading]   = useState(true)
+  const [incidents, setIncidents] = useState<Record<string, boolean>>({})
+  const [pending,   setPending]   = useState<string | null>(null)
+
+  const fetchSettings = useCallback(async () => {
+    try {
+      const res = await getPlatformSettings()
+      if (res.success) {
+        const incidentsOnly = res.data.filter((s) => s.family === "incidents")
+        setIncidents(Object.fromEntries(incidentsOnly.map((s) => [s.key, s.enabled])))
+      }
+    } catch {
+      toast.error("Impossible de charger l'état des mesures d'urgence")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchSettings() }, [fetchSettings])
 
   const hasActiveIncident = Object.values(incidents).some(Boolean)
   const activeCount = Object.values(incidents).filter(Boolean).length
   const status = hasActiveIncident ? "incident" : "online"
 
-  const handleToggle = (key: keyof typeof incidents) => (enabled: boolean) => {
-    setIncidents((prev) => ({ ...prev, [key]: enabled }))
+  const handleToggle = (key: string) => async (enabled: boolean) => {
+    const meta = INCIDENT_META.find((m) => m.id === key)
+    setPending(key)
+    try {
+      const res = await updatePlatformSetting(key, enabled)
+      if (res.success) {
+        setIncidents((prev) => ({ ...prev, [key]: enabled }))
+        toast.success(`${meta?.title ?? key} ${enabled ? "activé" : "désactivé"}`, {
+          duration: enabled ? Infinity : 3000,
+        })
+      } else {
+        toast.error(res.message || "Échec de la bascule - aucun changement appliqué")
+      }
+    } catch {
+      toast.error("Erreur réseau - la mesure d'urgence n'a pas été appliquée")
+    } finally {
+      setPending(null)
+    }
   }
 
   return (
@@ -263,38 +324,29 @@ export function IncidentCenter({ className }: IncidentCenterProps) {
       </div>
 
       {/* Cards incidents */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <IncidentCard
-          id="degraded-mode"
-          icon={Wrench}
-          title="Mode dégradé"
-          description="App statique, sans WebSocket ni temps réel"
-          tooltip="Bascule l'application en mode statique - désactive les connexions temps réel"
-          impact="L'application passe en mode statique. Les WebSockets, le GPS et les notifications en temps réel sont coupés."
-          enabled={incidents.degradedMode}
-          onToggle={handleToggle("degradedMode")}
-        />
-        <IncidentCard
-          id="gps-tracking"
-          icon={Navigation}
-          title="Couper le tracking"
-          description="Désactive la géolocalisation pour tous les festivaliers"
-          tooltip="Coupe immédiatement la géolocalisation de tous les utilisateurs actifs"
-          impact="La géolocalisation est désactivée pour tous les festivaliers connectés. La carte en temps réel ne sera plus mise à jour."
-          enabled={incidents.gpsTracking}
-          onToggle={handleToggle("gpsTracking")}
-        />
-        <IncidentCard
-          id="push-notifications"
-          icon={BellOff}
-          title="Suspendre les push"
-          description="Stoppe toutes les notifications sortantes"
-          tooltip="Bloque l'envoi de toutes les notifications push - aucun message ne sera envoyé"
-          impact="Toutes les notifications push sont suspendues. Les messages en file d'attente ne seront pas délivrés."
-          enabled={incidents.pushNotifications}
-          onToggle={handleToggle("pushNotifications")}
-        />
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-8 text-muted-foreground gap-2">
+          <Loader2 className="size-4 animate-spin" />
+          <span className="text-xs">Chargement...</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {INCIDENT_META.map((meta) => (
+            <IncidentCard
+              key={meta.id}
+              id={meta.id}
+              icon={meta.icon}
+              title={meta.title}
+              description={meta.description}
+              tooltip={meta.tooltip}
+              impact={meta.impact}
+              enabled={incidents[meta.id] ?? false}
+              pending={pending === meta.id}
+              onToggle={handleToggle(meta.id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

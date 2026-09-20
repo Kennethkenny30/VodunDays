@@ -209,7 +209,8 @@
       "urgences": "Urgences",
       "transport": "Transport",
       "assistance": "Assistance",
-      "ar": "AR"
+      "ar": "AR",
+      "scene": "Scène"
     },
     "itinerary": {
       "title": "Définir l'itinéraire",

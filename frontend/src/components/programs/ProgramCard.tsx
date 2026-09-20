@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, CalendarPlus, CalendarCheck, AlertTriangle } from "lucide-react";
+import { MapPin, CalendarPlus, CalendarCheck, AlertTriangle, Music2 } from "lucide-react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import type { Program, ProgramType } from "@/lib/types";
@@ -203,6 +203,13 @@ export function ProgramCard({ program, index = 0, highlighted = false }: Program
           <MapPin className="w-3.5 h-3.5" />
           {localize(program, "location", locale)}
         </p>
+
+        {program.artists && program.artists.length > 0 && (
+          <p className="flex items-center gap-1.5 text-[12px] text-[#F56E0F] mb-3 font-semibold truncate">
+            <Music2 className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">{program.artists.map((a) => a.name).join(", ")}</span>
+          </p>
+        )}
 
         <div className="flex gap-2">
           {/* Bouton "Voir sur la carte" */}

@@ -18,6 +18,7 @@ enum MarkerCategory {
   TRANSPORT
   ASSISTANCE
   PRA
+  SCENE
 }
 
 enum QuestionKind {
@@ -50,21 +51,21 @@ enum FestivalEdition {
 }
 
 model Sites {
-  id          String          @id @default(uuid())
+  id          String         @id @default(uuid())
   name        String
   description String?
   latitude    Float
   longitude   Float
-  type        String          // sous-type libre : "Scène", "Navette", "PRA-Plage"...
-  category    MarkerCategory  @default(SITE)
-  capacity    Int             @default(0)
+  type        String // sous-type libre : "Scène", "Navette", "PRA-Plage"...
+  category    MarkerCategory @default(SITE)
+  capacity    Int            @default(0)
 
-  arLabel     String?         // texte affiché en AR
-  arContent   String?         // URL vidéo/image ou contenu JSON AR
-  arRadius    Float?          // rayon de détection en mètres
-  zoneGeo     Unsupported("geometry")?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  arLabel   String? // texte affiché en AR
+  arContent String? // URL vidéo/image ou contenu JSON AR
+  arRadius  Float? // rayon de détection en mètres
+  zoneGeo   Unsupported("geometry")?
+  createdAt DateTime                 @default(now())
+  updatedAt DateTime                 @updatedAt
 
   // Champs i18n EN - repli sur FR si null
   nameEn        String?
@@ -73,11 +74,12 @@ model Sites {
   arLabelEn     String?
   arContentEn   String?
 
-  alerts      Alerts[]
-  amenities   Amenities[]
-  events      Events[]
+  alerts       Alerts[]
+  amenities    Amenities[]
+  events       Events[]
+  presenceLogs PresenceLog[]
 
-  @@index([category])         // filtrage map rapide
+  @@index([category]) // filtrage map rapide
 }
 
 model Amenities {
@@ -121,22 +123,38 @@ model Events {
 }
 
 model Programs {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   startTime DateTime
   endTime   DateTime
   eventId   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  event     Events   @relation(fields: [eventId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  event     Events    @relation(fields: [eventId], references: [id])
+  // Artistes programmés sur ce créneau - plusieurs possibles (b2b, collectif)
+  artists   Artists[]
 }
 
 model Artists {
-  id        String   @id @default(uuid())
-  name      String
-  eventId   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  event     Events   @relation(fields: [eventId], references: [id])
+  id           String     @id @default(uuid())
+  name         String
+  eventId      String
+  bio          String?
+  // Image encodée en base64 (même convention que Events.imageUrl) - pas une
+  // URL de stockage externe, cf. utils de recadrage côté frontend.
+  imageUrl     String?
+  genre        String?
+  instagramUrl String?
+  spotifyUrl   String?
+  websiteUrl   String?
+  // Ordre d'affichage / billing (tête d'affiche = plus petit nombre)
+  order        Int?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  // Champs i18n EN
+  bioEn        String?
+  event        Events     @relation(fields: [eventId], references: [id])
+  // Créneaux sur lesquels cet artiste est programmé
+  programs     Programs[]
 }
 
 model Quiz {
@@ -157,11 +175,11 @@ model Quiz {
 }
 
 model QuestionsTypes {
-  id        String        @id @default(uuid())
-  types     String        @unique
-  kind      QuestionKind  @default(TEXT)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id        String       @id @default(uuid())
+  types     String       @unique
+  kind      QuestionKind @default(TEXT)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
   questions Questions[]
 }
 
@@ -243,6 +261,26 @@ model Festivaliers {
   @@index([createdAt])
 }
 
+// Historique de présence des festivaliers (ping GPS périodique, cf. Phase 2
+// statistiques). uuid en texte libre (pas de FK vers Festivaliers) car un
+// ping peut arriver avant que l'onboarding ne soit complété.
+// siteId : site détecté (zoneGeo en priorité, arRadius en repli) - null si
+// le festivalier n'est dans le périmètre d'aucun site connu.
+model PresenceLog {
+  id        String   @id @default(uuid())
+  uuid      String
+  siteId    String?
+  latitude  Float
+  longitude Float
+  createdAt DateTime @default(now())
+
+  site Sites? @relation(fields: [siteId], references: [id])
+
+  @@index([uuid, createdAt])
+  @@index([createdAt])
+  @@index([siteId])
+}
+
 // Abonnement push navigateur (Web Push API), un festivalier peut avoir
 // plusieurs abonnements actifs (plusieurs appareils/navigateurs).
 model PushSubscriptions {
@@ -258,19 +296,20 @@ model PushSubscriptions {
 }
 
 model Users {
-  id             String          @id @default(uuid())
-  email          String          @unique
-  password       String
-  role           String
-  active         Boolean         @default(true)
-  firstname      String
-  lastname       String
-  phone          String?
-  lastLoging     DateTime?
-  createdBy      String?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  alertTimelines AlertTimeline[]
+  id                     String             @id @default(uuid())
+  email                  String             @unique
+  password               String
+  role                   String
+  active                 Boolean            @default(true)
+  firstname              String
+  lastname               String
+  phone                  String?
+  lastLoging             DateTime?
+  createdBy              String?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  alertTimelines         AlertTimeline[]
+  platformSettingChanges PlatformSettings[]
 }
 
 model Notifications {
@@ -323,6 +362,24 @@ model AlertTimeline {
   user      Users?   @relation(fields: [userId], references: [id], onUpdate: NoAction)
 
   @@index([alertId], map: "idx_timeline_alert")
+}
+
+// Interrupteurs de plateforme pilotés depuis le dashboard super admin.
+// Une ligne par clé fonctionnelle, deux familles distinguées côté service
+// (voir platform-settings.service.js) :
+// - modules   : fonctionnalités activables (ModulesCard)   ex: "map", "maintenance"
+// - incidents : mesures d'urgence (IncidentCenter)          ex: "degradedMode"
+// La liste des clés valides est fixée côté code (SETTING_KEYS), pas en base -
+// permet d'ajouter/retirer un interrupteur sans migration.
+model PlatformSettings {
+  key           String   @id
+  enabled       Boolean  @default(false)
+  updatedById   String?
+  updatedByName String?
+  updatedAt     DateTime @updatedAt
+  createdAt     DateTime @default(now())
+
+  updatedBy Users? @relation(fields: [updatedById], references: [id], onDelete: SetNull, onUpdate: NoAction)
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.

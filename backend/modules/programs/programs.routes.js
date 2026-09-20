@@ -11,12 +11,15 @@ const createSchema = Joi.object({
   startTime: Joi.date().iso().required(),
   endTime: Joi.date().iso().min(Joi.ref("startTime")).required(),
   eventId: Joi.string().uuid().required(),
+  // Artistes programmés sur ce créneau (b2b/collectif possible)
+  artistIds: Joi.array().items(Joi.string().uuid()).optional(),
 });
 
 const updateSchema = Joi.object({
   startTime: Joi.date().iso().optional(),
   endTime: Joi.date().iso().optional(),
   eventId: Joi.string().uuid().optional(),
+  artistIds: Joi.array().items(Joi.string().uuid()).optional(),
 });
 
 // Lecture publique

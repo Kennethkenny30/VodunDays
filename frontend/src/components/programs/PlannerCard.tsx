@@ -8,6 +8,10 @@ import { cn } from "@/lib/utils";
 import { usePlanner } from "@/providers/FestivalPlannerProvider";
 import type { AgendaItem } from "@/providers/FestivalPlannerProvider";
 
+// Nombre total de jours du festival. A synchroniser avec /lib/festival
+// si ce nombre change a nouveau - voir remarque dans la reponse.
+const FESTIVAL_TOTAL_DAYS = 7;
+
 function getNextEvent(agenda: AgendaItem[]): AgendaItem | null {
   if (!agenda.length) return null;
   const now = new Date();
@@ -16,9 +20,10 @@ function getNextEvent(agenda: AgendaItem[]): AgendaItem | null {
 }
 
 function DayDots({ agendaByDay }: { agendaByDay: Record<number, AgendaItem[]> }) {
+  const days = Array.from({ length: FESTIVAL_TOTAL_DAYS }, (_, i) => i + 1);
   return (
     <div className="flex items-center gap-1.5">
-      {[1, 2, 3].map((day) => {
+      {days.map((day) => {
         const count = agendaByDay[day]?.length ?? 0;
         return (
           <div key={day} className="flex flex-col items-center gap-0.5">

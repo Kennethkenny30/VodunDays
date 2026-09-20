@@ -1,6 +1,6 @@
 "use client";
 
-import { Landmark, Toilet, Siren, Bus, LifeBuoy, Scan, LayoutGrid } from "lucide-react";
+import { Landmark, Toilet, Siren, Bus, LifeBuoy, Scan, Music2, LayoutGrid } from "lucide-react";
 import type React from "react";
 import { useTranslations } from "next-intl";
 
@@ -12,6 +12,7 @@ const FILTER_CONFIG = [
   { value: "transport",  key: "transport",  color: "#FFbb00", Icon: Bus        },
   { value: "assistance", key: "assistance", color: "#AA44FF", Icon: LifeBuoy   },
   { value: "pra",        key: "ar",         color: "#00E5CC", Icon: Scan       },
+  { value: "scene",      key: "scene",      color: "#E91E8C", Icon: Music2     },
 ] as const;
 
 // Helpers

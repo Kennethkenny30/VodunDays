@@ -84,6 +84,11 @@ export type Answers = $Result.DefaultSelection<Prisma.$AnswersPayload>
  */
 export type Festivaliers = $Result.DefaultSelection<Prisma.$FestivaliersPayload>
 /**
+ * Model PresenceLog
+ * 
+ */
+export type PresenceLog = $Result.DefaultSelection<Prisma.$PresenceLogPayload>
+/**
  * Model PushSubscriptions
  * 
  */
@@ -109,6 +114,11 @@ export type Alerts = $Result.DefaultSelection<Prisma.$AlertsPayload>
  */
 export type AlertTimeline = $Result.DefaultSelection<Prisma.$AlertTimelinePayload>
 /**
+ * Model PlatformSettings
+ * 
+ */
+export type PlatformSettings = $Result.DefaultSelection<Prisma.$PlatformSettingsPayload>
+/**
  * Model AuditLogs
  * This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
  */
@@ -124,7 +134,8 @@ export namespace $Enums {
   URGENCES: 'URGENCES',
   TRANSPORT: 'TRANSPORT',
   ASSISTANCE: 'ASSISTANCE',
-  PRA: 'PRA'
+  PRA: 'PRA',
+  SCENE: 'SCENE'
 };
 
 export type MarkerCategory = (typeof MarkerCategory)[keyof typeof MarkerCategory]
@@ -451,6 +462,16 @@ export class PrismaClient<
   get festivaliers(): Prisma.FestivaliersDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.presenceLog`: Exposes CRUD operations for the **PresenceLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PresenceLogs
+    * const presenceLogs = await prisma.presenceLog.findMany()
+    * ```
+    */
+  get presenceLog(): Prisma.PresenceLogDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.pushSubscriptions`: Exposes CRUD operations for the **PushSubscriptions** model.
     * Example usage:
     * ```ts
@@ -499,6 +520,16 @@ export class PrismaClient<
     * ```
     */
   get alertTimeline(): Prisma.AlertTimelineDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.platformSettings`: Exposes CRUD operations for the **PlatformSettings** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PlatformSettings
+    * const platformSettings = await prisma.platformSettings.findMany()
+    * ```
+    */
+  get platformSettings(): Prisma.PlatformSettingsDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.auditLogs`: Exposes CRUD operations for the **AuditLogs** model.
@@ -964,11 +995,13 @@ export namespace Prisma {
     Choices: 'Choices',
     Answers: 'Answers',
     Festivaliers: 'Festivaliers',
+    PresenceLog: 'PresenceLog',
     PushSubscriptions: 'PushSubscriptions',
     Users: 'Users',
     Notifications: 'Notifications',
     Alerts: 'Alerts',
     AlertTimeline: 'AlertTimeline',
+    PlatformSettings: 'PlatformSettings',
     AuditLogs: 'AuditLogs'
   };
 
@@ -988,7 +1021,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "sites" | "amenities" | "eventsTypes" | "events" | "programs" | "artists" | "quiz" | "questionsTypes" | "questions" | "impressions" | "questions_impressions" | "choices" | "answers" | "festivaliers" | "pushSubscriptions" | "users" | "notifications" | "alerts" | "alertTimeline" | "auditLogs"
+      modelProps: "sites" | "amenities" | "eventsTypes" | "events" | "programs" | "artists" | "quiz" | "questionsTypes" | "questions" | "impressions" | "questions_impressions" | "choices" | "answers" | "festivaliers" | "presenceLog" | "pushSubscriptions" | "users" | "notifications" | "alerts" | "alertTimeline" | "platformSettings" | "auditLogs"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2028,6 +2061,80 @@ export namespace Prisma {
           }
         }
       }
+      PresenceLog: {
+        payload: Prisma.$PresenceLogPayload<ExtArgs>
+        fields: Prisma.PresenceLogFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PresenceLogFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PresenceLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PresenceLogFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PresenceLogPayload>
+          }
+          findFirst: {
+            args: Prisma.PresenceLogFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PresenceLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PresenceLogFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PresenceLogPayload>
+          }
+          findMany: {
+            args: Prisma.PresenceLogFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PresenceLogPayload>[]
+          }
+          create: {
+            args: Prisma.PresenceLogCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PresenceLogPayload>
+          }
+          createMany: {
+            args: Prisma.PresenceLogCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PresenceLogCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PresenceLogPayload>[]
+          }
+          delete: {
+            args: Prisma.PresenceLogDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PresenceLogPayload>
+          }
+          update: {
+            args: Prisma.PresenceLogUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PresenceLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.PresenceLogDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PresenceLogUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PresenceLogUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PresenceLogPayload>[]
+          }
+          upsert: {
+            args: Prisma.PresenceLogUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PresenceLogPayload>
+          }
+          aggregate: {
+            args: Prisma.PresenceLogAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePresenceLog>
+          }
+          groupBy: {
+            args: Prisma.PresenceLogGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PresenceLogGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PresenceLogCountArgs<ExtArgs>
+            result: $Utils.Optional<PresenceLogCountAggregateOutputType> | number
+          }
+        }
+      }
       PushSubscriptions: {
         payload: Prisma.$PushSubscriptionsPayload<ExtArgs>
         fields: Prisma.PushSubscriptionsFieldRefs
@@ -2398,6 +2505,80 @@ export namespace Prisma {
           }
         }
       }
+      PlatformSettings: {
+        payload: Prisma.$PlatformSettingsPayload<ExtArgs>
+        fields: Prisma.PlatformSettingsFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PlatformSettingsFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PlatformSettingsFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>
+          }
+          findFirst: {
+            args: Prisma.PlatformSettingsFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PlatformSettingsFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>
+          }
+          findMany: {
+            args: Prisma.PlatformSettingsFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>[]
+          }
+          create: {
+            args: Prisma.PlatformSettingsCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>
+          }
+          createMany: {
+            args: Prisma.PlatformSettingsCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PlatformSettingsCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>[]
+          }
+          delete: {
+            args: Prisma.PlatformSettingsDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>
+          }
+          update: {
+            args: Prisma.PlatformSettingsUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>
+          }
+          deleteMany: {
+            args: Prisma.PlatformSettingsDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PlatformSettingsUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PlatformSettingsUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>[]
+          }
+          upsert: {
+            args: Prisma.PlatformSettingsUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PlatformSettingsPayload>
+          }
+          aggregate: {
+            args: Prisma.PlatformSettingsAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePlatformSettings>
+          }
+          groupBy: {
+            args: Prisma.PlatformSettingsGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PlatformSettingsGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PlatformSettingsCountArgs<ExtArgs>
+            result: $Utils.Optional<PlatformSettingsCountAggregateOutputType> | number
+          }
+        }
+      }
       AuditLogs: {
         payload: Prisma.$AuditLogsPayload<ExtArgs>
         fields: Prisma.AuditLogsFieldRefs
@@ -2582,11 +2763,13 @@ export namespace Prisma {
     choices?: ChoicesOmit
     answers?: AnswersOmit
     festivaliers?: FestivaliersOmit
+    presenceLog?: PresenceLogOmit
     pushSubscriptions?: PushSubscriptionsOmit
     users?: UsersOmit
     notifications?: NotificationsOmit
     alerts?: AlertsOmit
     alertTimeline?: AlertTimelineOmit
+    platformSettings?: PlatformSettingsOmit
     auditLogs?: AuditLogsOmit
   }
 
@@ -2671,12 +2854,14 @@ export namespace Prisma {
     alerts: number
     amenities: number
     events: number
+    presenceLogs: number
   }
 
   export type SitesCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     alerts?: boolean | SitesCountOutputTypeCountAlertsArgs
     amenities?: boolean | SitesCountOutputTypeCountAmenitiesArgs
     events?: boolean | SitesCountOutputTypeCountEventsArgs
+    presenceLogs?: boolean | SitesCountOutputTypeCountPresenceLogsArgs
   }
 
   // Custom InputTypes
@@ -2709,6 +2894,13 @@ export namespace Prisma {
    */
   export type SitesCountOutputTypeCountEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: EventsWhereInput
+  }
+
+  /**
+   * SitesCountOutputType without action
+   */
+  export type SitesCountOutputTypeCountPresenceLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PresenceLogWhereInput
   }
 
 
@@ -2789,6 +2981,68 @@ export namespace Prisma {
    */
   export type EventsCountOutputTypeCountQuizzesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: QuizWhereInput
+  }
+
+
+  /**
+   * Count Type ProgramsCountOutputType
+   */
+
+  export type ProgramsCountOutputType = {
+    artists: number
+  }
+
+  export type ProgramsCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    artists?: boolean | ProgramsCountOutputTypeCountArtistsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ProgramsCountOutputType without action
+   */
+  export type ProgramsCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProgramsCountOutputType
+     */
+    select?: ProgramsCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ProgramsCountOutputType without action
+   */
+  export type ProgramsCountOutputTypeCountArtistsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ArtistsWhereInput
+  }
+
+
+  /**
+   * Count Type ArtistsCountOutputType
+   */
+
+  export type ArtistsCountOutputType = {
+    programs: number
+  }
+
+  export type ArtistsCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    programs?: boolean | ArtistsCountOutputTypeCountProgramsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ArtistsCountOutputType without action
+   */
+  export type ArtistsCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ArtistsCountOutputType
+     */
+    select?: ArtistsCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ArtistsCountOutputType without action
+   */
+  export type ArtistsCountOutputTypeCountProgramsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProgramsWhereInput
   }
 
 
@@ -2940,10 +3194,12 @@ export namespace Prisma {
 
   export type UsersCountOutputType = {
     alertTimelines: number
+    platformSettingChanges: number
   }
 
   export type UsersCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     alertTimelines?: boolean | UsersCountOutputTypeCountAlertTimelinesArgs
+    platformSettingChanges?: boolean | UsersCountOutputTypeCountPlatformSettingChangesArgs
   }
 
   // Custom InputTypes
@@ -2962,6 +3218,13 @@ export namespace Prisma {
    */
   export type UsersCountOutputTypeCountAlertTimelinesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AlertTimelineWhereInput
+  }
+
+  /**
+   * UsersCountOutputType without action
+   */
+  export type UsersCountOutputTypeCountPlatformSettingChangesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PlatformSettingsWhereInput
   }
 
 
@@ -3317,6 +3580,7 @@ export namespace Prisma {
     alerts?: boolean | Sites$alertsArgs<ExtArgs>
     amenities?: boolean | Sites$amenitiesArgs<ExtArgs>
     events?: boolean | Sites$eventsArgs<ExtArgs>
+    presenceLogs?: boolean | Sites$presenceLogsArgs<ExtArgs>
     _count?: boolean | SitesCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["sites"]>
 
@@ -3388,6 +3652,7 @@ export namespace Prisma {
     alerts?: boolean | Sites$alertsArgs<ExtArgs>
     amenities?: boolean | Sites$amenitiesArgs<ExtArgs>
     events?: boolean | Sites$eventsArgs<ExtArgs>
+    presenceLogs?: boolean | Sites$presenceLogsArgs<ExtArgs>
     _count?: boolean | SitesCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type SitesIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3399,6 +3664,7 @@ export namespace Prisma {
       alerts: Prisma.$AlertsPayload<ExtArgs>[]
       amenities: Prisma.$AmenitiesPayload<ExtArgs>[]
       events: Prisma.$EventsPayload<ExtArgs>[]
+      presenceLogs: Prisma.$PresenceLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3816,6 +4082,7 @@ export namespace Prisma {
     alerts<T extends Sites$alertsArgs<ExtArgs> = {}>(args?: Subset<T, Sites$alertsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AlertsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     amenities<T extends Sites$amenitiesArgs<ExtArgs> = {}>(args?: Subset<T, Sites$amenitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AmenitiesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     events<T extends Sites$eventsArgs<ExtArgs> = {}>(args?: Subset<T, Sites$eventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    presenceLogs<T extends Sites$presenceLogsArgs<ExtArgs> = {}>(args?: Subset<T, Sites$presenceLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PresenceLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4320,6 +4587,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: EventsScalarFieldEnum | EventsScalarFieldEnum[]
+  }
+
+  /**
+   * Sites.presenceLogs
+   */
+  export type Sites$presenceLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PresenceLog
+     */
+    select?: PresenceLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PresenceLog
+     */
+    omit?: PresenceLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PresenceLogInclude<ExtArgs> | null
+    where?: PresenceLogWhereInput
+    orderBy?: PresenceLogOrderByWithRelationInput | PresenceLogOrderByWithRelationInput[]
+    cursor?: PresenceLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PresenceLogScalarFieldEnum | PresenceLogScalarFieldEnum[]
   }
 
   /**
@@ -7898,6 +8189,8 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     event?: boolean | EventsDefaultArgs<ExtArgs>
+    artists?: boolean | Programs$artistsArgs<ExtArgs>
+    _count?: boolean | ProgramsCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["programs"]>
 
   export type ProgramsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -7932,6 +8225,8 @@ export namespace Prisma {
   export type ProgramsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "startTime" | "endTime" | "eventId" | "createdAt" | "updatedAt", ExtArgs["result"]["programs"]>
   export type ProgramsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventsDefaultArgs<ExtArgs>
+    artists?: boolean | Programs$artistsArgs<ExtArgs>
+    _count?: boolean | ProgramsCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProgramsIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventsDefaultArgs<ExtArgs>
@@ -7944,6 +8239,7 @@ export namespace Prisma {
     name: "Programs"
     objects: {
       event: Prisma.$EventsPayload<ExtArgs>
+      artists: Prisma.$ArtistsPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -8347,6 +8643,7 @@ export namespace Prisma {
   export interface Prisma__ProgramsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     event<T extends EventsDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventsDefaultArgs<ExtArgs>>): Prisma__EventsClient<$Result.GetResult<Prisma.$EventsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    artists<T extends Programs$artistsArgs<ExtArgs> = {}>(args?: Subset<T, Programs$artistsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ArtistsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8778,6 +9075,30 @@ export namespace Prisma {
   }
 
   /**
+   * Programs.artists
+   */
+  export type Programs$artistsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Artists
+     */
+    select?: ArtistsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Artists
+     */
+    omit?: ArtistsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ArtistsInclude<ExtArgs> | null
+    where?: ArtistsWhereInput
+    orderBy?: ArtistsOrderByWithRelationInput | ArtistsOrderByWithRelationInput[]
+    cursor?: ArtistsWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ArtistsScalarFieldEnum | ArtistsScalarFieldEnum[]
+  }
+
+  /**
    * Programs without action
    */
   export type ProgramsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8802,58 +9123,124 @@ export namespace Prisma {
 
   export type AggregateArtists = {
     _count: ArtistsCountAggregateOutputType | null
+    _avg: ArtistsAvgAggregateOutputType | null
+    _sum: ArtistsSumAggregateOutputType | null
     _min: ArtistsMinAggregateOutputType | null
     _max: ArtistsMaxAggregateOutputType | null
+  }
+
+  export type ArtistsAvgAggregateOutputType = {
+    order: number | null
+  }
+
+  export type ArtistsSumAggregateOutputType = {
+    order: number | null
   }
 
   export type ArtistsMinAggregateOutputType = {
     id: string | null
     name: string | null
     eventId: string | null
+    bio: string | null
+    imageUrl: string | null
+    genre: string | null
+    instagramUrl: string | null
+    spotifyUrl: string | null
+    websiteUrl: string | null
+    order: number | null
     createdAt: Date | null
     updatedAt: Date | null
+    bioEn: string | null
   }
 
   export type ArtistsMaxAggregateOutputType = {
     id: string | null
     name: string | null
     eventId: string | null
+    bio: string | null
+    imageUrl: string | null
+    genre: string | null
+    instagramUrl: string | null
+    spotifyUrl: string | null
+    websiteUrl: string | null
+    order: number | null
     createdAt: Date | null
     updatedAt: Date | null
+    bioEn: string | null
   }
 
   export type ArtistsCountAggregateOutputType = {
     id: number
     name: number
     eventId: number
+    bio: number
+    imageUrl: number
+    genre: number
+    instagramUrl: number
+    spotifyUrl: number
+    websiteUrl: number
+    order: number
     createdAt: number
     updatedAt: number
+    bioEn: number
     _all: number
   }
 
+
+  export type ArtistsAvgAggregateInputType = {
+    order?: true
+  }
+
+  export type ArtistsSumAggregateInputType = {
+    order?: true
+  }
 
   export type ArtistsMinAggregateInputType = {
     id?: true
     name?: true
     eventId?: true
+    bio?: true
+    imageUrl?: true
+    genre?: true
+    instagramUrl?: true
+    spotifyUrl?: true
+    websiteUrl?: true
+    order?: true
     createdAt?: true
     updatedAt?: true
+    bioEn?: true
   }
 
   export type ArtistsMaxAggregateInputType = {
     id?: true
     name?: true
     eventId?: true
+    bio?: true
+    imageUrl?: true
+    genre?: true
+    instagramUrl?: true
+    spotifyUrl?: true
+    websiteUrl?: true
+    order?: true
     createdAt?: true
     updatedAt?: true
+    bioEn?: true
   }
 
   export type ArtistsCountAggregateInputType = {
     id?: true
     name?: true
     eventId?: true
+    bio?: true
+    imageUrl?: true
+    genre?: true
+    instagramUrl?: true
+    spotifyUrl?: true
+    websiteUrl?: true
+    order?: true
     createdAt?: true
     updatedAt?: true
+    bioEn?: true
     _all?: true
   }
 
@@ -8895,6 +9282,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: ArtistsAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ArtistsSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: ArtistsMinAggregateInputType
@@ -8925,6 +9324,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ArtistsCountAggregateInputType | true
+    _avg?: ArtistsAvgAggregateInputType
+    _sum?: ArtistsSumAggregateInputType
     _min?: ArtistsMinAggregateInputType
     _max?: ArtistsMaxAggregateInputType
   }
@@ -8933,9 +9334,19 @@ export namespace Prisma {
     id: string
     name: string
     eventId: string
+    bio: string | null
+    imageUrl: string | null
+    genre: string | null
+    instagramUrl: string | null
+    spotifyUrl: string | null
+    websiteUrl: string | null
+    order: number | null
     createdAt: Date
     updatedAt: Date
+    bioEn: string | null
     _count: ArtistsCountAggregateOutputType | null
+    _avg: ArtistsAvgAggregateOutputType | null
+    _sum: ArtistsSumAggregateOutputType | null
     _min: ArtistsMinAggregateOutputType | null
     _max: ArtistsMaxAggregateOutputType | null
   }
@@ -8958,17 +9369,35 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     eventId?: boolean
+    bio?: boolean
+    imageUrl?: boolean
+    genre?: boolean
+    instagramUrl?: boolean
+    spotifyUrl?: boolean
+    websiteUrl?: boolean
+    order?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    bioEn?: boolean
     event?: boolean | EventsDefaultArgs<ExtArgs>
+    programs?: boolean | Artists$programsArgs<ExtArgs>
+    _count?: boolean | ArtistsCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["artists"]>
 
   export type ArtistsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
     eventId?: boolean
+    bio?: boolean
+    imageUrl?: boolean
+    genre?: boolean
+    instagramUrl?: boolean
+    spotifyUrl?: boolean
+    websiteUrl?: boolean
+    order?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    bioEn?: boolean
     event?: boolean | EventsDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["artists"]>
 
@@ -8976,8 +9405,16 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     eventId?: boolean
+    bio?: boolean
+    imageUrl?: boolean
+    genre?: boolean
+    instagramUrl?: boolean
+    spotifyUrl?: boolean
+    websiteUrl?: boolean
+    order?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    bioEn?: boolean
     event?: boolean | EventsDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["artists"]>
 
@@ -8985,13 +9422,23 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     eventId?: boolean
+    bio?: boolean
+    imageUrl?: boolean
+    genre?: boolean
+    instagramUrl?: boolean
+    spotifyUrl?: boolean
+    websiteUrl?: boolean
+    order?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    bioEn?: boolean
   }
 
-  export type ArtistsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "eventId" | "createdAt" | "updatedAt", ExtArgs["result"]["artists"]>
+  export type ArtistsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "eventId" | "bio" | "imageUrl" | "genre" | "instagramUrl" | "spotifyUrl" | "websiteUrl" | "order" | "createdAt" | "updatedAt" | "bioEn", ExtArgs["result"]["artists"]>
   export type ArtistsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventsDefaultArgs<ExtArgs>
+    programs?: boolean | Artists$programsArgs<ExtArgs>
+    _count?: boolean | ArtistsCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ArtistsIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventsDefaultArgs<ExtArgs>
@@ -9004,13 +9451,22 @@ export namespace Prisma {
     name: "Artists"
     objects: {
       event: Prisma.$EventsPayload<ExtArgs>
+      programs: Prisma.$ProgramsPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
       eventId: string
+      bio: string | null
+      imageUrl: string | null
+      genre: string | null
+      instagramUrl: string | null
+      spotifyUrl: string | null
+      websiteUrl: string | null
+      order: number | null
       createdAt: Date
       updatedAt: Date
+      bioEn: string | null
     }, ExtArgs["result"]["artists"]>
     composites: {}
   }
@@ -9406,6 +9862,7 @@ export namespace Prisma {
   export interface Prisma__ArtistsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     event<T extends EventsDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventsDefaultArgs<ExtArgs>>): Prisma__EventsClient<$Result.GetResult<Prisma.$EventsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    programs<T extends Artists$programsArgs<ExtArgs> = {}>(args?: Subset<T, Artists$programsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProgramsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9438,8 +9895,16 @@ export namespace Prisma {
     readonly id: FieldRef<"Artists", 'String'>
     readonly name: FieldRef<"Artists", 'String'>
     readonly eventId: FieldRef<"Artists", 'String'>
+    readonly bio: FieldRef<"Artists", 'String'>
+    readonly imageUrl: FieldRef<"Artists", 'String'>
+    readonly genre: FieldRef<"Artists", 'String'>
+    readonly instagramUrl: FieldRef<"Artists", 'String'>
+    readonly spotifyUrl: FieldRef<"Artists", 'String'>
+    readonly websiteUrl: FieldRef<"Artists", 'String'>
+    readonly order: FieldRef<"Artists", 'Int'>
     readonly createdAt: FieldRef<"Artists", 'DateTime'>
     readonly updatedAt: FieldRef<"Artists", 'DateTime'>
+    readonly bioEn: FieldRef<"Artists", 'String'>
   }
     
 
@@ -9833,6 +10298,30 @@ export namespace Prisma {
      * Limit how many Artists to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Artists.programs
+   */
+  export type Artists$programsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Programs
+     */
+    select?: ProgramsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Programs
+     */
+    omit?: ProgramsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProgramsInclude<ExtArgs> | null
+    where?: ProgramsWhereInput
+    orderBy?: ProgramsOrderByWithRelationInput | ProgramsOrderByWithRelationInput[]
+    cursor?: ProgramsWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProgramsScalarFieldEnum | ProgramsScalarFieldEnum[]
   }
 
   /**
@@ -18647,6 +19136,1134 @@ export namespace Prisma {
 
 
   /**
+   * Model PresenceLog
+   */
+
+  export type AggregatePresenceLog = {
+    _count: PresenceLogCountAggregateOutputType | null
+    _avg: PresenceLogAvgAggregateOutputType | null
+    _sum: PresenceLogSumAggregateOutputType | null
+    _min: PresenceLogMinAggregateOutputType | null
+    _max: PresenceLogMaxAggregateOutputType | null
+  }
+
+  export type PresenceLogAvgAggregateOutputType = {
+    latitude: number | null
+    longitude: number | null
+  }
+
+  export type PresenceLogSumAggregateOutputType = {
+    latitude: number | null
+    longitude: number | null
+  }
+
+  export type PresenceLogMinAggregateOutputType = {
+    id: string | null
+    uuid: string | null
+    siteId: string | null
+    latitude: number | null
+    longitude: number | null
+    createdAt: Date | null
+  }
+
+  export type PresenceLogMaxAggregateOutputType = {
+    id: string | null
+    uuid: string | null
+    siteId: string | null
+    latitude: number | null
+    longitude: number | null
+    createdAt: Date | null
+  }
+
+  export type PresenceLogCountAggregateOutputType = {
+    id: number
+    uuid: number
+    siteId: number
+    latitude: number
+    longitude: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type PresenceLogAvgAggregateInputType = {
+    latitude?: true
+    longitude?: true
+  }
+
+  export type PresenceLogSumAggregateInputType = {
+    latitude?: true
+    longitude?: true
+  }
+
+  export type PresenceLogMinAggregateInputType = {
+    id?: true
+    uuid?: true
+    siteId?: true
+    latitude?: true
+    longitude?: true
+    createdAt?: true
+  }
+
+  export type PresenceLogMaxAggregateInputType = {
+    id?: true
+    uuid?: true
+    siteId?: true
+    latitude?: true
+    longitude?: true
+    createdAt?: true
+  }
+
+  export type PresenceLogCountAggregateInputType = {
+    id?: true
+    uuid?: true
+    siteId?: true
+    latitude?: true
+    longitude?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type PresenceLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PresenceLog to aggregate.
+     */
+    where?: PresenceLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PresenceLogs to fetch.
+     */
+    orderBy?: PresenceLogOrderByWithRelationInput | PresenceLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PresenceLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PresenceLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PresenceLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PresenceLogs
+    **/
+    _count?: true | PresenceLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PresenceLogAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PresenceLogSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PresenceLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PresenceLogMaxAggregateInputType
+  }
+
+  export type GetPresenceLogAggregateType<T extends PresenceLogAggregateArgs> = {
+        [P in keyof T & keyof AggregatePresenceLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePresenceLog[P]>
+      : GetScalarType<T[P], AggregatePresenceLog[P]>
+  }
+
+
+
+
+  export type PresenceLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PresenceLogWhereInput
+    orderBy?: PresenceLogOrderByWithAggregationInput | PresenceLogOrderByWithAggregationInput[]
+    by: PresenceLogScalarFieldEnum[] | PresenceLogScalarFieldEnum
+    having?: PresenceLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PresenceLogCountAggregateInputType | true
+    _avg?: PresenceLogAvgAggregateInputType
+    _sum?: PresenceLogSumAggregateInputType
+    _min?: PresenceLogMinAggregateInputType
+    _max?: PresenceLogMaxAggregateInputType
+  }
+
+  export type PresenceLogGroupByOutputType = {
+    id: string
+    uuid: string
+    siteId: string | null
+    latitude: number
+    longitude: number
+    createdAt: Date
+    _count: PresenceLogCountAggregateOutputType | null
+    _avg: PresenceLogAvgAggregateOutputType | null
+    _sum: PresenceLogSumAggregateOutputType | null
+    _min: PresenceLogMinAggregateOutputType | null
+    _max: PresenceLogMaxAggregateOutputType | null
+  }
+
+  type GetPresenceLogGroupByPayload<T extends PresenceLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PresenceLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PresenceLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PresenceLogGroupByOutputType[P]>
+            : GetScalarType<T[P], PresenceLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PresenceLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    uuid?: boolean
+    siteId?: boolean
+    latitude?: boolean
+    longitude?: boolean
+    createdAt?: boolean
+    site?: boolean | PresenceLog$siteArgs<ExtArgs>
+  }, ExtArgs["result"]["presenceLog"]>
+
+  export type PresenceLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    uuid?: boolean
+    siteId?: boolean
+    latitude?: boolean
+    longitude?: boolean
+    createdAt?: boolean
+    site?: boolean | PresenceLog$siteArgs<ExtArgs>
+  }, ExtArgs["result"]["presenceLog"]>
+
+  export type PresenceLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    uuid?: boolean
+    siteId?: boolean
+    latitude?: boolean
+    longitude?: boolean
+    createdAt?: boolean
+    site?: boolean | PresenceLog$siteArgs<ExtArgs>
+  }, ExtArgs["result"]["presenceLog"]>
+
+  export type PresenceLogSelectScalar = {
+    id?: boolean
+    uuid?: boolean
+    siteId?: boolean
+    latitude?: boolean
+    longitude?: boolean
+    createdAt?: boolean
+  }
+
+  export type PresenceLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "uuid" | "siteId" | "latitude" | "longitude" | "createdAt", ExtArgs["result"]["presenceLog"]>
+  export type PresenceLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    site?: boolean | PresenceLog$siteArgs<ExtArgs>
+  }
+  export type PresenceLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    site?: boolean | PresenceLog$siteArgs<ExtArgs>
+  }
+  export type PresenceLogIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    site?: boolean | PresenceLog$siteArgs<ExtArgs>
+  }
+
+  export type $PresenceLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PresenceLog"
+    objects: {
+      site: Prisma.$SitesPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      uuid: string
+      siteId: string | null
+      latitude: number
+      longitude: number
+      createdAt: Date
+    }, ExtArgs["result"]["presenceLog"]>
+    composites: {}
+  }
+
+  type PresenceLogGetPayload<S extends boolean | null | undefined | PresenceLogDefaultArgs> = $Result.GetResult<Prisma.$PresenceLogPayload, S>
+
+  type PresenceLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PresenceLogFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PresenceLogCountAggregateInputType | true
+    }
+
+  export interface PresenceLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PresenceLog'], meta: { name: 'PresenceLog' } }
+    /**
+     * Find zero or one PresenceLog that matches the filter.
+     * @param {PresenceLogFindUniqueArgs} args - Arguments to find a PresenceLog
+     * @example
+     * // Get one PresenceLog
+     * const presenceLog = await prisma.presenceLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PresenceLogFindUniqueArgs>(args: SelectSubset<T, PresenceLogFindUniqueArgs<ExtArgs>>): Prisma__PresenceLogClient<$Result.GetResult<Prisma.$PresenceLogPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PresenceLog that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PresenceLogFindUniqueOrThrowArgs} args - Arguments to find a PresenceLog
+     * @example
+     * // Get one PresenceLog
+     * const presenceLog = await prisma.presenceLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PresenceLogFindUniqueOrThrowArgs>(args: SelectSubset<T, PresenceLogFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PresenceLogClient<$Result.GetResult<Prisma.$PresenceLogPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PresenceLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PresenceLogFindFirstArgs} args - Arguments to find a PresenceLog
+     * @example
+     * // Get one PresenceLog
+     * const presenceLog = await prisma.presenceLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PresenceLogFindFirstArgs>(args?: SelectSubset<T, PresenceLogFindFirstArgs<ExtArgs>>): Prisma__PresenceLogClient<$Result.GetResult<Prisma.$PresenceLogPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PresenceLog that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PresenceLogFindFirstOrThrowArgs} args - Arguments to find a PresenceLog
+     * @example
+     * // Get one PresenceLog
+     * const presenceLog = await prisma.presenceLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PresenceLogFindFirstOrThrowArgs>(args?: SelectSubset<T, PresenceLogFindFirstOrThrowArgs<ExtArgs>>): Prisma__PresenceLogClient<$Result.GetResult<Prisma.$PresenceLogPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PresenceLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PresenceLogFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PresenceLogs
+     * const presenceLogs = await prisma.presenceLog.findMany()
+     * 
+     * // Get first 10 PresenceLogs
+     * const presenceLogs = await prisma.presenceLog.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const presenceLogWithIdOnly = await prisma.presenceLog.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PresenceLogFindManyArgs>(args?: SelectSubset<T, PresenceLogFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PresenceLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PresenceLog.
+     * @param {PresenceLogCreateArgs} args - Arguments to create a PresenceLog.
+     * @example
+     * // Create one PresenceLog
+     * const PresenceLog = await prisma.presenceLog.create({
+     *   data: {
+     *     // ... data to create a PresenceLog
+     *   }
+     * })
+     * 
+     */
+    create<T extends PresenceLogCreateArgs>(args: SelectSubset<T, PresenceLogCreateArgs<ExtArgs>>): Prisma__PresenceLogClient<$Result.GetResult<Prisma.$PresenceLogPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PresenceLogs.
+     * @param {PresenceLogCreateManyArgs} args - Arguments to create many PresenceLogs.
+     * @example
+     * // Create many PresenceLogs
+     * const presenceLog = await prisma.presenceLog.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PresenceLogCreateManyArgs>(args?: SelectSubset<T, PresenceLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PresenceLogs and returns the data saved in the database.
+     * @param {PresenceLogCreateManyAndReturnArgs} args - Arguments to create many PresenceLogs.
+     * @example
+     * // Create many PresenceLogs
+     * const presenceLog = await prisma.presenceLog.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PresenceLogs and only return the `id`
+     * const presenceLogWithIdOnly = await prisma.presenceLog.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PresenceLogCreateManyAndReturnArgs>(args?: SelectSubset<T, PresenceLogCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PresenceLogPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PresenceLog.
+     * @param {PresenceLogDeleteArgs} args - Arguments to delete one PresenceLog.
+     * @example
+     * // Delete one PresenceLog
+     * const PresenceLog = await prisma.presenceLog.delete({
+     *   where: {
+     *     // ... filter to delete one PresenceLog
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PresenceLogDeleteArgs>(args: SelectSubset<T, PresenceLogDeleteArgs<ExtArgs>>): Prisma__PresenceLogClient<$Result.GetResult<Prisma.$PresenceLogPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PresenceLog.
+     * @param {PresenceLogUpdateArgs} args - Arguments to update one PresenceLog.
+     * @example
+     * // Update one PresenceLog
+     * const presenceLog = await prisma.presenceLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PresenceLogUpdateArgs>(args: SelectSubset<T, PresenceLogUpdateArgs<ExtArgs>>): Prisma__PresenceLogClient<$Result.GetResult<Prisma.$PresenceLogPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PresenceLogs.
+     * @param {PresenceLogDeleteManyArgs} args - Arguments to filter PresenceLogs to delete.
+     * @example
+     * // Delete a few PresenceLogs
+     * const { count } = await prisma.presenceLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PresenceLogDeleteManyArgs>(args?: SelectSubset<T, PresenceLogDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PresenceLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PresenceLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PresenceLogs
+     * const presenceLog = await prisma.presenceLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PresenceLogUpdateManyArgs>(args: SelectSubset<T, PresenceLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PresenceLogs and returns the data updated in the database.
+     * @param {PresenceLogUpdateManyAndReturnArgs} args - Arguments to update many PresenceLogs.
+     * @example
+     * // Update many PresenceLogs
+     * const presenceLog = await prisma.presenceLog.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PresenceLogs and only return the `id`
+     * const presenceLogWithIdOnly = await prisma.presenceLog.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PresenceLogUpdateManyAndReturnArgs>(args: SelectSubset<T, PresenceLogUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PresenceLogPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PresenceLog.
+     * @param {PresenceLogUpsertArgs} args - Arguments to update or create a PresenceLog.
+     * @example
+     * // Update or create a PresenceLog
+     * const presenceLog = await prisma.presenceLog.upsert({
+     *   create: {
+     *     // ... data to create a PresenceLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PresenceLog we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PresenceLogUpsertArgs>(args: SelectSubset<T, PresenceLogUpsertArgs<ExtArgs>>): Prisma__PresenceLogClient<$Result.GetResult<Prisma.$PresenceLogPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PresenceLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PresenceLogCountArgs} args - Arguments to filter PresenceLogs to count.
+     * @example
+     * // Count the number of PresenceLogs
+     * const count = await prisma.presenceLog.count({
+     *   where: {
+     *     // ... the filter for the PresenceLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends PresenceLogCountArgs>(
+      args?: Subset<T, PresenceLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PresenceLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PresenceLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PresenceLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PresenceLogAggregateArgs>(args: Subset<T, PresenceLogAggregateArgs>): Prisma.PrismaPromise<GetPresenceLogAggregateType<T>>
+
+    /**
+     * Group by PresenceLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PresenceLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PresenceLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PresenceLogGroupByArgs['orderBy'] }
+        : { orderBy?: PresenceLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PresenceLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPresenceLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PresenceLog model
+   */
+  readonly fields: PresenceLogFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PresenceLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PresenceLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    site<T extends PresenceLog$siteArgs<ExtArgs> = {}>(args?: Subset<T, PresenceLog$siteArgs<ExtArgs>>): Prisma__SitesClient<$Result.GetResult<Prisma.$SitesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PresenceLog model
+   */
+  interface PresenceLogFieldRefs {
+    readonly id: FieldRef<"PresenceLog", 'String'>
+    readonly uuid: FieldRef<"PresenceLog", 'String'>
+    readonly siteId: FieldRef<"PresenceLog", 'String'>
+    readonly latitude: FieldRef<"PresenceLog", 'Float'>
+    readonly longitude: FieldRef<"PresenceLog", 'Float'>
+    readonly createdAt: FieldRef<"PresenceLog", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PresenceLog findUnique
+   */
+  export type PresenceLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PresenceLog
+     */
+    select?: PresenceLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PresenceLog
+     */
+    omit?: PresenceLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PresenceLogInclude<ExtArgs> | null
+    /**
+     * Filter, which PresenceLog to fetch.
+     */
+    where: PresenceLogWhereUniqueInput
+  }
+
+  /**
+   * PresenceLog findUniqueOrThrow
+   */
+  export type PresenceLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PresenceLog
+     */
+    select?: PresenceLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PresenceLog
+     */
+    omit?: PresenceLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PresenceLogInclude<ExtArgs> | null
+    /**
+     * Filter, which PresenceLog to fetch.
+     */
+    where: PresenceLogWhereUniqueInput
+  }
+
+  /**
+   * PresenceLog findFirst
+   */
+  export type PresenceLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PresenceLog
+     */
+    select?: PresenceLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PresenceLog
+     */
+    omit?: PresenceLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PresenceLogInclude<ExtArgs> | null
+    /**
+     * Filter, which PresenceLog to fetch.
+     */
+    where?: PresenceLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PresenceLogs to fetch.
+     */
+    orderBy?: PresenceLogOrderByWithRelationInput | PresenceLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PresenceLogs.
+     */
+    cursor?: PresenceLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PresenceLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PresenceLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PresenceLogs.
+     */
+    distinct?: PresenceLogScalarFieldEnum | PresenceLogScalarFieldEnum[]
+  }
+
+  /**
+   * PresenceLog findFirstOrThrow
+   */
+  export type PresenceLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PresenceLog
+     */
+    select?: PresenceLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PresenceLog
+     */
+    omit?: PresenceLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PresenceLogInclude<ExtArgs> | null
+    /**
+     * Filter, which PresenceLog to fetch.
+     */
+    where?: PresenceLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PresenceLogs to fetch.
+     */
+    orderBy?: PresenceLogOrderByWithRelationInput | PresenceLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PresenceLogs.
+     */
+    cursor?: PresenceLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PresenceLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PresenceLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PresenceLogs.
+     */
+    distinct?: PresenceLogScalarFieldEnum | PresenceLogScalarFieldEnum[]
+  }
+
+  /**
+   * PresenceLog findMany
+   */
+  export type PresenceLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PresenceLog
+     */
+    select?: PresenceLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PresenceLog
+     */
+    omit?: PresenceLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PresenceLogInclude<ExtArgs> | null
+    /**
+     * Filter, which PresenceLogs to fetch.
+     */
+    where?: PresenceLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PresenceLogs to fetch.
+     */
+    orderBy?: PresenceLogOrderByWithRelationInput | PresenceLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PresenceLogs.
+     */
+    cursor?: PresenceLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PresenceLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PresenceLogs.
+     */
+    skip?: number
+    distinct?: PresenceLogScalarFieldEnum | PresenceLogScalarFieldEnum[]
+  }
+
+  /**
+   * PresenceLog create
+   */
+  export type PresenceLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PresenceLog
+     */
+    select?: PresenceLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PresenceLog
+     */
+    omit?: PresenceLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PresenceLogInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PresenceLog.
+     */
+    data: XOR<PresenceLogCreateInput, PresenceLogUncheckedCreateInput>
+  }
+
+  /**
+   * PresenceLog createMany
+   */
+  export type PresenceLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PresenceLogs.
+     */
+    data: PresenceLogCreateManyInput | PresenceLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PresenceLog createManyAndReturn
+   */
+  export type PresenceLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PresenceLog
+     */
+    select?: PresenceLogSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PresenceLog
+     */
+    omit?: PresenceLogOmit<ExtArgs> | null
+    /**
+     * The data used to create many PresenceLogs.
+     */
+    data: PresenceLogCreateManyInput | PresenceLogCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PresenceLogIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PresenceLog update
+   */
+  export type PresenceLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PresenceLog
+     */
+    select?: PresenceLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PresenceLog
+     */
+    omit?: PresenceLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PresenceLogInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PresenceLog.
+     */
+    data: XOR<PresenceLogUpdateInput, PresenceLogUncheckedUpdateInput>
+    /**
+     * Choose, which PresenceLog to update.
+     */
+    where: PresenceLogWhereUniqueInput
+  }
+
+  /**
+   * PresenceLog updateMany
+   */
+  export type PresenceLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PresenceLogs.
+     */
+    data: XOR<PresenceLogUpdateManyMutationInput, PresenceLogUncheckedUpdateManyInput>
+    /**
+     * Filter which PresenceLogs to update
+     */
+    where?: PresenceLogWhereInput
+    /**
+     * Limit how many PresenceLogs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PresenceLog updateManyAndReturn
+   */
+  export type PresenceLogUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PresenceLog
+     */
+    select?: PresenceLogSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PresenceLog
+     */
+    omit?: PresenceLogOmit<ExtArgs> | null
+    /**
+     * The data used to update PresenceLogs.
+     */
+    data: XOR<PresenceLogUpdateManyMutationInput, PresenceLogUncheckedUpdateManyInput>
+    /**
+     * Filter which PresenceLogs to update
+     */
+    where?: PresenceLogWhereInput
+    /**
+     * Limit how many PresenceLogs to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PresenceLogIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PresenceLog upsert
+   */
+  export type PresenceLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PresenceLog
+     */
+    select?: PresenceLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PresenceLog
+     */
+    omit?: PresenceLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PresenceLogInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PresenceLog to update in case it exists.
+     */
+    where: PresenceLogWhereUniqueInput
+    /**
+     * In case the PresenceLog found by the `where` argument doesn't exist, create a new PresenceLog with this data.
+     */
+    create: XOR<PresenceLogCreateInput, PresenceLogUncheckedCreateInput>
+    /**
+     * In case the PresenceLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PresenceLogUpdateInput, PresenceLogUncheckedUpdateInput>
+  }
+
+  /**
+   * PresenceLog delete
+   */
+  export type PresenceLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PresenceLog
+     */
+    select?: PresenceLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PresenceLog
+     */
+    omit?: PresenceLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PresenceLogInclude<ExtArgs> | null
+    /**
+     * Filter which PresenceLog to delete.
+     */
+    where: PresenceLogWhereUniqueInput
+  }
+
+  /**
+   * PresenceLog deleteMany
+   */
+  export type PresenceLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PresenceLogs to delete
+     */
+    where?: PresenceLogWhereInput
+    /**
+     * Limit how many PresenceLogs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PresenceLog.site
+   */
+  export type PresenceLog$siteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Sites
+     */
+    select?: SitesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Sites
+     */
+    omit?: SitesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SitesInclude<ExtArgs> | null
+    where?: SitesWhereInput
+  }
+
+  /**
+   * PresenceLog without action
+   */
+  export type PresenceLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PresenceLog
+     */
+    select?: PresenceLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PresenceLog
+     */
+    omit?: PresenceLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PresenceLogInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model PushSubscriptions
    */
 
@@ -19875,6 +21492,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     alertTimelines?: boolean | Users$alertTimelinesArgs<ExtArgs>
+    platformSettingChanges?: boolean | Users$platformSettingChangesArgs<ExtArgs>
     _count?: boolean | UsersCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["users"]>
 
@@ -19926,6 +21544,7 @@ export namespace Prisma {
   export type UsersOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "password" | "role" | "active" | "firstname" | "lastname" | "phone" | "lastLoging" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["users"]>
   export type UsersInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     alertTimelines?: boolean | Users$alertTimelinesArgs<ExtArgs>
+    platformSettingChanges?: boolean | Users$platformSettingChangesArgs<ExtArgs>
     _count?: boolean | UsersCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UsersIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -19935,6 +21554,7 @@ export namespace Prisma {
     name: "Users"
     objects: {
       alertTimelines: Prisma.$AlertTimelinePayload<ExtArgs>[]
+      platformSettingChanges: Prisma.$PlatformSettingsPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -20344,6 +21964,7 @@ export namespace Prisma {
   export interface Prisma__UsersClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     alertTimelines<T extends Users$alertTimelinesArgs<ExtArgs> = {}>(args?: Subset<T, Users$alertTimelinesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AlertTimelinePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    platformSettingChanges<T extends Users$platformSettingChangesArgs<ExtArgs> = {}>(args?: Subset<T, Users$platformSettingChangesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -20794,6 +22415,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AlertTimelineScalarFieldEnum | AlertTimelineScalarFieldEnum[]
+  }
+
+  /**
+   * Users.platformSettingChanges
+   */
+  export type Users$platformSettingChangesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlatformSettingsInclude<ExtArgs> | null
+    where?: PlatformSettingsWhereInput
+    orderBy?: PlatformSettingsOrderByWithRelationInput | PlatformSettingsOrderByWithRelationInput[]
+    cursor?: PlatformSettingsWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PlatformSettingsScalarFieldEnum | PlatformSettingsScalarFieldEnum[]
   }
 
   /**
@@ -24236,6 +25881,1096 @@ export namespace Prisma {
 
 
   /**
+   * Model PlatformSettings
+   */
+
+  export type AggregatePlatformSettings = {
+    _count: PlatformSettingsCountAggregateOutputType | null
+    _min: PlatformSettingsMinAggregateOutputType | null
+    _max: PlatformSettingsMaxAggregateOutputType | null
+  }
+
+  export type PlatformSettingsMinAggregateOutputType = {
+    key: string | null
+    enabled: boolean | null
+    updatedById: string | null
+    updatedByName: string | null
+    updatedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type PlatformSettingsMaxAggregateOutputType = {
+    key: string | null
+    enabled: boolean | null
+    updatedById: string | null
+    updatedByName: string | null
+    updatedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type PlatformSettingsCountAggregateOutputType = {
+    key: number
+    enabled: number
+    updatedById: number
+    updatedByName: number
+    updatedAt: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type PlatformSettingsMinAggregateInputType = {
+    key?: true
+    enabled?: true
+    updatedById?: true
+    updatedByName?: true
+    updatedAt?: true
+    createdAt?: true
+  }
+
+  export type PlatformSettingsMaxAggregateInputType = {
+    key?: true
+    enabled?: true
+    updatedById?: true
+    updatedByName?: true
+    updatedAt?: true
+    createdAt?: true
+  }
+
+  export type PlatformSettingsCountAggregateInputType = {
+    key?: true
+    enabled?: true
+    updatedById?: true
+    updatedByName?: true
+    updatedAt?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type PlatformSettingsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PlatformSettings to aggregate.
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlatformSettings to fetch.
+     */
+    orderBy?: PlatformSettingsOrderByWithRelationInput | PlatformSettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PlatformSettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlatformSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlatformSettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PlatformSettings
+    **/
+    _count?: true | PlatformSettingsCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PlatformSettingsMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PlatformSettingsMaxAggregateInputType
+  }
+
+  export type GetPlatformSettingsAggregateType<T extends PlatformSettingsAggregateArgs> = {
+        [P in keyof T & keyof AggregatePlatformSettings]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePlatformSettings[P]>
+      : GetScalarType<T[P], AggregatePlatformSettings[P]>
+  }
+
+
+
+
+  export type PlatformSettingsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PlatformSettingsWhereInput
+    orderBy?: PlatformSettingsOrderByWithAggregationInput | PlatformSettingsOrderByWithAggregationInput[]
+    by: PlatformSettingsScalarFieldEnum[] | PlatformSettingsScalarFieldEnum
+    having?: PlatformSettingsScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PlatformSettingsCountAggregateInputType | true
+    _min?: PlatformSettingsMinAggregateInputType
+    _max?: PlatformSettingsMaxAggregateInputType
+  }
+
+  export type PlatformSettingsGroupByOutputType = {
+    key: string
+    enabled: boolean
+    updatedById: string | null
+    updatedByName: string | null
+    updatedAt: Date
+    createdAt: Date
+    _count: PlatformSettingsCountAggregateOutputType | null
+    _min: PlatformSettingsMinAggregateOutputType | null
+    _max: PlatformSettingsMaxAggregateOutputType | null
+  }
+
+  type GetPlatformSettingsGroupByPayload<T extends PlatformSettingsGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PlatformSettingsGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PlatformSettingsGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PlatformSettingsGroupByOutputType[P]>
+            : GetScalarType<T[P], PlatformSettingsGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PlatformSettingsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    key?: boolean
+    enabled?: boolean
+    updatedById?: boolean
+    updatedByName?: boolean
+    updatedAt?: boolean
+    createdAt?: boolean
+    updatedBy?: boolean | PlatformSettings$updatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["platformSettings"]>
+
+  export type PlatformSettingsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    key?: boolean
+    enabled?: boolean
+    updatedById?: boolean
+    updatedByName?: boolean
+    updatedAt?: boolean
+    createdAt?: boolean
+    updatedBy?: boolean | PlatformSettings$updatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["platformSettings"]>
+
+  export type PlatformSettingsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    key?: boolean
+    enabled?: boolean
+    updatedById?: boolean
+    updatedByName?: boolean
+    updatedAt?: boolean
+    createdAt?: boolean
+    updatedBy?: boolean | PlatformSettings$updatedByArgs<ExtArgs>
+  }, ExtArgs["result"]["platformSettings"]>
+
+  export type PlatformSettingsSelectScalar = {
+    key?: boolean
+    enabled?: boolean
+    updatedById?: boolean
+    updatedByName?: boolean
+    updatedAt?: boolean
+    createdAt?: boolean
+  }
+
+  export type PlatformSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"key" | "enabled" | "updatedById" | "updatedByName" | "updatedAt" | "createdAt", ExtArgs["result"]["platformSettings"]>
+  export type PlatformSettingsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    updatedBy?: boolean | PlatformSettings$updatedByArgs<ExtArgs>
+  }
+  export type PlatformSettingsIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    updatedBy?: boolean | PlatformSettings$updatedByArgs<ExtArgs>
+  }
+  export type PlatformSettingsIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    updatedBy?: boolean | PlatformSettings$updatedByArgs<ExtArgs>
+  }
+
+  export type $PlatformSettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PlatformSettings"
+    objects: {
+      updatedBy: Prisma.$UsersPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      key: string
+      enabled: boolean
+      updatedById: string | null
+      updatedByName: string | null
+      updatedAt: Date
+      createdAt: Date
+    }, ExtArgs["result"]["platformSettings"]>
+    composites: {}
+  }
+
+  type PlatformSettingsGetPayload<S extends boolean | null | undefined | PlatformSettingsDefaultArgs> = $Result.GetResult<Prisma.$PlatformSettingsPayload, S>
+
+  type PlatformSettingsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PlatformSettingsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PlatformSettingsCountAggregateInputType | true
+    }
+
+  export interface PlatformSettingsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PlatformSettings'], meta: { name: 'PlatformSettings' } }
+    /**
+     * Find zero or one PlatformSettings that matches the filter.
+     * @param {PlatformSettingsFindUniqueArgs} args - Arguments to find a PlatformSettings
+     * @example
+     * // Get one PlatformSettings
+     * const platformSettings = await prisma.platformSettings.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PlatformSettingsFindUniqueArgs>(args: SelectSubset<T, PlatformSettingsFindUniqueArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PlatformSettings that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PlatformSettingsFindUniqueOrThrowArgs} args - Arguments to find a PlatformSettings
+     * @example
+     * // Get one PlatformSettings
+     * const platformSettings = await prisma.platformSettings.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PlatformSettingsFindUniqueOrThrowArgs>(args: SelectSubset<T, PlatformSettingsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PlatformSettings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsFindFirstArgs} args - Arguments to find a PlatformSettings
+     * @example
+     * // Get one PlatformSettings
+     * const platformSettings = await prisma.platformSettings.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PlatformSettingsFindFirstArgs>(args?: SelectSubset<T, PlatformSettingsFindFirstArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PlatformSettings that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsFindFirstOrThrowArgs} args - Arguments to find a PlatformSettings
+     * @example
+     * // Get one PlatformSettings
+     * const platformSettings = await prisma.platformSettings.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PlatformSettingsFindFirstOrThrowArgs>(args?: SelectSubset<T, PlatformSettingsFindFirstOrThrowArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PlatformSettings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PlatformSettings
+     * const platformSettings = await prisma.platformSettings.findMany()
+     * 
+     * // Get first 10 PlatformSettings
+     * const platformSettings = await prisma.platformSettings.findMany({ take: 10 })
+     * 
+     * // Only select the `key`
+     * const platformSettingsWithKeyOnly = await prisma.platformSettings.findMany({ select: { key: true } })
+     * 
+     */
+    findMany<T extends PlatformSettingsFindManyArgs>(args?: SelectSubset<T, PlatformSettingsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PlatformSettings.
+     * @param {PlatformSettingsCreateArgs} args - Arguments to create a PlatformSettings.
+     * @example
+     * // Create one PlatformSettings
+     * const PlatformSettings = await prisma.platformSettings.create({
+     *   data: {
+     *     // ... data to create a PlatformSettings
+     *   }
+     * })
+     * 
+     */
+    create<T extends PlatformSettingsCreateArgs>(args: SelectSubset<T, PlatformSettingsCreateArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PlatformSettings.
+     * @param {PlatformSettingsCreateManyArgs} args - Arguments to create many PlatformSettings.
+     * @example
+     * // Create many PlatformSettings
+     * const platformSettings = await prisma.platformSettings.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PlatformSettingsCreateManyArgs>(args?: SelectSubset<T, PlatformSettingsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PlatformSettings and returns the data saved in the database.
+     * @param {PlatformSettingsCreateManyAndReturnArgs} args - Arguments to create many PlatformSettings.
+     * @example
+     * // Create many PlatformSettings
+     * const platformSettings = await prisma.platformSettings.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PlatformSettings and only return the `key`
+     * const platformSettingsWithKeyOnly = await prisma.platformSettings.createManyAndReturn({
+     *   select: { key: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PlatformSettingsCreateManyAndReturnArgs>(args?: SelectSubset<T, PlatformSettingsCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PlatformSettings.
+     * @param {PlatformSettingsDeleteArgs} args - Arguments to delete one PlatformSettings.
+     * @example
+     * // Delete one PlatformSettings
+     * const PlatformSettings = await prisma.platformSettings.delete({
+     *   where: {
+     *     // ... filter to delete one PlatformSettings
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PlatformSettingsDeleteArgs>(args: SelectSubset<T, PlatformSettingsDeleteArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PlatformSettings.
+     * @param {PlatformSettingsUpdateArgs} args - Arguments to update one PlatformSettings.
+     * @example
+     * // Update one PlatformSettings
+     * const platformSettings = await prisma.platformSettings.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PlatformSettingsUpdateArgs>(args: SelectSubset<T, PlatformSettingsUpdateArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PlatformSettings.
+     * @param {PlatformSettingsDeleteManyArgs} args - Arguments to filter PlatformSettings to delete.
+     * @example
+     * // Delete a few PlatformSettings
+     * const { count } = await prisma.platformSettings.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PlatformSettingsDeleteManyArgs>(args?: SelectSubset<T, PlatformSettingsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PlatformSettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PlatformSettings
+     * const platformSettings = await prisma.platformSettings.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PlatformSettingsUpdateManyArgs>(args: SelectSubset<T, PlatformSettingsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PlatformSettings and returns the data updated in the database.
+     * @param {PlatformSettingsUpdateManyAndReturnArgs} args - Arguments to update many PlatformSettings.
+     * @example
+     * // Update many PlatformSettings
+     * const platformSettings = await prisma.platformSettings.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PlatformSettings and only return the `key`
+     * const platformSettingsWithKeyOnly = await prisma.platformSettings.updateManyAndReturn({
+     *   select: { key: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PlatformSettingsUpdateManyAndReturnArgs>(args: SelectSubset<T, PlatformSettingsUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PlatformSettings.
+     * @param {PlatformSettingsUpsertArgs} args - Arguments to update or create a PlatformSettings.
+     * @example
+     * // Update or create a PlatformSettings
+     * const platformSettings = await prisma.platformSettings.upsert({
+     *   create: {
+     *     // ... data to create a PlatformSettings
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PlatformSettings we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PlatformSettingsUpsertArgs>(args: SelectSubset<T, PlatformSettingsUpsertArgs<ExtArgs>>): Prisma__PlatformSettingsClient<$Result.GetResult<Prisma.$PlatformSettingsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PlatformSettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsCountArgs} args - Arguments to filter PlatformSettings to count.
+     * @example
+     * // Count the number of PlatformSettings
+     * const count = await prisma.platformSettings.count({
+     *   where: {
+     *     // ... the filter for the PlatformSettings we want to count
+     *   }
+     * })
+    **/
+    count<T extends PlatformSettingsCountArgs>(
+      args?: Subset<T, PlatformSettingsCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PlatformSettingsCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PlatformSettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PlatformSettingsAggregateArgs>(args: Subset<T, PlatformSettingsAggregateArgs>): Prisma.PrismaPromise<GetPlatformSettingsAggregateType<T>>
+
+    /**
+     * Group by PlatformSettings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PlatformSettingsGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PlatformSettingsGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PlatformSettingsGroupByArgs['orderBy'] }
+        : { orderBy?: PlatformSettingsGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PlatformSettingsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPlatformSettingsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PlatformSettings model
+   */
+  readonly fields: PlatformSettingsFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PlatformSettings.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PlatformSettingsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    updatedBy<T extends PlatformSettings$updatedByArgs<ExtArgs> = {}>(args?: Subset<T, PlatformSettings$updatedByArgs<ExtArgs>>): Prisma__UsersClient<$Result.GetResult<Prisma.$UsersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PlatformSettings model
+   */
+  interface PlatformSettingsFieldRefs {
+    readonly key: FieldRef<"PlatformSettings", 'String'>
+    readonly enabled: FieldRef<"PlatformSettings", 'Boolean'>
+    readonly updatedById: FieldRef<"PlatformSettings", 'String'>
+    readonly updatedByName: FieldRef<"PlatformSettings", 'String'>
+    readonly updatedAt: FieldRef<"PlatformSettings", 'DateTime'>
+    readonly createdAt: FieldRef<"PlatformSettings", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PlatformSettings findUnique
+   */
+  export type PlatformSettingsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlatformSettingsInclude<ExtArgs> | null
+    /**
+     * Filter, which PlatformSettings to fetch.
+     */
+    where: PlatformSettingsWhereUniqueInput
+  }
+
+  /**
+   * PlatformSettings findUniqueOrThrow
+   */
+  export type PlatformSettingsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlatformSettingsInclude<ExtArgs> | null
+    /**
+     * Filter, which PlatformSettings to fetch.
+     */
+    where: PlatformSettingsWhereUniqueInput
+  }
+
+  /**
+   * PlatformSettings findFirst
+   */
+  export type PlatformSettingsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlatformSettingsInclude<ExtArgs> | null
+    /**
+     * Filter, which PlatformSettings to fetch.
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlatformSettings to fetch.
+     */
+    orderBy?: PlatformSettingsOrderByWithRelationInput | PlatformSettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PlatformSettings.
+     */
+    cursor?: PlatformSettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlatformSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlatformSettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PlatformSettings.
+     */
+    distinct?: PlatformSettingsScalarFieldEnum | PlatformSettingsScalarFieldEnum[]
+  }
+
+  /**
+   * PlatformSettings findFirstOrThrow
+   */
+  export type PlatformSettingsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlatformSettingsInclude<ExtArgs> | null
+    /**
+     * Filter, which PlatformSettings to fetch.
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlatformSettings to fetch.
+     */
+    orderBy?: PlatformSettingsOrderByWithRelationInput | PlatformSettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PlatformSettings.
+     */
+    cursor?: PlatformSettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlatformSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlatformSettings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PlatformSettings.
+     */
+    distinct?: PlatformSettingsScalarFieldEnum | PlatformSettingsScalarFieldEnum[]
+  }
+
+  /**
+   * PlatformSettings findMany
+   */
+  export type PlatformSettingsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlatformSettingsInclude<ExtArgs> | null
+    /**
+     * Filter, which PlatformSettings to fetch.
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PlatformSettings to fetch.
+     */
+    orderBy?: PlatformSettingsOrderByWithRelationInput | PlatformSettingsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PlatformSettings.
+     */
+    cursor?: PlatformSettingsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PlatformSettings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PlatformSettings.
+     */
+    skip?: number
+    distinct?: PlatformSettingsScalarFieldEnum | PlatformSettingsScalarFieldEnum[]
+  }
+
+  /**
+   * PlatformSettings create
+   */
+  export type PlatformSettingsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlatformSettingsInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PlatformSettings.
+     */
+    data: XOR<PlatformSettingsCreateInput, PlatformSettingsUncheckedCreateInput>
+  }
+
+  /**
+   * PlatformSettings createMany
+   */
+  export type PlatformSettingsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PlatformSettings.
+     */
+    data: PlatformSettingsCreateManyInput | PlatformSettingsCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PlatformSettings createManyAndReturn
+   */
+  export type PlatformSettingsCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * The data used to create many PlatformSettings.
+     */
+    data: PlatformSettingsCreateManyInput | PlatformSettingsCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlatformSettingsIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PlatformSettings update
+   */
+  export type PlatformSettingsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlatformSettingsInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PlatformSettings.
+     */
+    data: XOR<PlatformSettingsUpdateInput, PlatformSettingsUncheckedUpdateInput>
+    /**
+     * Choose, which PlatformSettings to update.
+     */
+    where: PlatformSettingsWhereUniqueInput
+  }
+
+  /**
+   * PlatformSettings updateMany
+   */
+  export type PlatformSettingsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PlatformSettings.
+     */
+    data: XOR<PlatformSettingsUpdateManyMutationInput, PlatformSettingsUncheckedUpdateManyInput>
+    /**
+     * Filter which PlatformSettings to update
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * Limit how many PlatformSettings to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PlatformSettings updateManyAndReturn
+   */
+  export type PlatformSettingsUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * The data used to update PlatformSettings.
+     */
+    data: XOR<PlatformSettingsUpdateManyMutationInput, PlatformSettingsUncheckedUpdateManyInput>
+    /**
+     * Filter which PlatformSettings to update
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * Limit how many PlatformSettings to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlatformSettingsIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PlatformSettings upsert
+   */
+  export type PlatformSettingsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlatformSettingsInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PlatformSettings to update in case it exists.
+     */
+    where: PlatformSettingsWhereUniqueInput
+    /**
+     * In case the PlatformSettings found by the `where` argument doesn't exist, create a new PlatformSettings with this data.
+     */
+    create: XOR<PlatformSettingsCreateInput, PlatformSettingsUncheckedCreateInput>
+    /**
+     * In case the PlatformSettings was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PlatformSettingsUpdateInput, PlatformSettingsUncheckedUpdateInput>
+  }
+
+  /**
+   * PlatformSettings delete
+   */
+  export type PlatformSettingsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlatformSettingsInclude<ExtArgs> | null
+    /**
+     * Filter which PlatformSettings to delete.
+     */
+    where: PlatformSettingsWhereUniqueInput
+  }
+
+  /**
+   * PlatformSettings deleteMany
+   */
+  export type PlatformSettingsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PlatformSettings to delete
+     */
+    where?: PlatformSettingsWhereInput
+    /**
+     * Limit how many PlatformSettings to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PlatformSettings.updatedBy
+   */
+  export type PlatformSettings$updatedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Users
+     */
+    select?: UsersSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Users
+     */
+    omit?: UsersOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UsersInclude<ExtArgs> | null
+    where?: UsersWhereInput
+  }
+
+  /**
+   * PlatformSettings without action
+   */
+  export type PlatformSettingsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlatformSettings
+     */
+    select?: PlatformSettingsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PlatformSettings
+     */
+    omit?: PlatformSettingsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlatformSettingsInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model AuditLogs
    */
 
@@ -25373,8 +28108,16 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     eventId: 'eventId',
+    bio: 'bio',
+    imageUrl: 'imageUrl',
+    genre: 'genre',
+    instagramUrl: 'instagramUrl',
+    spotifyUrl: 'spotifyUrl',
+    websiteUrl: 'websiteUrl',
+    order: 'order',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    bioEn: 'bioEn'
   };
 
   export type ArtistsScalarFieldEnum = (typeof ArtistsScalarFieldEnum)[keyof typeof ArtistsScalarFieldEnum]
@@ -25482,6 +28225,18 @@ export namespace Prisma {
   export type FestivaliersScalarFieldEnum = (typeof FestivaliersScalarFieldEnum)[keyof typeof FestivaliersScalarFieldEnum]
 
 
+  export const PresenceLogScalarFieldEnum: {
+    id: 'id',
+    uuid: 'uuid',
+    siteId: 'siteId',
+    latitude: 'latitude',
+    longitude: 'longitude',
+    createdAt: 'createdAt'
+  };
+
+  export type PresenceLogScalarFieldEnum = (typeof PresenceLogScalarFieldEnum)[keyof typeof PresenceLogScalarFieldEnum]
+
+
   export const PushSubscriptionsScalarFieldEnum: {
     id: 'id',
     uuid: 'uuid',
@@ -25558,6 +28313,18 @@ export namespace Prisma {
   };
 
   export type AlertTimelineScalarFieldEnum = (typeof AlertTimelineScalarFieldEnum)[keyof typeof AlertTimelineScalarFieldEnum]
+
+
+  export const PlatformSettingsScalarFieldEnum: {
+    key: 'key',
+    enabled: 'enabled',
+    updatedById: 'updatedById',
+    updatedByName: 'updatedByName',
+    updatedAt: 'updatedAt',
+    createdAt: 'createdAt'
+  };
+
+  export type PlatformSettingsScalarFieldEnum = (typeof PlatformSettingsScalarFieldEnum)[keyof typeof PlatformSettingsScalarFieldEnum]
 
 
   export const AuditLogsScalarFieldEnum: {
@@ -25796,6 +28563,7 @@ export namespace Prisma {
     alerts?: AlertsListRelationFilter
     amenities?: AmenitiesListRelationFilter
     events?: EventsListRelationFilter
+    presenceLogs?: PresenceLogListRelationFilter
   }
 
   export type SitesOrderByWithRelationInput = {
@@ -25820,6 +28588,7 @@ export namespace Prisma {
     alerts?: AlertsOrderByRelationAggregateInput
     amenities?: AmenitiesOrderByRelationAggregateInput
     events?: EventsOrderByRelationAggregateInput
+    presenceLogs?: PresenceLogOrderByRelationAggregateInput
   }
 
   export type SitesWhereUniqueInput = Prisma.AtLeast<{
@@ -25847,6 +28616,7 @@ export namespace Prisma {
     alerts?: AlertsListRelationFilter
     amenities?: AmenitiesListRelationFilter
     events?: EventsListRelationFilter
+    presenceLogs?: PresenceLogListRelationFilter
   }, "id">
 
   export type SitesOrderByWithAggregationInput = {
@@ -26127,6 +28897,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Programs"> | Date | string
     updatedAt?: DateTimeFilter<"Programs"> | Date | string
     event?: XOR<EventsScalarRelationFilter, EventsWhereInput>
+    artists?: ArtistsListRelationFilter
   }
 
   export type ProgramsOrderByWithRelationInput = {
@@ -26137,6 +28908,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     event?: EventsOrderByWithRelationInput
+    artists?: ArtistsOrderByRelationAggregateInput
   }
 
   export type ProgramsWhereUniqueInput = Prisma.AtLeast<{
@@ -26150,6 +28922,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Programs"> | Date | string
     updatedAt?: DateTimeFilter<"Programs"> | Date | string
     event?: XOR<EventsScalarRelationFilter, EventsWhereInput>
+    artists?: ArtistsListRelationFilter
   }, "id">
 
   export type ProgramsOrderByWithAggregationInput = {
@@ -26183,18 +28956,36 @@ export namespace Prisma {
     id?: StringFilter<"Artists"> | string
     name?: StringFilter<"Artists"> | string
     eventId?: StringFilter<"Artists"> | string
+    bio?: StringNullableFilter<"Artists"> | string | null
+    imageUrl?: StringNullableFilter<"Artists"> | string | null
+    genre?: StringNullableFilter<"Artists"> | string | null
+    instagramUrl?: StringNullableFilter<"Artists"> | string | null
+    spotifyUrl?: StringNullableFilter<"Artists"> | string | null
+    websiteUrl?: StringNullableFilter<"Artists"> | string | null
+    order?: IntNullableFilter<"Artists"> | number | null
     createdAt?: DateTimeFilter<"Artists"> | Date | string
     updatedAt?: DateTimeFilter<"Artists"> | Date | string
+    bioEn?: StringNullableFilter<"Artists"> | string | null
     event?: XOR<EventsScalarRelationFilter, EventsWhereInput>
+    programs?: ProgramsListRelationFilter
   }
 
   export type ArtistsOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
     eventId?: SortOrder
+    bio?: SortOrderInput | SortOrder
+    imageUrl?: SortOrderInput | SortOrder
+    genre?: SortOrderInput | SortOrder
+    instagramUrl?: SortOrderInput | SortOrder
+    spotifyUrl?: SortOrderInput | SortOrder
+    websiteUrl?: SortOrderInput | SortOrder
+    order?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    bioEn?: SortOrderInput | SortOrder
     event?: EventsOrderByWithRelationInput
+    programs?: ProgramsOrderByRelationAggregateInput
   }
 
   export type ArtistsWhereUniqueInput = Prisma.AtLeast<{
@@ -26204,20 +28995,39 @@ export namespace Prisma {
     NOT?: ArtistsWhereInput | ArtistsWhereInput[]
     name?: StringFilter<"Artists"> | string
     eventId?: StringFilter<"Artists"> | string
+    bio?: StringNullableFilter<"Artists"> | string | null
+    imageUrl?: StringNullableFilter<"Artists"> | string | null
+    genre?: StringNullableFilter<"Artists"> | string | null
+    instagramUrl?: StringNullableFilter<"Artists"> | string | null
+    spotifyUrl?: StringNullableFilter<"Artists"> | string | null
+    websiteUrl?: StringNullableFilter<"Artists"> | string | null
+    order?: IntNullableFilter<"Artists"> | number | null
     createdAt?: DateTimeFilter<"Artists"> | Date | string
     updatedAt?: DateTimeFilter<"Artists"> | Date | string
+    bioEn?: StringNullableFilter<"Artists"> | string | null
     event?: XOR<EventsScalarRelationFilter, EventsWhereInput>
+    programs?: ProgramsListRelationFilter
   }, "id">
 
   export type ArtistsOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
     eventId?: SortOrder
+    bio?: SortOrderInput | SortOrder
+    imageUrl?: SortOrderInput | SortOrder
+    genre?: SortOrderInput | SortOrder
+    instagramUrl?: SortOrderInput | SortOrder
+    spotifyUrl?: SortOrderInput | SortOrder
+    websiteUrl?: SortOrderInput | SortOrder
+    order?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    bioEn?: SortOrderInput | SortOrder
     _count?: ArtistsCountOrderByAggregateInput
+    _avg?: ArtistsAvgOrderByAggregateInput
     _max?: ArtistsMaxOrderByAggregateInput
     _min?: ArtistsMinOrderByAggregateInput
+    _sum?: ArtistsSumOrderByAggregateInput
   }
 
   export type ArtistsScalarWhereWithAggregatesInput = {
@@ -26227,8 +29037,16 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Artists"> | string
     name?: StringWithAggregatesFilter<"Artists"> | string
     eventId?: StringWithAggregatesFilter<"Artists"> | string
+    bio?: StringNullableWithAggregatesFilter<"Artists"> | string | null
+    imageUrl?: StringNullableWithAggregatesFilter<"Artists"> | string | null
+    genre?: StringNullableWithAggregatesFilter<"Artists"> | string | null
+    instagramUrl?: StringNullableWithAggregatesFilter<"Artists"> | string | null
+    spotifyUrl?: StringNullableWithAggregatesFilter<"Artists"> | string | null
+    websiteUrl?: StringNullableWithAggregatesFilter<"Artists"> | string | null
+    order?: IntNullableWithAggregatesFilter<"Artists"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"Artists"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Artists"> | Date | string
+    bioEn?: StringNullableWithAggregatesFilter<"Artists"> | string | null
   }
 
   export type QuizWhereInput = {
@@ -26759,6 +29577,68 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Festivaliers"> | Date | string
   }
 
+  export type PresenceLogWhereInput = {
+    AND?: PresenceLogWhereInput | PresenceLogWhereInput[]
+    OR?: PresenceLogWhereInput[]
+    NOT?: PresenceLogWhereInput | PresenceLogWhereInput[]
+    id?: StringFilter<"PresenceLog"> | string
+    uuid?: StringFilter<"PresenceLog"> | string
+    siteId?: StringNullableFilter<"PresenceLog"> | string | null
+    latitude?: FloatFilter<"PresenceLog"> | number
+    longitude?: FloatFilter<"PresenceLog"> | number
+    createdAt?: DateTimeFilter<"PresenceLog"> | Date | string
+    site?: XOR<SitesNullableScalarRelationFilter, SitesWhereInput> | null
+  }
+
+  export type PresenceLogOrderByWithRelationInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    siteId?: SortOrderInput | SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    createdAt?: SortOrder
+    site?: SitesOrderByWithRelationInput
+  }
+
+  export type PresenceLogWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PresenceLogWhereInput | PresenceLogWhereInput[]
+    OR?: PresenceLogWhereInput[]
+    NOT?: PresenceLogWhereInput | PresenceLogWhereInput[]
+    uuid?: StringFilter<"PresenceLog"> | string
+    siteId?: StringNullableFilter<"PresenceLog"> | string | null
+    latitude?: FloatFilter<"PresenceLog"> | number
+    longitude?: FloatFilter<"PresenceLog"> | number
+    createdAt?: DateTimeFilter<"PresenceLog"> | Date | string
+    site?: XOR<SitesNullableScalarRelationFilter, SitesWhereInput> | null
+  }, "id">
+
+  export type PresenceLogOrderByWithAggregationInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    siteId?: SortOrderInput | SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    createdAt?: SortOrder
+    _count?: PresenceLogCountOrderByAggregateInput
+    _avg?: PresenceLogAvgOrderByAggregateInput
+    _max?: PresenceLogMaxOrderByAggregateInput
+    _min?: PresenceLogMinOrderByAggregateInput
+    _sum?: PresenceLogSumOrderByAggregateInput
+  }
+
+  export type PresenceLogScalarWhereWithAggregatesInput = {
+    AND?: PresenceLogScalarWhereWithAggregatesInput | PresenceLogScalarWhereWithAggregatesInput[]
+    OR?: PresenceLogScalarWhereWithAggregatesInput[]
+    NOT?: PresenceLogScalarWhereWithAggregatesInput | PresenceLogScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PresenceLog"> | string
+    uuid?: StringWithAggregatesFilter<"PresenceLog"> | string
+    siteId?: StringNullableWithAggregatesFilter<"PresenceLog"> | string | null
+    latitude?: FloatWithAggregatesFilter<"PresenceLog"> | number
+    longitude?: FloatWithAggregatesFilter<"PresenceLog"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"PresenceLog"> | Date | string
+  }
+
   export type PushSubscriptionsWhereInput = {
     AND?: PushSubscriptionsWhereInput | PushSubscriptionsWhereInput[]
     OR?: PushSubscriptionsWhereInput[]
@@ -26833,6 +29713,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Users"> | Date | string
     updatedAt?: DateTimeFilter<"Users"> | Date | string
     alertTimelines?: AlertTimelineListRelationFilter
+    platformSettingChanges?: PlatformSettingsListRelationFilter
   }
 
   export type UsersOrderByWithRelationInput = {
@@ -26849,6 +29730,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     alertTimelines?: AlertTimelineOrderByRelationAggregateInput
+    platformSettingChanges?: PlatformSettingsOrderByRelationAggregateInput
   }
 
   export type UsersWhereUniqueInput = Prisma.AtLeast<{
@@ -26868,6 +29750,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Users"> | Date | string
     updatedAt?: DateTimeFilter<"Users"> | Date | string
     alertTimelines?: AlertTimelineListRelationFilter
+    platformSettingChanges?: PlatformSettingsListRelationFilter
   }, "id" | "email">
 
   export type UsersOrderByWithAggregationInput = {
@@ -27151,6 +30034,66 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"AlertTimeline"> | Date | string
   }
 
+  export type PlatformSettingsWhereInput = {
+    AND?: PlatformSettingsWhereInput | PlatformSettingsWhereInput[]
+    OR?: PlatformSettingsWhereInput[]
+    NOT?: PlatformSettingsWhereInput | PlatformSettingsWhereInput[]
+    key?: StringFilter<"PlatformSettings"> | string
+    enabled?: BoolFilter<"PlatformSettings"> | boolean
+    updatedById?: StringNullableFilter<"PlatformSettings"> | string | null
+    updatedByName?: StringNullableFilter<"PlatformSettings"> | string | null
+    updatedAt?: DateTimeFilter<"PlatformSettings"> | Date | string
+    createdAt?: DateTimeFilter<"PlatformSettings"> | Date | string
+    updatedBy?: XOR<UsersNullableScalarRelationFilter, UsersWhereInput> | null
+  }
+
+  export type PlatformSettingsOrderByWithRelationInput = {
+    key?: SortOrder
+    enabled?: SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    updatedByName?: SortOrderInput | SortOrder
+    updatedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedBy?: UsersOrderByWithRelationInput
+  }
+
+  export type PlatformSettingsWhereUniqueInput = Prisma.AtLeast<{
+    key?: string
+    AND?: PlatformSettingsWhereInput | PlatformSettingsWhereInput[]
+    OR?: PlatformSettingsWhereInput[]
+    NOT?: PlatformSettingsWhereInput | PlatformSettingsWhereInput[]
+    enabled?: BoolFilter<"PlatformSettings"> | boolean
+    updatedById?: StringNullableFilter<"PlatformSettings"> | string | null
+    updatedByName?: StringNullableFilter<"PlatformSettings"> | string | null
+    updatedAt?: DateTimeFilter<"PlatformSettings"> | Date | string
+    createdAt?: DateTimeFilter<"PlatformSettings"> | Date | string
+    updatedBy?: XOR<UsersNullableScalarRelationFilter, UsersWhereInput> | null
+  }, "key">
+
+  export type PlatformSettingsOrderByWithAggregationInput = {
+    key?: SortOrder
+    enabled?: SortOrder
+    updatedById?: SortOrderInput | SortOrder
+    updatedByName?: SortOrderInput | SortOrder
+    updatedAt?: SortOrder
+    createdAt?: SortOrder
+    _count?: PlatformSettingsCountOrderByAggregateInput
+    _max?: PlatformSettingsMaxOrderByAggregateInput
+    _min?: PlatformSettingsMinOrderByAggregateInput
+  }
+
+  export type PlatformSettingsScalarWhereWithAggregatesInput = {
+    AND?: PlatformSettingsScalarWhereWithAggregatesInput | PlatformSettingsScalarWhereWithAggregatesInput[]
+    OR?: PlatformSettingsScalarWhereWithAggregatesInput[]
+    NOT?: PlatformSettingsScalarWhereWithAggregatesInput | PlatformSettingsScalarWhereWithAggregatesInput[]
+    key?: StringWithAggregatesFilter<"PlatformSettings"> | string
+    enabled?: BoolWithAggregatesFilter<"PlatformSettings"> | boolean
+    updatedById?: StringNullableWithAggregatesFilter<"PlatformSettings"> | string | null
+    updatedByName?: StringNullableWithAggregatesFilter<"PlatformSettings"> | string | null
+    updatedAt?: DateTimeWithAggregatesFilter<"PlatformSettings"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"PlatformSettings"> | Date | string
+  }
+
   export type AuditLogsWhereInput = {
     AND?: AuditLogsWhereInput | AuditLogsWhereInput[]
     OR?: AuditLogsWhereInput[]
@@ -27245,6 +30188,7 @@ export namespace Prisma {
     alerts?: AlertsCreateNestedManyWithoutSiteInput
     amenities?: AmenitiesCreateNestedManyWithoutSiteInput
     events?: EventsCreateNestedManyWithoutSiteInput
+    presenceLogs?: PresenceLogCreateNestedManyWithoutSiteInput
   }
 
   export type SitesUncheckedCreateInput = {
@@ -27269,6 +30213,7 @@ export namespace Prisma {
     alerts?: AlertsUncheckedCreateNestedManyWithoutSiteInput
     amenities?: AmenitiesUncheckedCreateNestedManyWithoutSiteInput
     events?: EventsUncheckedCreateNestedManyWithoutSiteInput
+    presenceLogs?: PresenceLogUncheckedCreateNestedManyWithoutSiteInput
   }
 
   export type SitesUpdateInput = {
@@ -27293,6 +30238,7 @@ export namespace Prisma {
     alerts?: AlertsUpdateManyWithoutSiteNestedInput
     amenities?: AmenitiesUpdateManyWithoutSiteNestedInput
     events?: EventsUpdateManyWithoutSiteNestedInput
+    presenceLogs?: PresenceLogUpdateManyWithoutSiteNestedInput
   }
 
   export type SitesUncheckedUpdateInput = {
@@ -27317,6 +30263,7 @@ export namespace Prisma {
     alerts?: AlertsUncheckedUpdateManyWithoutSiteNestedInput
     amenities?: AmenitiesUncheckedUpdateManyWithoutSiteNestedInput
     events?: EventsUncheckedUpdateManyWithoutSiteNestedInput
+    presenceLogs?: PresenceLogUncheckedUpdateManyWithoutSiteNestedInput
   }
 
   export type SitesCreateManyInput = {
@@ -27626,6 +30573,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     event: EventsCreateNestedOneWithoutProgramsInput
+    artists?: ArtistsCreateNestedManyWithoutProgramsInput
   }
 
   export type ProgramsUncheckedCreateInput = {
@@ -27635,6 +30583,7 @@ export namespace Prisma {
     eventId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    artists?: ArtistsUncheckedCreateNestedManyWithoutProgramsInput
   }
 
   export type ProgramsUpdateInput = {
@@ -27644,6 +30593,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     event?: EventsUpdateOneRequiredWithoutProgramsNestedInput
+    artists?: ArtistsUpdateManyWithoutProgramsNestedInput
   }
 
   export type ProgramsUncheckedUpdateInput = {
@@ -27653,6 +30603,7 @@ export namespace Prisma {
     eventId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    artists?: ArtistsUncheckedUpdateManyWithoutProgramsNestedInput
   }
 
   export type ProgramsCreateManyInput = {
@@ -27684,56 +30635,116 @@ export namespace Prisma {
   export type ArtistsCreateInput = {
     id?: string
     name: string
+    bio?: string | null
+    imageUrl?: string | null
+    genre?: string | null
+    instagramUrl?: string | null
+    spotifyUrl?: string | null
+    websiteUrl?: string | null
+    order?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    bioEn?: string | null
     event: EventsCreateNestedOneWithoutArtistsInput
+    programs?: ProgramsCreateNestedManyWithoutArtistsInput
   }
 
   export type ArtistsUncheckedCreateInput = {
     id?: string
     name: string
     eventId: string
+    bio?: string | null
+    imageUrl?: string | null
+    genre?: string | null
+    instagramUrl?: string | null
+    spotifyUrl?: string | null
+    websiteUrl?: string | null
+    order?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    bioEn?: string | null
+    programs?: ProgramsUncheckedCreateNestedManyWithoutArtistsInput
   }
 
   export type ArtistsUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    genre?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    spotifyUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bioEn?: NullableStringFieldUpdateOperationsInput | string | null
     event?: EventsUpdateOneRequiredWithoutArtistsNestedInput
+    programs?: ProgramsUpdateManyWithoutArtistsNestedInput
   }
 
   export type ArtistsUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     eventId?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    genre?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    spotifyUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bioEn?: NullableStringFieldUpdateOperationsInput | string | null
+    programs?: ProgramsUncheckedUpdateManyWithoutArtistsNestedInput
   }
 
   export type ArtistsCreateManyInput = {
     id?: string
     name: string
     eventId: string
+    bio?: string | null
+    imageUrl?: string | null
+    genre?: string | null
+    instagramUrl?: string | null
+    spotifyUrl?: string | null
+    websiteUrl?: string | null
+    order?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    bioEn?: string | null
   }
 
   export type ArtistsUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    genre?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    spotifyUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bioEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ArtistsUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     eventId?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    genre?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    spotifyUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bioEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type QuizCreateInput = {
@@ -28300,6 +31311,68 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PresenceLogCreateInput = {
+    id?: string
+    uuid: string
+    latitude: number
+    longitude: number
+    createdAt?: Date | string
+    site?: SitesCreateNestedOneWithoutPresenceLogsInput
+  }
+
+  export type PresenceLogUncheckedCreateInput = {
+    id?: string
+    uuid: string
+    siteId?: string | null
+    latitude: number
+    longitude: number
+    createdAt?: Date | string
+  }
+
+  export type PresenceLogUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    site?: SitesUpdateOneWithoutPresenceLogsNestedInput
+  }
+
+  export type PresenceLogUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    siteId?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PresenceLogCreateManyInput = {
+    id?: string
+    uuid: string
+    siteId?: string | null
+    latitude: number
+    longitude: number
+    createdAt?: Date | string
+  }
+
+  export type PresenceLogUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PresenceLogUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    siteId?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type PushSubscriptionsCreateInput = {
     id?: string
     uuid: string
@@ -28377,6 +31450,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     alertTimelines?: AlertTimelineCreateNestedManyWithoutUserInput
+    platformSettingChanges?: PlatformSettingsCreateNestedManyWithoutUpdatedByInput
   }
 
   export type UsersUncheckedCreateInput = {
@@ -28393,6 +31467,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     alertTimelines?: AlertTimelineUncheckedCreateNestedManyWithoutUserInput
+    platformSettingChanges?: PlatformSettingsUncheckedCreateNestedManyWithoutUpdatedByInput
   }
 
   export type UsersUpdateInput = {
@@ -28409,6 +31484,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     alertTimelines?: AlertTimelineUpdateManyWithoutUserNestedInput
+    platformSettingChanges?: PlatformSettingsUpdateManyWithoutUpdatedByNestedInput
   }
 
   export type UsersUncheckedUpdateInput = {
@@ -28425,6 +31501,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     alertTimelines?: AlertTimelineUncheckedUpdateManyWithoutUserNestedInput
+    platformSettingChanges?: PlatformSettingsUncheckedUpdateManyWithoutUpdatedByNestedInput
   }
 
   export type UsersCreateManyInput = {
@@ -28746,6 +31823,68 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PlatformSettingsCreateInput = {
+    key: string
+    enabled?: boolean
+    updatedByName?: string | null
+    updatedAt?: Date | string
+    createdAt?: Date | string
+    updatedBy?: UsersCreateNestedOneWithoutPlatformSettingChangesInput
+  }
+
+  export type PlatformSettingsUncheckedCreateInput = {
+    key: string
+    enabled?: boolean
+    updatedById?: string | null
+    updatedByName?: string | null
+    updatedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type PlatformSettingsUpdateInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    updatedByName?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedBy?: UsersUpdateOneWithoutPlatformSettingChangesNestedInput
+  }
+
+  export type PlatformSettingsUncheckedUpdateInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedByName?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlatformSettingsCreateManyInput = {
+    key: string
+    enabled?: boolean
+    updatedById?: string | null
+    updatedByName?: string | null
+    updatedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type PlatformSettingsUpdateManyMutationInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    updatedByName?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlatformSettingsUncheckedUpdateManyInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    updatedById?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedByName?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type AuditLogsCreateInput = {
     id?: string
     action: string
@@ -28929,6 +32068,12 @@ export namespace Prisma {
     none?: EventsWhereInput
   }
 
+  export type PresenceLogListRelationFilter = {
+    every?: PresenceLogWhereInput
+    some?: PresenceLogWhereInput
+    none?: PresenceLogWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -28943,6 +32088,10 @@ export namespace Prisma {
   }
 
   export type EventsOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PresenceLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -29299,28 +32448,87 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type ArtistsCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     eventId?: SortOrder
+    bio?: SortOrder
+    imageUrl?: SortOrder
+    genre?: SortOrder
+    instagramUrl?: SortOrder
+    spotifyUrl?: SortOrder
+    websiteUrl?: SortOrder
+    order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    bioEn?: SortOrder
+  }
+
+  export type ArtistsAvgOrderByAggregateInput = {
+    order?: SortOrder
   }
 
   export type ArtistsMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     eventId?: SortOrder
+    bio?: SortOrder
+    imageUrl?: SortOrder
+    genre?: SortOrder
+    instagramUrl?: SortOrder
+    spotifyUrl?: SortOrder
+    websiteUrl?: SortOrder
+    order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    bioEn?: SortOrder
   }
 
   export type ArtistsMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     eventId?: SortOrder
+    bio?: SortOrder
+    imageUrl?: SortOrder
+    genre?: SortOrder
+    instagramUrl?: SortOrder
+    spotifyUrl?: SortOrder
+    websiteUrl?: SortOrder
+    order?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    bioEn?: SortOrder
+  }
+
+  export type ArtistsSumOrderByAggregateInput = {
+    order?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type BoolFilter<$PrismaModel = never> = {
@@ -29741,6 +32949,48 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type SitesNullableScalarRelationFilter = {
+    is?: SitesWhereInput | null
+    isNot?: SitesWhereInput | null
+  }
+
+  export type PresenceLogCountOrderByAggregateInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    siteId?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PresenceLogAvgOrderByAggregateInput = {
+    latitude?: SortOrder
+    longitude?: SortOrder
+  }
+
+  export type PresenceLogMaxOrderByAggregateInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    siteId?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PresenceLogMinOrderByAggregateInput = {
+    id?: SortOrder
+    uuid?: SortOrder
+    siteId?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PresenceLogSumOrderByAggregateInput = {
+    latitude?: SortOrder
+    longitude?: SortOrder
+  }
+
   export type PushSubscriptionsCountOrderByAggregateInput = {
     id?: SortOrder
     uuid?: SortOrder
@@ -29774,7 +33024,17 @@ export namespace Prisma {
     none?: AlertTimelineWhereInput
   }
 
+  export type PlatformSettingsListRelationFilter = {
+    every?: PlatformSettingsWhereInput
+    some?: PlatformSettingsWhereInput
+    none?: PlatformSettingsWhereInput
+  }
+
   export type AlertTimelineOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PlatformSettingsOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -29878,11 +33138,6 @@ export namespace Prisma {
     gte?: string | StringFieldRefInput<$PrismaModel>
     mode?: QueryMode
     not?: NestedUuidFilter<$PrismaModel> | string
-  }
-
-  export type SitesNullableScalarRelationFilter = {
-    is?: SitesWhereInput | null
-    isNot?: SitesWhereInput | null
   }
 
   export type AlertsCountOrderByAggregateInput = {
@@ -29989,6 +33244,33 @@ export namespace Prisma {
     note?: SortOrder
     userId?: SortOrder
     userName?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PlatformSettingsCountOrderByAggregateInput = {
+    key?: SortOrder
+    enabled?: SortOrder
+    updatedById?: SortOrder
+    updatedByName?: SortOrder
+    updatedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PlatformSettingsMaxOrderByAggregateInput = {
+    key?: SortOrder
+    enabled?: SortOrder
+    updatedById?: SortOrder
+    updatedByName?: SortOrder
+    updatedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PlatformSettingsMinOrderByAggregateInput = {
+    key?: SortOrder
+    enabled?: SortOrder
+    updatedById?: SortOrder
+    updatedByName?: SortOrder
+    updatedAt?: SortOrder
     createdAt?: SortOrder
   }
   export type JsonNullableFilter<$PrismaModel = never> =
@@ -30123,6 +33405,13 @@ export namespace Prisma {
     connect?: EventsWhereUniqueInput | EventsWhereUniqueInput[]
   }
 
+  export type PresenceLogCreateNestedManyWithoutSiteInput = {
+    create?: XOR<PresenceLogCreateWithoutSiteInput, PresenceLogUncheckedCreateWithoutSiteInput> | PresenceLogCreateWithoutSiteInput[] | PresenceLogUncheckedCreateWithoutSiteInput[]
+    connectOrCreate?: PresenceLogCreateOrConnectWithoutSiteInput | PresenceLogCreateOrConnectWithoutSiteInput[]
+    createMany?: PresenceLogCreateManySiteInputEnvelope
+    connect?: PresenceLogWhereUniqueInput | PresenceLogWhereUniqueInput[]
+  }
+
   export type AlertsUncheckedCreateNestedManyWithoutSiteInput = {
     create?: XOR<AlertsCreateWithoutSiteInput, AlertsUncheckedCreateWithoutSiteInput> | AlertsCreateWithoutSiteInput[] | AlertsUncheckedCreateWithoutSiteInput[]
     connectOrCreate?: AlertsCreateOrConnectWithoutSiteInput | AlertsCreateOrConnectWithoutSiteInput[]
@@ -30142,6 +33431,13 @@ export namespace Prisma {
     connectOrCreate?: EventsCreateOrConnectWithoutSiteInput | EventsCreateOrConnectWithoutSiteInput[]
     createMany?: EventsCreateManySiteInputEnvelope
     connect?: EventsWhereUniqueInput | EventsWhereUniqueInput[]
+  }
+
+  export type PresenceLogUncheckedCreateNestedManyWithoutSiteInput = {
+    create?: XOR<PresenceLogCreateWithoutSiteInput, PresenceLogUncheckedCreateWithoutSiteInput> | PresenceLogCreateWithoutSiteInput[] | PresenceLogUncheckedCreateWithoutSiteInput[]
+    connectOrCreate?: PresenceLogCreateOrConnectWithoutSiteInput | PresenceLogCreateOrConnectWithoutSiteInput[]
+    createMany?: PresenceLogCreateManySiteInputEnvelope
+    connect?: PresenceLogWhereUniqueInput | PresenceLogWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -30226,6 +33522,20 @@ export namespace Prisma {
     deleteMany?: EventsScalarWhereInput | EventsScalarWhereInput[]
   }
 
+  export type PresenceLogUpdateManyWithoutSiteNestedInput = {
+    create?: XOR<PresenceLogCreateWithoutSiteInput, PresenceLogUncheckedCreateWithoutSiteInput> | PresenceLogCreateWithoutSiteInput[] | PresenceLogUncheckedCreateWithoutSiteInput[]
+    connectOrCreate?: PresenceLogCreateOrConnectWithoutSiteInput | PresenceLogCreateOrConnectWithoutSiteInput[]
+    upsert?: PresenceLogUpsertWithWhereUniqueWithoutSiteInput | PresenceLogUpsertWithWhereUniqueWithoutSiteInput[]
+    createMany?: PresenceLogCreateManySiteInputEnvelope
+    set?: PresenceLogWhereUniqueInput | PresenceLogWhereUniqueInput[]
+    disconnect?: PresenceLogWhereUniqueInput | PresenceLogWhereUniqueInput[]
+    delete?: PresenceLogWhereUniqueInput | PresenceLogWhereUniqueInput[]
+    connect?: PresenceLogWhereUniqueInput | PresenceLogWhereUniqueInput[]
+    update?: PresenceLogUpdateWithWhereUniqueWithoutSiteInput | PresenceLogUpdateWithWhereUniqueWithoutSiteInput[]
+    updateMany?: PresenceLogUpdateManyWithWhereWithoutSiteInput | PresenceLogUpdateManyWithWhereWithoutSiteInput[]
+    deleteMany?: PresenceLogScalarWhereInput | PresenceLogScalarWhereInput[]
+  }
+
   export type AlertsUncheckedUpdateManyWithoutSiteNestedInput = {
     create?: XOR<AlertsCreateWithoutSiteInput, AlertsUncheckedCreateWithoutSiteInput> | AlertsCreateWithoutSiteInput[] | AlertsUncheckedCreateWithoutSiteInput[]
     connectOrCreate?: AlertsCreateOrConnectWithoutSiteInput | AlertsCreateOrConnectWithoutSiteInput[]
@@ -30266,6 +33576,20 @@ export namespace Prisma {
     update?: EventsUpdateWithWhereUniqueWithoutSiteInput | EventsUpdateWithWhereUniqueWithoutSiteInput[]
     updateMany?: EventsUpdateManyWithWhereWithoutSiteInput | EventsUpdateManyWithWhereWithoutSiteInput[]
     deleteMany?: EventsScalarWhereInput | EventsScalarWhereInput[]
+  }
+
+  export type PresenceLogUncheckedUpdateManyWithoutSiteNestedInput = {
+    create?: XOR<PresenceLogCreateWithoutSiteInput, PresenceLogUncheckedCreateWithoutSiteInput> | PresenceLogCreateWithoutSiteInput[] | PresenceLogUncheckedCreateWithoutSiteInput[]
+    connectOrCreate?: PresenceLogCreateOrConnectWithoutSiteInput | PresenceLogCreateOrConnectWithoutSiteInput[]
+    upsert?: PresenceLogUpsertWithWhereUniqueWithoutSiteInput | PresenceLogUpsertWithWhereUniqueWithoutSiteInput[]
+    createMany?: PresenceLogCreateManySiteInputEnvelope
+    set?: PresenceLogWhereUniqueInput | PresenceLogWhereUniqueInput[]
+    disconnect?: PresenceLogWhereUniqueInput | PresenceLogWhereUniqueInput[]
+    delete?: PresenceLogWhereUniqueInput | PresenceLogWhereUniqueInput[]
+    connect?: PresenceLogWhereUniqueInput | PresenceLogWhereUniqueInput[]
+    update?: PresenceLogUpdateWithWhereUniqueWithoutSiteInput | PresenceLogUpdateWithWhereUniqueWithoutSiteInput[]
+    updateMany?: PresenceLogUpdateManyWithWhereWithoutSiteInput | PresenceLogUpdateManyWithWhereWithoutSiteInput[]
+    deleteMany?: PresenceLogScalarWhereInput | PresenceLogScalarWhereInput[]
   }
 
   export type SitesCreateNestedOneWithoutAmenitiesInput = {
@@ -30484,6 +33808,18 @@ export namespace Prisma {
     connect?: EventsWhereUniqueInput
   }
 
+  export type ArtistsCreateNestedManyWithoutProgramsInput = {
+    create?: XOR<ArtistsCreateWithoutProgramsInput, ArtistsUncheckedCreateWithoutProgramsInput> | ArtistsCreateWithoutProgramsInput[] | ArtistsUncheckedCreateWithoutProgramsInput[]
+    connectOrCreate?: ArtistsCreateOrConnectWithoutProgramsInput | ArtistsCreateOrConnectWithoutProgramsInput[]
+    connect?: ArtistsWhereUniqueInput | ArtistsWhereUniqueInput[]
+  }
+
+  export type ArtistsUncheckedCreateNestedManyWithoutProgramsInput = {
+    create?: XOR<ArtistsCreateWithoutProgramsInput, ArtistsUncheckedCreateWithoutProgramsInput> | ArtistsCreateWithoutProgramsInput[] | ArtistsUncheckedCreateWithoutProgramsInput[]
+    connectOrCreate?: ArtistsCreateOrConnectWithoutProgramsInput | ArtistsCreateOrConnectWithoutProgramsInput[]
+    connect?: ArtistsWhereUniqueInput | ArtistsWhereUniqueInput[]
+  }
+
   export type EventsUpdateOneRequiredWithoutProgramsNestedInput = {
     create?: XOR<EventsCreateWithoutProgramsInput, EventsUncheckedCreateWithoutProgramsInput>
     connectOrCreate?: EventsCreateOrConnectWithoutProgramsInput
@@ -30492,10 +33828,56 @@ export namespace Prisma {
     update?: XOR<XOR<EventsUpdateToOneWithWhereWithoutProgramsInput, EventsUpdateWithoutProgramsInput>, EventsUncheckedUpdateWithoutProgramsInput>
   }
 
+  export type ArtistsUpdateManyWithoutProgramsNestedInput = {
+    create?: XOR<ArtistsCreateWithoutProgramsInput, ArtistsUncheckedCreateWithoutProgramsInput> | ArtistsCreateWithoutProgramsInput[] | ArtistsUncheckedCreateWithoutProgramsInput[]
+    connectOrCreate?: ArtistsCreateOrConnectWithoutProgramsInput | ArtistsCreateOrConnectWithoutProgramsInput[]
+    upsert?: ArtistsUpsertWithWhereUniqueWithoutProgramsInput | ArtistsUpsertWithWhereUniqueWithoutProgramsInput[]
+    set?: ArtistsWhereUniqueInput | ArtistsWhereUniqueInput[]
+    disconnect?: ArtistsWhereUniqueInput | ArtistsWhereUniqueInput[]
+    delete?: ArtistsWhereUniqueInput | ArtistsWhereUniqueInput[]
+    connect?: ArtistsWhereUniqueInput | ArtistsWhereUniqueInput[]
+    update?: ArtistsUpdateWithWhereUniqueWithoutProgramsInput | ArtistsUpdateWithWhereUniqueWithoutProgramsInput[]
+    updateMany?: ArtistsUpdateManyWithWhereWithoutProgramsInput | ArtistsUpdateManyWithWhereWithoutProgramsInput[]
+    deleteMany?: ArtistsScalarWhereInput | ArtistsScalarWhereInput[]
+  }
+
+  export type ArtistsUncheckedUpdateManyWithoutProgramsNestedInput = {
+    create?: XOR<ArtistsCreateWithoutProgramsInput, ArtistsUncheckedCreateWithoutProgramsInput> | ArtistsCreateWithoutProgramsInput[] | ArtistsUncheckedCreateWithoutProgramsInput[]
+    connectOrCreate?: ArtistsCreateOrConnectWithoutProgramsInput | ArtistsCreateOrConnectWithoutProgramsInput[]
+    upsert?: ArtistsUpsertWithWhereUniqueWithoutProgramsInput | ArtistsUpsertWithWhereUniqueWithoutProgramsInput[]
+    set?: ArtistsWhereUniqueInput | ArtistsWhereUniqueInput[]
+    disconnect?: ArtistsWhereUniqueInput | ArtistsWhereUniqueInput[]
+    delete?: ArtistsWhereUniqueInput | ArtistsWhereUniqueInput[]
+    connect?: ArtistsWhereUniqueInput | ArtistsWhereUniqueInput[]
+    update?: ArtistsUpdateWithWhereUniqueWithoutProgramsInput | ArtistsUpdateWithWhereUniqueWithoutProgramsInput[]
+    updateMany?: ArtistsUpdateManyWithWhereWithoutProgramsInput | ArtistsUpdateManyWithWhereWithoutProgramsInput[]
+    deleteMany?: ArtistsScalarWhereInput | ArtistsScalarWhereInput[]
+  }
+
   export type EventsCreateNestedOneWithoutArtistsInput = {
     create?: XOR<EventsCreateWithoutArtistsInput, EventsUncheckedCreateWithoutArtistsInput>
     connectOrCreate?: EventsCreateOrConnectWithoutArtistsInput
     connect?: EventsWhereUniqueInput
+  }
+
+  export type ProgramsCreateNestedManyWithoutArtistsInput = {
+    create?: XOR<ProgramsCreateWithoutArtistsInput, ProgramsUncheckedCreateWithoutArtistsInput> | ProgramsCreateWithoutArtistsInput[] | ProgramsUncheckedCreateWithoutArtistsInput[]
+    connectOrCreate?: ProgramsCreateOrConnectWithoutArtistsInput | ProgramsCreateOrConnectWithoutArtistsInput[]
+    connect?: ProgramsWhereUniqueInput | ProgramsWhereUniqueInput[]
+  }
+
+  export type ProgramsUncheckedCreateNestedManyWithoutArtistsInput = {
+    create?: XOR<ProgramsCreateWithoutArtistsInput, ProgramsUncheckedCreateWithoutArtistsInput> | ProgramsCreateWithoutArtistsInput[] | ProgramsUncheckedCreateWithoutArtistsInput[]
+    connectOrCreate?: ProgramsCreateOrConnectWithoutArtistsInput | ProgramsCreateOrConnectWithoutArtistsInput[]
+    connect?: ProgramsWhereUniqueInput | ProgramsWhereUniqueInput[]
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type EventsUpdateOneRequiredWithoutArtistsNestedInput = {
@@ -30504,6 +33886,32 @@ export namespace Prisma {
     upsert?: EventsUpsertWithoutArtistsInput
     connect?: EventsWhereUniqueInput
     update?: XOR<XOR<EventsUpdateToOneWithWhereWithoutArtistsInput, EventsUpdateWithoutArtistsInput>, EventsUncheckedUpdateWithoutArtistsInput>
+  }
+
+  export type ProgramsUpdateManyWithoutArtistsNestedInput = {
+    create?: XOR<ProgramsCreateWithoutArtistsInput, ProgramsUncheckedCreateWithoutArtistsInput> | ProgramsCreateWithoutArtistsInput[] | ProgramsUncheckedCreateWithoutArtistsInput[]
+    connectOrCreate?: ProgramsCreateOrConnectWithoutArtistsInput | ProgramsCreateOrConnectWithoutArtistsInput[]
+    upsert?: ProgramsUpsertWithWhereUniqueWithoutArtistsInput | ProgramsUpsertWithWhereUniqueWithoutArtistsInput[]
+    set?: ProgramsWhereUniqueInput | ProgramsWhereUniqueInput[]
+    disconnect?: ProgramsWhereUniqueInput | ProgramsWhereUniqueInput[]
+    delete?: ProgramsWhereUniqueInput | ProgramsWhereUniqueInput[]
+    connect?: ProgramsWhereUniqueInput | ProgramsWhereUniqueInput[]
+    update?: ProgramsUpdateWithWhereUniqueWithoutArtistsInput | ProgramsUpdateWithWhereUniqueWithoutArtistsInput[]
+    updateMany?: ProgramsUpdateManyWithWhereWithoutArtistsInput | ProgramsUpdateManyWithWhereWithoutArtistsInput[]
+    deleteMany?: ProgramsScalarWhereInput | ProgramsScalarWhereInput[]
+  }
+
+  export type ProgramsUncheckedUpdateManyWithoutArtistsNestedInput = {
+    create?: XOR<ProgramsCreateWithoutArtistsInput, ProgramsUncheckedCreateWithoutArtistsInput> | ProgramsCreateWithoutArtistsInput[] | ProgramsUncheckedCreateWithoutArtistsInput[]
+    connectOrCreate?: ProgramsCreateOrConnectWithoutArtistsInput | ProgramsCreateOrConnectWithoutArtistsInput[]
+    upsert?: ProgramsUpsertWithWhereUniqueWithoutArtistsInput | ProgramsUpsertWithWhereUniqueWithoutArtistsInput[]
+    set?: ProgramsWhereUniqueInput | ProgramsWhereUniqueInput[]
+    disconnect?: ProgramsWhereUniqueInput | ProgramsWhereUniqueInput[]
+    delete?: ProgramsWhereUniqueInput | ProgramsWhereUniqueInput[]
+    connect?: ProgramsWhereUniqueInput | ProgramsWhereUniqueInput[]
+    update?: ProgramsUpdateWithWhereUniqueWithoutArtistsInput | ProgramsUpdateWithWhereUniqueWithoutArtistsInput[]
+    updateMany?: ProgramsUpdateManyWithWhereWithoutArtistsInput | ProgramsUpdateManyWithWhereWithoutArtistsInput[]
+    deleteMany?: ProgramsScalarWhereInput | ProgramsScalarWhereInput[]
   }
 
   export type QuestionsCreateNestedManyWithoutQuizInput = {
@@ -30882,6 +34290,22 @@ export namespace Prisma {
     set?: Date | string | null
   }
 
+  export type SitesCreateNestedOneWithoutPresenceLogsInput = {
+    create?: XOR<SitesCreateWithoutPresenceLogsInput, SitesUncheckedCreateWithoutPresenceLogsInput>
+    connectOrCreate?: SitesCreateOrConnectWithoutPresenceLogsInput
+    connect?: SitesWhereUniqueInput
+  }
+
+  export type SitesUpdateOneWithoutPresenceLogsNestedInput = {
+    create?: XOR<SitesCreateWithoutPresenceLogsInput, SitesUncheckedCreateWithoutPresenceLogsInput>
+    connectOrCreate?: SitesCreateOrConnectWithoutPresenceLogsInput
+    upsert?: SitesUpsertWithoutPresenceLogsInput
+    disconnect?: SitesWhereInput | boolean
+    delete?: SitesWhereInput | boolean
+    connect?: SitesWhereUniqueInput
+    update?: XOR<XOR<SitesUpdateToOneWithWhereWithoutPresenceLogsInput, SitesUpdateWithoutPresenceLogsInput>, SitesUncheckedUpdateWithoutPresenceLogsInput>
+  }
+
   export type AlertTimelineCreateNestedManyWithoutUserInput = {
     create?: XOR<AlertTimelineCreateWithoutUserInput, AlertTimelineUncheckedCreateWithoutUserInput> | AlertTimelineCreateWithoutUserInput[] | AlertTimelineUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AlertTimelineCreateOrConnectWithoutUserInput | AlertTimelineCreateOrConnectWithoutUserInput[]
@@ -30889,11 +34313,25 @@ export namespace Prisma {
     connect?: AlertTimelineWhereUniqueInput | AlertTimelineWhereUniqueInput[]
   }
 
+  export type PlatformSettingsCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<PlatformSettingsCreateWithoutUpdatedByInput, PlatformSettingsUncheckedCreateWithoutUpdatedByInput> | PlatformSettingsCreateWithoutUpdatedByInput[] | PlatformSettingsUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: PlatformSettingsCreateOrConnectWithoutUpdatedByInput | PlatformSettingsCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: PlatformSettingsCreateManyUpdatedByInputEnvelope
+    connect?: PlatformSettingsWhereUniqueInput | PlatformSettingsWhereUniqueInput[]
+  }
+
   export type AlertTimelineUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AlertTimelineCreateWithoutUserInput, AlertTimelineUncheckedCreateWithoutUserInput> | AlertTimelineCreateWithoutUserInput[] | AlertTimelineUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AlertTimelineCreateOrConnectWithoutUserInput | AlertTimelineCreateOrConnectWithoutUserInput[]
     createMany?: AlertTimelineCreateManyUserInputEnvelope
     connect?: AlertTimelineWhereUniqueInput | AlertTimelineWhereUniqueInput[]
+  }
+
+  export type PlatformSettingsUncheckedCreateNestedManyWithoutUpdatedByInput = {
+    create?: XOR<PlatformSettingsCreateWithoutUpdatedByInput, PlatformSettingsUncheckedCreateWithoutUpdatedByInput> | PlatformSettingsCreateWithoutUpdatedByInput[] | PlatformSettingsUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: PlatformSettingsCreateOrConnectWithoutUpdatedByInput | PlatformSettingsCreateOrConnectWithoutUpdatedByInput[]
+    createMany?: PlatformSettingsCreateManyUpdatedByInputEnvelope
+    connect?: PlatformSettingsWhereUniqueInput | PlatformSettingsWhereUniqueInput[]
   }
 
   export type AlertTimelineUpdateManyWithoutUserNestedInput = {
@@ -30910,6 +34348,20 @@ export namespace Prisma {
     deleteMany?: AlertTimelineScalarWhereInput | AlertTimelineScalarWhereInput[]
   }
 
+  export type PlatformSettingsUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<PlatformSettingsCreateWithoutUpdatedByInput, PlatformSettingsUncheckedCreateWithoutUpdatedByInput> | PlatformSettingsCreateWithoutUpdatedByInput[] | PlatformSettingsUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: PlatformSettingsCreateOrConnectWithoutUpdatedByInput | PlatformSettingsCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: PlatformSettingsUpsertWithWhereUniqueWithoutUpdatedByInput | PlatformSettingsUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: PlatformSettingsCreateManyUpdatedByInputEnvelope
+    set?: PlatformSettingsWhereUniqueInput | PlatformSettingsWhereUniqueInput[]
+    disconnect?: PlatformSettingsWhereUniqueInput | PlatformSettingsWhereUniqueInput[]
+    delete?: PlatformSettingsWhereUniqueInput | PlatformSettingsWhereUniqueInput[]
+    connect?: PlatformSettingsWhereUniqueInput | PlatformSettingsWhereUniqueInput[]
+    update?: PlatformSettingsUpdateWithWhereUniqueWithoutUpdatedByInput | PlatformSettingsUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: PlatformSettingsUpdateManyWithWhereWithoutUpdatedByInput | PlatformSettingsUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: PlatformSettingsScalarWhereInput | PlatformSettingsScalarWhereInput[]
+  }
+
   export type AlertTimelineUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AlertTimelineCreateWithoutUserInput, AlertTimelineUncheckedCreateWithoutUserInput> | AlertTimelineCreateWithoutUserInput[] | AlertTimelineUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AlertTimelineCreateOrConnectWithoutUserInput | AlertTimelineCreateOrConnectWithoutUserInput[]
@@ -30922,6 +34374,20 @@ export namespace Prisma {
     update?: AlertTimelineUpdateWithWhereUniqueWithoutUserInput | AlertTimelineUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: AlertTimelineUpdateManyWithWhereWithoutUserInput | AlertTimelineUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: AlertTimelineScalarWhereInput | AlertTimelineScalarWhereInput[]
+  }
+
+  export type PlatformSettingsUncheckedUpdateManyWithoutUpdatedByNestedInput = {
+    create?: XOR<PlatformSettingsCreateWithoutUpdatedByInput, PlatformSettingsUncheckedCreateWithoutUpdatedByInput> | PlatformSettingsCreateWithoutUpdatedByInput[] | PlatformSettingsUncheckedCreateWithoutUpdatedByInput[]
+    connectOrCreate?: PlatformSettingsCreateOrConnectWithoutUpdatedByInput | PlatformSettingsCreateOrConnectWithoutUpdatedByInput[]
+    upsert?: PlatformSettingsUpsertWithWhereUniqueWithoutUpdatedByInput | PlatformSettingsUpsertWithWhereUniqueWithoutUpdatedByInput[]
+    createMany?: PlatformSettingsCreateManyUpdatedByInputEnvelope
+    set?: PlatformSettingsWhereUniqueInput | PlatformSettingsWhereUniqueInput[]
+    disconnect?: PlatformSettingsWhereUniqueInput | PlatformSettingsWhereUniqueInput[]
+    delete?: PlatformSettingsWhereUniqueInput | PlatformSettingsWhereUniqueInput[]
+    connect?: PlatformSettingsWhereUniqueInput | PlatformSettingsWhereUniqueInput[]
+    update?: PlatformSettingsUpdateWithWhereUniqueWithoutUpdatedByInput | PlatformSettingsUpdateWithWhereUniqueWithoutUpdatedByInput[]
+    updateMany?: PlatformSettingsUpdateManyWithWhereWithoutUpdatedByInput | PlatformSettingsUpdateManyWithWhereWithoutUpdatedByInput[]
+    deleteMany?: PlatformSettingsScalarWhereInput | PlatformSettingsScalarWhereInput[]
   }
 
   export type AlertTimelineCreateNestedManyWithoutAlertInput = {
@@ -31010,6 +34476,22 @@ export namespace Prisma {
     delete?: UsersWhereInput | boolean
     connect?: UsersWhereUniqueInput
     update?: XOR<XOR<UsersUpdateToOneWithWhereWithoutAlertTimelinesInput, UsersUpdateWithoutAlertTimelinesInput>, UsersUncheckedUpdateWithoutAlertTimelinesInput>
+  }
+
+  export type UsersCreateNestedOneWithoutPlatformSettingChangesInput = {
+    create?: XOR<UsersCreateWithoutPlatformSettingChangesInput, UsersUncheckedCreateWithoutPlatformSettingChangesInput>
+    connectOrCreate?: UsersCreateOrConnectWithoutPlatformSettingChangesInput
+    connect?: UsersWhereUniqueInput
+  }
+
+  export type UsersUpdateOneWithoutPlatformSettingChangesNestedInput = {
+    create?: XOR<UsersCreateWithoutPlatformSettingChangesInput, UsersUncheckedCreateWithoutPlatformSettingChangesInput>
+    connectOrCreate?: UsersCreateOrConnectWithoutPlatformSettingChangesInput
+    upsert?: UsersUpsertWithoutPlatformSettingChangesInput
+    disconnect?: UsersWhereInput | boolean
+    delete?: UsersWhereInput | boolean
+    connect?: UsersWhereUniqueInput
+    update?: XOR<XOR<UsersUpdateToOneWithWhereWithoutPlatformSettingChangesInput, UsersUpdateWithoutPlatformSettingChangesInput>, UsersUncheckedUpdateWithoutPlatformSettingChangesInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -31206,6 +34688,22 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type NestedBoolFilter<$PrismaModel = never> = {
@@ -31495,6 +34993,32 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type PresenceLogCreateWithoutSiteInput = {
+    id?: string
+    uuid: string
+    latitude: number
+    longitude: number
+    createdAt?: Date | string
+  }
+
+  export type PresenceLogUncheckedCreateWithoutSiteInput = {
+    id?: string
+    uuid: string
+    latitude: number
+    longitude: number
+    createdAt?: Date | string
+  }
+
+  export type PresenceLogCreateOrConnectWithoutSiteInput = {
+    where: PresenceLogWhereUniqueInput
+    create: XOR<PresenceLogCreateWithoutSiteInput, PresenceLogUncheckedCreateWithoutSiteInput>
+  }
+
+  export type PresenceLogCreateManySiteInputEnvelope = {
+    data: PresenceLogCreateManySiteInput | PresenceLogCreateManySiteInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AlertsUpsertWithWhereUniqueWithoutSiteInput = {
     where: AlertsWhereUniqueInput
     update: XOR<AlertsUpdateWithoutSiteInput, AlertsUncheckedUpdateWithoutSiteInput>
@@ -31590,6 +35114,34 @@ export namespace Prisma {
     descriptionEn?: StringNullableFilter<"Events"> | string | null
   }
 
+  export type PresenceLogUpsertWithWhereUniqueWithoutSiteInput = {
+    where: PresenceLogWhereUniqueInput
+    update: XOR<PresenceLogUpdateWithoutSiteInput, PresenceLogUncheckedUpdateWithoutSiteInput>
+    create: XOR<PresenceLogCreateWithoutSiteInput, PresenceLogUncheckedCreateWithoutSiteInput>
+  }
+
+  export type PresenceLogUpdateWithWhereUniqueWithoutSiteInput = {
+    where: PresenceLogWhereUniqueInput
+    data: XOR<PresenceLogUpdateWithoutSiteInput, PresenceLogUncheckedUpdateWithoutSiteInput>
+  }
+
+  export type PresenceLogUpdateManyWithWhereWithoutSiteInput = {
+    where: PresenceLogScalarWhereInput
+    data: XOR<PresenceLogUpdateManyMutationInput, PresenceLogUncheckedUpdateManyWithoutSiteInput>
+  }
+
+  export type PresenceLogScalarWhereInput = {
+    AND?: PresenceLogScalarWhereInput | PresenceLogScalarWhereInput[]
+    OR?: PresenceLogScalarWhereInput[]
+    NOT?: PresenceLogScalarWhereInput | PresenceLogScalarWhereInput[]
+    id?: StringFilter<"PresenceLog"> | string
+    uuid?: StringFilter<"PresenceLog"> | string
+    siteId?: StringNullableFilter<"PresenceLog"> | string | null
+    latitude?: FloatFilter<"PresenceLog"> | number
+    longitude?: FloatFilter<"PresenceLog"> | number
+    createdAt?: DateTimeFilter<"PresenceLog"> | Date | string
+  }
+
   export type SitesCreateWithoutAmenitiesInput = {
     id?: string
     name: string
@@ -31611,6 +35163,7 @@ export namespace Prisma {
     arContentEn?: string | null
     alerts?: AlertsCreateNestedManyWithoutSiteInput
     events?: EventsCreateNestedManyWithoutSiteInput
+    presenceLogs?: PresenceLogCreateNestedManyWithoutSiteInput
   }
 
   export type SitesUncheckedCreateWithoutAmenitiesInput = {
@@ -31634,6 +35187,7 @@ export namespace Prisma {
     arContentEn?: string | null
     alerts?: AlertsUncheckedCreateNestedManyWithoutSiteInput
     events?: EventsUncheckedCreateNestedManyWithoutSiteInput
+    presenceLogs?: PresenceLogUncheckedCreateNestedManyWithoutSiteInput
   }
 
   export type SitesCreateOrConnectWithoutAmenitiesInput = {
@@ -31673,6 +35227,7 @@ export namespace Prisma {
     arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     alerts?: AlertsUpdateManyWithoutSiteNestedInput
     events?: EventsUpdateManyWithoutSiteNestedInput
+    presenceLogs?: PresenceLogUpdateManyWithoutSiteNestedInput
   }
 
   export type SitesUncheckedUpdateWithoutAmenitiesInput = {
@@ -31696,6 +35251,7 @@ export namespace Prisma {
     arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     alerts?: AlertsUncheckedUpdateManyWithoutSiteNestedInput
     events?: EventsUncheckedUpdateManyWithoutSiteNestedInput
+    presenceLogs?: PresenceLogUncheckedUpdateManyWithoutSiteNestedInput
   }
 
   export type EventsCreateWithoutEventTypeInput = {
@@ -31761,15 +35317,33 @@ export namespace Prisma {
   export type ArtistsCreateWithoutEventInput = {
     id?: string
     name: string
+    bio?: string | null
+    imageUrl?: string | null
+    genre?: string | null
+    instagramUrl?: string | null
+    spotifyUrl?: string | null
+    websiteUrl?: string | null
+    order?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    bioEn?: string | null
+    programs?: ProgramsCreateNestedManyWithoutArtistsInput
   }
 
   export type ArtistsUncheckedCreateWithoutEventInput = {
     id?: string
     name: string
+    bio?: string | null
+    imageUrl?: string | null
+    genre?: string | null
+    instagramUrl?: string | null
+    spotifyUrl?: string | null
+    websiteUrl?: string | null
+    order?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    bioEn?: string | null
+    programs?: ProgramsUncheckedCreateNestedManyWithoutArtistsInput
   }
 
   export type ArtistsCreateOrConnectWithoutEventInput = {
@@ -31824,6 +35398,7 @@ export namespace Prisma {
     arContentEn?: string | null
     alerts?: AlertsCreateNestedManyWithoutSiteInput
     amenities?: AmenitiesCreateNestedManyWithoutSiteInput
+    presenceLogs?: PresenceLogCreateNestedManyWithoutSiteInput
   }
 
   export type SitesUncheckedCreateWithoutEventsInput = {
@@ -31847,6 +35422,7 @@ export namespace Prisma {
     arContentEn?: string | null
     alerts?: AlertsUncheckedCreateNestedManyWithoutSiteInput
     amenities?: AmenitiesUncheckedCreateNestedManyWithoutSiteInput
+    presenceLogs?: PresenceLogUncheckedCreateNestedManyWithoutSiteInput
   }
 
   export type SitesCreateOrConnectWithoutEventsInput = {
@@ -31860,6 +35436,7 @@ export namespace Prisma {
     endTime: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    artists?: ArtistsCreateNestedManyWithoutProgramsInput
   }
 
   export type ProgramsUncheckedCreateWithoutEventInput = {
@@ -31868,6 +35445,7 @@ export namespace Prisma {
     endTime: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    artists?: ArtistsUncheckedCreateNestedManyWithoutProgramsInput
   }
 
   export type ProgramsCreateOrConnectWithoutEventInput = {
@@ -31939,8 +35517,16 @@ export namespace Prisma {
     id?: StringFilter<"Artists"> | string
     name?: StringFilter<"Artists"> | string
     eventId?: StringFilter<"Artists"> | string
+    bio?: StringNullableFilter<"Artists"> | string | null
+    imageUrl?: StringNullableFilter<"Artists"> | string | null
+    genre?: StringNullableFilter<"Artists"> | string | null
+    instagramUrl?: StringNullableFilter<"Artists"> | string | null
+    spotifyUrl?: StringNullableFilter<"Artists"> | string | null
+    websiteUrl?: StringNullableFilter<"Artists"> | string | null
+    order?: IntNullableFilter<"Artists"> | number | null
     createdAt?: DateTimeFilter<"Artists"> | Date | string
     updatedAt?: DateTimeFilter<"Artists"> | Date | string
+    bioEn?: StringNullableFilter<"Artists"> | string | null
   }
 
   export type EventsTypesUpsertWithoutEventsInput = {
@@ -32002,6 +35588,7 @@ export namespace Prisma {
     arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     alerts?: AlertsUpdateManyWithoutSiteNestedInput
     amenities?: AmenitiesUpdateManyWithoutSiteNestedInput
+    presenceLogs?: PresenceLogUpdateManyWithoutSiteNestedInput
   }
 
   export type SitesUncheckedUpdateWithoutEventsInput = {
@@ -32025,6 +35612,7 @@ export namespace Prisma {
     arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     alerts?: AlertsUncheckedUpdateManyWithoutSiteNestedInput
     amenities?: AmenitiesUncheckedUpdateManyWithoutSiteNestedInput
+    presenceLogs?: PresenceLogUncheckedUpdateManyWithoutSiteNestedInput
   }
 
   export type ProgramsUpsertWithWhereUniqueWithoutEventInput = {
@@ -32126,6 +35714,43 @@ export namespace Prisma {
     create: XOR<EventsCreateWithoutProgramsInput, EventsUncheckedCreateWithoutProgramsInput>
   }
 
+  export type ArtistsCreateWithoutProgramsInput = {
+    id?: string
+    name: string
+    bio?: string | null
+    imageUrl?: string | null
+    genre?: string | null
+    instagramUrl?: string | null
+    spotifyUrl?: string | null
+    websiteUrl?: string | null
+    order?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    bioEn?: string | null
+    event: EventsCreateNestedOneWithoutArtistsInput
+  }
+
+  export type ArtistsUncheckedCreateWithoutProgramsInput = {
+    id?: string
+    name: string
+    eventId: string
+    bio?: string | null
+    imageUrl?: string | null
+    genre?: string | null
+    instagramUrl?: string | null
+    spotifyUrl?: string | null
+    websiteUrl?: string | null
+    order?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    bioEn?: string | null
+  }
+
+  export type ArtistsCreateOrConnectWithoutProgramsInput = {
+    where: ArtistsWhereUniqueInput
+    create: XOR<ArtistsCreateWithoutProgramsInput, ArtistsUncheckedCreateWithoutProgramsInput>
+  }
+
   export type EventsUpsertWithoutProgramsInput = {
     update: XOR<EventsUpdateWithoutProgramsInput, EventsUncheckedUpdateWithoutProgramsInput>
     create: XOR<EventsCreateWithoutProgramsInput, EventsUncheckedCreateWithoutProgramsInput>
@@ -32171,6 +35796,22 @@ export namespace Prisma {
     quizzes?: QuizUncheckedUpdateManyWithoutEventNestedInput
   }
 
+  export type ArtistsUpsertWithWhereUniqueWithoutProgramsInput = {
+    where: ArtistsWhereUniqueInput
+    update: XOR<ArtistsUpdateWithoutProgramsInput, ArtistsUncheckedUpdateWithoutProgramsInput>
+    create: XOR<ArtistsCreateWithoutProgramsInput, ArtistsUncheckedCreateWithoutProgramsInput>
+  }
+
+  export type ArtistsUpdateWithWhereUniqueWithoutProgramsInput = {
+    where: ArtistsWhereUniqueInput
+    data: XOR<ArtistsUpdateWithoutProgramsInput, ArtistsUncheckedUpdateWithoutProgramsInput>
+  }
+
+  export type ArtistsUpdateManyWithWhereWithoutProgramsInput = {
+    where: ArtistsScalarWhereInput
+    data: XOR<ArtistsUpdateManyMutationInput, ArtistsUncheckedUpdateManyWithoutProgramsInput>
+  }
+
   export type EventsCreateWithoutArtistsInput = {
     id?: string
     name: string
@@ -32208,6 +35849,29 @@ export namespace Prisma {
   export type EventsCreateOrConnectWithoutArtistsInput = {
     where: EventsWhereUniqueInput
     create: XOR<EventsCreateWithoutArtistsInput, EventsUncheckedCreateWithoutArtistsInput>
+  }
+
+  export type ProgramsCreateWithoutArtistsInput = {
+    id?: string
+    startTime: Date | string
+    endTime: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    event: EventsCreateNestedOneWithoutProgramsInput
+  }
+
+  export type ProgramsUncheckedCreateWithoutArtistsInput = {
+    id?: string
+    startTime: Date | string
+    endTime: Date | string
+    eventId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProgramsCreateOrConnectWithoutArtistsInput = {
+    where: ProgramsWhereUniqueInput
+    create: XOR<ProgramsCreateWithoutArtistsInput, ProgramsUncheckedCreateWithoutArtistsInput>
   }
 
   export type EventsUpsertWithoutArtistsInput = {
@@ -32253,6 +35917,22 @@ export namespace Prisma {
     descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
     programs?: ProgramsUncheckedUpdateManyWithoutEventNestedInput
     quizzes?: QuizUncheckedUpdateManyWithoutEventNestedInput
+  }
+
+  export type ProgramsUpsertWithWhereUniqueWithoutArtistsInput = {
+    where: ProgramsWhereUniqueInput
+    update: XOR<ProgramsUpdateWithoutArtistsInput, ProgramsUncheckedUpdateWithoutArtistsInput>
+    create: XOR<ProgramsCreateWithoutArtistsInput, ProgramsUncheckedCreateWithoutArtistsInput>
+  }
+
+  export type ProgramsUpdateWithWhereUniqueWithoutArtistsInput = {
+    where: ProgramsWhereUniqueInput
+    data: XOR<ProgramsUpdateWithoutArtistsInput, ProgramsUncheckedUpdateWithoutArtistsInput>
+  }
+
+  export type ProgramsUpdateManyWithWhereWithoutArtistsInput = {
+    where: ProgramsScalarWhereInput
+    data: XOR<ProgramsUpdateManyMutationInput, ProgramsUncheckedUpdateManyWithoutArtistsInput>
   }
 
   export type QuestionsCreateWithoutQuizInput = {
@@ -33013,6 +36693,118 @@ export namespace Prisma {
     impressions?: Questions_impressionsUncheckedUpdateManyWithoutQuestionNestedInput
   }
 
+  export type SitesCreateWithoutPresenceLogsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    latitude: number
+    longitude: number
+    type: string
+    category?: $Enums.MarkerCategory
+    capacity?: number
+    arLabel?: string | null
+    arContent?: string | null
+    arRadius?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    nameEn?: string | null
+    descriptionEn?: string | null
+    typeEn?: string | null
+    arLabelEn?: string | null
+    arContentEn?: string | null
+    alerts?: AlertsCreateNestedManyWithoutSiteInput
+    amenities?: AmenitiesCreateNestedManyWithoutSiteInput
+    events?: EventsCreateNestedManyWithoutSiteInput
+  }
+
+  export type SitesUncheckedCreateWithoutPresenceLogsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    latitude: number
+    longitude: number
+    type: string
+    category?: $Enums.MarkerCategory
+    capacity?: number
+    arLabel?: string | null
+    arContent?: string | null
+    arRadius?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    nameEn?: string | null
+    descriptionEn?: string | null
+    typeEn?: string | null
+    arLabelEn?: string | null
+    arContentEn?: string | null
+    alerts?: AlertsUncheckedCreateNestedManyWithoutSiteInput
+    amenities?: AmenitiesUncheckedCreateNestedManyWithoutSiteInput
+    events?: EventsUncheckedCreateNestedManyWithoutSiteInput
+  }
+
+  export type SitesCreateOrConnectWithoutPresenceLogsInput = {
+    where: SitesWhereUniqueInput
+    create: XOR<SitesCreateWithoutPresenceLogsInput, SitesUncheckedCreateWithoutPresenceLogsInput>
+  }
+
+  export type SitesUpsertWithoutPresenceLogsInput = {
+    update: XOR<SitesUpdateWithoutPresenceLogsInput, SitesUncheckedUpdateWithoutPresenceLogsInput>
+    create: XOR<SitesCreateWithoutPresenceLogsInput, SitesUncheckedCreateWithoutPresenceLogsInput>
+    where?: SitesWhereInput
+  }
+
+  export type SitesUpdateToOneWithWhereWithoutPresenceLogsInput = {
+    where?: SitesWhereInput
+    data: XOR<SitesUpdateWithoutPresenceLogsInput, SitesUncheckedUpdateWithoutPresenceLogsInput>
+  }
+
+  export type SitesUpdateWithoutPresenceLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    category?: EnumMarkerCategoryFieldUpdateOperationsInput | $Enums.MarkerCategory
+    capacity?: IntFieldUpdateOperationsInput | number
+    arLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    arContent?: NullableStringFieldUpdateOperationsInput | string | null
+    arRadius?: NullableFloatFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+    typeEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arLabelEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
+    alerts?: AlertsUpdateManyWithoutSiteNestedInput
+    amenities?: AmenitiesUpdateManyWithoutSiteNestedInput
+    events?: EventsUpdateManyWithoutSiteNestedInput
+  }
+
+  export type SitesUncheckedUpdateWithoutPresenceLogsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    category?: EnumMarkerCategoryFieldUpdateOperationsInput | $Enums.MarkerCategory
+    capacity?: IntFieldUpdateOperationsInput | number
+    arLabel?: NullableStringFieldUpdateOperationsInput | string | null
+    arContent?: NullableStringFieldUpdateOperationsInput | string | null
+    arRadius?: NullableFloatFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+    typeEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arLabelEn?: NullableStringFieldUpdateOperationsInput | string | null
+    arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
+    alerts?: AlertsUncheckedUpdateManyWithoutSiteNestedInput
+    amenities?: AmenitiesUncheckedUpdateManyWithoutSiteNestedInput
+    events?: EventsUncheckedUpdateManyWithoutSiteNestedInput
+  }
+
   export type AlertTimelineCreateWithoutUserInput = {
     id?: string
     status: string
@@ -33038,6 +36830,32 @@ export namespace Prisma {
 
   export type AlertTimelineCreateManyUserInputEnvelope = {
     data: AlertTimelineCreateManyUserInput | AlertTimelineCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PlatformSettingsCreateWithoutUpdatedByInput = {
+    key: string
+    enabled?: boolean
+    updatedByName?: string | null
+    updatedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type PlatformSettingsUncheckedCreateWithoutUpdatedByInput = {
+    key: string
+    enabled?: boolean
+    updatedByName?: string | null
+    updatedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type PlatformSettingsCreateOrConnectWithoutUpdatedByInput = {
+    where: PlatformSettingsWhereUniqueInput
+    create: XOR<PlatformSettingsCreateWithoutUpdatedByInput, PlatformSettingsUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type PlatformSettingsCreateManyUpdatedByInputEnvelope = {
+    data: PlatformSettingsCreateManyUpdatedByInput | PlatformSettingsCreateManyUpdatedByInput[]
     skipDuplicates?: boolean
   }
 
@@ -33068,6 +36886,34 @@ export namespace Prisma {
     userId?: StringNullableFilter<"AlertTimeline"> | string | null
     userName?: StringNullableFilter<"AlertTimeline"> | string | null
     createdAt?: DateTimeFilter<"AlertTimeline"> | Date | string
+  }
+
+  export type PlatformSettingsUpsertWithWhereUniqueWithoutUpdatedByInput = {
+    where: PlatformSettingsWhereUniqueInput
+    update: XOR<PlatformSettingsUpdateWithoutUpdatedByInput, PlatformSettingsUncheckedUpdateWithoutUpdatedByInput>
+    create: XOR<PlatformSettingsCreateWithoutUpdatedByInput, PlatformSettingsUncheckedCreateWithoutUpdatedByInput>
+  }
+
+  export type PlatformSettingsUpdateWithWhereUniqueWithoutUpdatedByInput = {
+    where: PlatformSettingsWhereUniqueInput
+    data: XOR<PlatformSettingsUpdateWithoutUpdatedByInput, PlatformSettingsUncheckedUpdateWithoutUpdatedByInput>
+  }
+
+  export type PlatformSettingsUpdateManyWithWhereWithoutUpdatedByInput = {
+    where: PlatformSettingsScalarWhereInput
+    data: XOR<PlatformSettingsUpdateManyMutationInput, PlatformSettingsUncheckedUpdateManyWithoutUpdatedByInput>
+  }
+
+  export type PlatformSettingsScalarWhereInput = {
+    AND?: PlatformSettingsScalarWhereInput | PlatformSettingsScalarWhereInput[]
+    OR?: PlatformSettingsScalarWhereInput[]
+    NOT?: PlatformSettingsScalarWhereInput | PlatformSettingsScalarWhereInput[]
+    key?: StringFilter<"PlatformSettings"> | string
+    enabled?: BoolFilter<"PlatformSettings"> | boolean
+    updatedById?: StringNullableFilter<"PlatformSettings"> | string | null
+    updatedByName?: StringNullableFilter<"PlatformSettings"> | string | null
+    updatedAt?: DateTimeFilter<"PlatformSettings"> | Date | string
+    createdAt?: DateTimeFilter<"PlatformSettings"> | Date | string
   }
 
   export type AlertTimelineCreateWithoutAlertInput = {
@@ -33119,6 +36965,7 @@ export namespace Prisma {
     arContentEn?: string | null
     amenities?: AmenitiesCreateNestedManyWithoutSiteInput
     events?: EventsCreateNestedManyWithoutSiteInput
+    presenceLogs?: PresenceLogCreateNestedManyWithoutSiteInput
   }
 
   export type SitesUncheckedCreateWithoutAlertsInput = {
@@ -33142,6 +36989,7 @@ export namespace Prisma {
     arContentEn?: string | null
     amenities?: AmenitiesUncheckedCreateNestedManyWithoutSiteInput
     events?: EventsUncheckedCreateNestedManyWithoutSiteInput
+    presenceLogs?: PresenceLogUncheckedCreateNestedManyWithoutSiteInput
   }
 
   export type SitesCreateOrConnectWithoutAlertsInput = {
@@ -33197,6 +37045,7 @@ export namespace Prisma {
     arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     amenities?: AmenitiesUpdateManyWithoutSiteNestedInput
     events?: EventsUpdateManyWithoutSiteNestedInput
+    presenceLogs?: PresenceLogUpdateManyWithoutSiteNestedInput
   }
 
   export type SitesUncheckedUpdateWithoutAlertsInput = {
@@ -33220,6 +37069,7 @@ export namespace Prisma {
     arContentEn?: NullableStringFieldUpdateOperationsInput | string | null
     amenities?: AmenitiesUncheckedUpdateManyWithoutSiteNestedInput
     events?: EventsUncheckedUpdateManyWithoutSiteNestedInput
+    presenceLogs?: PresenceLogUncheckedUpdateManyWithoutSiteNestedInput
   }
 
   export type AlertsCreateWithoutTimelineInput = {
@@ -33268,6 +37118,7 @@ export namespace Prisma {
     createdBy?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    platformSettingChanges?: PlatformSettingsCreateNestedManyWithoutUpdatedByInput
   }
 
   export type UsersUncheckedCreateWithoutAlertTimelinesInput = {
@@ -33283,6 +37134,7 @@ export namespace Prisma {
     createdBy?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    platformSettingChanges?: PlatformSettingsUncheckedCreateNestedManyWithoutUpdatedByInput
   }
 
   export type UsersCreateOrConnectWithoutAlertTimelinesInput = {
@@ -33353,6 +37205,7 @@ export namespace Prisma {
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    platformSettingChanges?: PlatformSettingsUpdateManyWithoutUpdatedByNestedInput
   }
 
   export type UsersUncheckedUpdateWithoutAlertTimelinesInput = {
@@ -33368,6 +37221,87 @@ export namespace Prisma {
     createdBy?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    platformSettingChanges?: PlatformSettingsUncheckedUpdateManyWithoutUpdatedByNestedInput
+  }
+
+  export type UsersCreateWithoutPlatformSettingChangesInput = {
+    id?: string
+    email: string
+    password: string
+    role: string
+    active?: boolean
+    firstname: string
+    lastname: string
+    phone?: string | null
+    lastLoging?: Date | string | null
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    alertTimelines?: AlertTimelineCreateNestedManyWithoutUserInput
+  }
+
+  export type UsersUncheckedCreateWithoutPlatformSettingChangesInput = {
+    id?: string
+    email: string
+    password: string
+    role: string
+    active?: boolean
+    firstname: string
+    lastname: string
+    phone?: string | null
+    lastLoging?: Date | string | null
+    createdBy?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    alertTimelines?: AlertTimelineUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UsersCreateOrConnectWithoutPlatformSettingChangesInput = {
+    where: UsersWhereUniqueInput
+    create: XOR<UsersCreateWithoutPlatformSettingChangesInput, UsersUncheckedCreateWithoutPlatformSettingChangesInput>
+  }
+
+  export type UsersUpsertWithoutPlatformSettingChangesInput = {
+    update: XOR<UsersUpdateWithoutPlatformSettingChangesInput, UsersUncheckedUpdateWithoutPlatformSettingChangesInput>
+    create: XOR<UsersCreateWithoutPlatformSettingChangesInput, UsersUncheckedCreateWithoutPlatformSettingChangesInput>
+    where?: UsersWhereInput
+  }
+
+  export type UsersUpdateToOneWithWhereWithoutPlatformSettingChangesInput = {
+    where?: UsersWhereInput
+    data: XOR<UsersUpdateWithoutPlatformSettingChangesInput, UsersUncheckedUpdateWithoutPlatformSettingChangesInput>
+  }
+
+  export type UsersUpdateWithoutPlatformSettingChangesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    active?: BoolFieldUpdateOperationsInput | boolean
+    firstname?: StringFieldUpdateOperationsInput | string
+    lastname?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLoging?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    alertTimelines?: AlertTimelineUpdateManyWithoutUserNestedInput
+  }
+
+  export type UsersUncheckedUpdateWithoutPlatformSettingChangesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    active?: BoolFieldUpdateOperationsInput | boolean
+    firstname?: StringFieldUpdateOperationsInput | string
+    lastname?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    lastLoging?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    alertTimelines?: AlertTimelineUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AlertsCreateManySiteInput = {
@@ -33403,6 +37337,14 @@ export namespace Prisma {
     imageUrl?: string | null
     nameEn?: string | null
     descriptionEn?: string | null
+  }
+
+  export type PresenceLogCreateManySiteInput = {
+    id?: string
+    uuid: string
+    latitude: number
+    longitude: number
+    createdAt?: Date | string
   }
 
   export type AlertsUpdateWithoutSiteInput = {
@@ -33518,6 +37460,30 @@ export namespace Prisma {
     descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
+  export type PresenceLogUpdateWithoutSiteInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PresenceLogUncheckedUpdateWithoutSiteInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PresenceLogUncheckedUpdateManyWithoutSiteInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uuid?: StringFieldUpdateOperationsInput | string
+    latitude?: FloatFieldUpdateOperationsInput | number
+    longitude?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type EventsCreateManyEventTypeInput = {
     id?: string
     name: string
@@ -33583,8 +37549,16 @@ export namespace Prisma {
   export type ArtistsCreateManyEventInput = {
     id?: string
     name: string
+    bio?: string | null
+    imageUrl?: string | null
+    genre?: string | null
+    instagramUrl?: string | null
+    spotifyUrl?: string | null
+    websiteUrl?: string | null
+    order?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    bioEn?: string | null
   }
 
   export type ProgramsCreateManyEventInput = {
@@ -33610,22 +37584,48 @@ export namespace Prisma {
   export type ArtistsUpdateWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    genre?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    spotifyUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bioEn?: NullableStringFieldUpdateOperationsInput | string | null
+    programs?: ProgramsUpdateManyWithoutArtistsNestedInput
   }
 
   export type ArtistsUncheckedUpdateWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    genre?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    spotifyUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bioEn?: NullableStringFieldUpdateOperationsInput | string | null
+    programs?: ProgramsUncheckedUpdateManyWithoutArtistsNestedInput
   }
 
   export type ArtistsUncheckedUpdateManyWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    genre?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    spotifyUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bioEn?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type ProgramsUpdateWithoutEventInput = {
@@ -33634,6 +37634,7 @@ export namespace Prisma {
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    artists?: ArtistsUpdateManyWithoutProgramsNestedInput
   }
 
   export type ProgramsUncheckedUpdateWithoutEventInput = {
@@ -33642,6 +37643,7 @@ export namespace Prisma {
     endTime?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    artists?: ArtistsUncheckedUpdateManyWithoutProgramsNestedInput
   }
 
   export type ProgramsUncheckedUpdateManyWithoutEventInput = {
@@ -33688,6 +37690,81 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     titleEn?: NullableStringFieldUpdateOperationsInput | string | null
     descriptionEn?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type ArtistsUpdateWithoutProgramsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    genre?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    spotifyUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bioEn?: NullableStringFieldUpdateOperationsInput | string | null
+    event?: EventsUpdateOneRequiredWithoutArtistsNestedInput
+  }
+
+  export type ArtistsUncheckedUpdateWithoutProgramsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    genre?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    spotifyUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bioEn?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type ArtistsUncheckedUpdateManyWithoutProgramsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    genre?: NullableStringFieldUpdateOperationsInput | string | null
+    instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    spotifyUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    websiteUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    order?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bioEn?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type ProgramsUpdateWithoutArtistsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventsUpdateOneRequiredWithoutProgramsNestedInput
+  }
+
+  export type ProgramsUncheckedUpdateWithoutArtistsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProgramsUncheckedUpdateManyWithoutArtistsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    startTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    endTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type QuestionsCreateManyQuizInput = {
@@ -33887,6 +37964,14 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type PlatformSettingsCreateManyUpdatedByInput = {
+    key: string
+    enabled?: boolean
+    updatedByName?: string | null
+    updatedAt?: Date | string
+    createdAt?: Date | string
+  }
+
   export type AlertTimelineUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
@@ -33911,6 +37996,30 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     note?: NullableStringFieldUpdateOperationsInput | string | null
     userName?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlatformSettingsUpdateWithoutUpdatedByInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    updatedByName?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlatformSettingsUncheckedUpdateWithoutUpdatedByInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    updatedByName?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlatformSettingsUncheckedUpdateManyWithoutUpdatedByInput = {
+    key?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    updatedByName?: NullableStringFieldUpdateOperationsInput | string | null
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

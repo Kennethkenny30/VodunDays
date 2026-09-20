@@ -26,12 +26,13 @@ import {
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog"
 import { EmptyState }     from "@/components/dashboard/empty-state"
 import { SitesMapModal }  from "./SitesMapModal"
+import { SiteZoneModal }  from "./SiteZoneModal"
 import {
   Plus, MoreHorizontal, Pencil, MapPin, Trash2,
   Navigation, Info, CheckCircle2, AlertCircle, Loader2,
   Map, Building2, Users, ChevronRight, ChevronLeft,
-  Eye, Landmark, Toilet, Siren, Bus, LifeBuoy, Scan,
-  Tag, Package,
+  Eye, Landmark, Toilet, Siren, Bus, LifeBuoy, Scan, Music2,
+  Tag, Package, Hexagon,
 } from "lucide-react"
 import { toast } from "sonner"
 import type { Site, SiteCreatePayload } from "@/lib/types/api"
@@ -50,7 +51,7 @@ type ExtendedSitePayload = Partial<SiteCreatePayload> & {
   arRadius?:  number
 }
 
-type MarkerCategory = "SITE" | "TOILETTES" | "URGENCES" | "TRANSPORT" | "ASSISTANCE" | "PRA"
+type MarkerCategory = "SITE" | "TOILETTES" | "URGENCES" | "TRANSPORT" | "ASSISTANCE" | "PRA" | "SCENE"
 
 // ─── Config : catégories de marqueurs ────────────────────────────────────────
 
@@ -93,6 +94,11 @@ const MARKER_CATEGORIES: Record<MarkerCategory, {
     icon: Scan,
     description: "Point de Réalité Augmentée - expérience immersive AR",
   },
+  SCENE: {
+    label: "Scène",     color: "#E91E8C", border: "border-pink-500/30", bg: "bg-pink-500/10", textClass: "text-pink-400",
+    icon: Music2,
+    description: "Scène de concert - programmation, artistes et line-up",
+  },
 }
 
 // ─── Sous-types fonctionnels par catégorie ────────────────────────────────────
@@ -132,6 +138,11 @@ const SUBTYPES: Record<MarkerCategory, { value: string; label: string }[]> = {
     { value: "PRA_HISTOIRE",label: "Histoire immersive"},
     { value: "PRA_NATURE",  label: "Nature augmentée"  },
     { value: "PRA_RITUEL",  label: "Rituel AR"         },
+  ],
+  SCENE:      [
+    { value: "SCENE_PRINCIPALE", label: "Scène principale" },
+    { value: "SCENE_SECONDAIRE", label: "Scène secondaire" },
+    { value: "SCENE_ACOUSTIQUE", label: "Scène acoustique" },
   ],
 }
 
@@ -204,6 +215,8 @@ function SiteModal({ open, onClose, editingSite, onSave }: SiteModalProps) {
   const [geoLoading, setGeoLoading] = useState(false)
   const [geoStatus,  setGeoStatus]  = useState<"idle" | "success" | "error">("idle")
   const [mapPickOpen,setMapPickOpen]= useState(false)
+  const [zoneModalOpen, setZoneModalOpen] = useState(false)
+  const [hasZone,       setHasZone]       = useState(false)
 
   // ── Reset à l'ouverture ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -213,6 +226,8 @@ function SiteModal({ open, onClose, editingSite, onSave }: SiteModalProps) {
       setGeoStatus("idle")
       setGeoLoading(false)
       setMapPickOpen(false)
+      setZoneModalOpen(false)
+      setHasZone(!!(editingSite as (Site & { zoneGeo?: unknown }) | null)?.zoneGeo)
       setFormData(
         editingSite
           ? {
@@ -776,6 +791,48 @@ function SiteModal({ open, onClose, editingSite, onSave }: SiteModalProps) {
                       </div>
                     </div>
                   )}
+
+                  {/* ── Zone géographique (polygone) - nécessite un site déjà créé ── */}
+                  <div className="flex items-center gap-3">
+                    <Separator className="flex-1 bg-white/8" />
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40">zone géographique</span>
+                    <Separator className="flex-1 bg-white/8" />
+                  </div>
+
+                  {editingSite ? (
+                    <div className="rounded-xl border border-white/10 bg-white/4 p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Hexagon className="size-4" style={{ color: activeCat?.color ?? "var(--vd-gold)" }} />
+                        <p className="text-sm font-medium">Contour du site (polygone)</p>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="size-3.5 text-muted-foreground/40 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="text-xs max-w-[240px]">
+                            Dessine la zone réelle du site (utilisée pour la détection de présence et les statistiques de fréquentation), en plus du point GPS ci-dessus.
+                          </TooltipContent>
+                        </Tooltip>
+                        {hasZone && (
+                          <Badge variant="outline" className="ml-auto text-[10px] border-green-500/30 text-green-400 bg-green-500/10">
+                            <CheckCircle2 className="size-3 mr-1" /> Zone dessinée
+                          </Badge>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setZoneModalOpen(true)}
+                        className="w-full border-white/15"
+                      >
+                        <Hexagon className="size-4 mr-2" />
+                        {hasZone ? "Modifier la zone" : "Dessiner la zone"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground/60 leading-relaxed rounded-xl border border-white/8 bg-white/3 p-3">
+                      La zone se dessine une fois le site créé - un raccourci apparaîtra après l'enregistrement.
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -919,6 +976,14 @@ function SiteModal({ open, onClose, editingSite, onSave }: SiteModalProps) {
         initialLng={formData.longitude}
         onPick={handleMapPick}
       />
+
+      {/* Modal dessin de la zone géographique (polygone) */}
+      <SiteZoneModal
+        open={zoneModalOpen}
+        onClose={() => setZoneModalOpen(false)}
+        site={editingSite}
+        onSaved={zoneGeo => setHasZone(!!zoneGeo)}
+      />
     </>
   )
 }
@@ -970,7 +1035,13 @@ export function SitesManager({ className }: SitesManagerProps) {
         const res = await createSite(data as SiteCreatePayload)
         if (res.success) {
           setSites(prev => [...prev, res.data])
-          toast.success("Site créé avec succès", { description: `${res.data.name} a été ajouté au festival` })
+          toast.success("Site créé avec succès", {
+            description: `${res.data.name} a été ajouté au festival`,
+            action: {
+              label: "Dessiner la zone",
+              onClick: () => handleOpen(res.data),
+            },
+          })
         } else {
           toast.error(res.message || "Erreur lors de la création"); return
         }

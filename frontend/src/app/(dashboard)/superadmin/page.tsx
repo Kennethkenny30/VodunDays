@@ -5,6 +5,8 @@ import { ModulesCard } from "./components/modules-card"
 import { CacheCard } from "./components/cache-card"
 import { ActivityCard } from "./components/activity-card"
 import { IncidentCenter } from "./components/incident-center"
+import { PresenceCard } from "./components/PresenceCard"
+import { PresenceMapCard } from "./components/presence-map-card"
 
 export default function SuperAdminPage() {
   return (
@@ -24,6 +26,8 @@ export default function SuperAdminPage() {
           <StatusCard className="md:col-span-2" />
           <ModulesCard />
           <CacheCard />
+          <PresenceCard className="md:col-span-2" />
+          <PresenceMapCard className="md:col-span-2" />
           <ActivityCard className="lg:col-span-2" />
         </div>
       </section>

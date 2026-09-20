@@ -13,6 +13,7 @@ import { FestivalPlannerProvider, usePlanner, type AgendaItem } from "@/provider
 import type { ProgramType } from "@/lib/types";
 import { useLocale, useTranslations } from "next-intl";
 import { localize } from "@/lib/i18n/localize";
+import { getFestivalStartDate } from "@/lib/festival";
 
 // Tokens
 
@@ -32,8 +33,29 @@ const typeColors: Record<ProgramType, { dot: string; pill: string; text: string 
 };
 
 
-const DAY_NAMES: Record<number, string> = { 1: "Jour 1 - Vendredi", 2: "Jour 2 - Samedi", 3: "Jour 3 - Dimanche" };
-const DAY_DATES: Record<number, string> = { 1: "10 Janv.", 2: "11 Janv.", 3: "12 Janv." };
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// Date reelle du jour N du festival, calculee depuis la date de debut
+// (meme logique que mapEventToPrograms dans programme/page.tsx)
+function getDayDate(day: number): Date {
+  const start = getFestivalStartDate();
+  return new Date(start.getFullYear(), start.getMonth(), start.getDate() + (day - 1));
+}
+
+// "Jour 3 - Dimanche" - fonctionne pour n'importe quel nombre de jours,
+// plus besoin de mettre a jour un tableau code en dur a chaque changement
+function getDayName(day: number): string {
+  const weekday = getDayDate(day).toLocaleDateString("fr-FR", { weekday: "long" });
+  return `Jour ${day} - ${capitalize(weekday)}`;
+}
+
+// "12 Janv."
+function getDayLabel(day: number): string {
+  const formatted = getDayDate(day).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+  return capitalize(formatted);
+}
 
 function getDurationMin(start: string, end: string) {
   const [sh, sm] = start.split(":").map(Number);
@@ -275,9 +297,9 @@ function DaySection({ day, items, conflicts, onRemove }: { day: number; items: A
       <div className="flex items-center justify-between px-4 mb-3">
         <div className="flex items-center gap-3">
           <div className={cn("px-2.5 py-1 rounded-xl", "bg-[rgba(245,110,15,0.15)] border border-[rgba(245,110,15,0.25)]", "shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]")}>
-            <span className="text-[11px] font-black text-[#F56E0F] uppercase tracking-wider">{DAY_NAMES[day]}</span>
+            <span className="text-[11px] font-black text-[#F56E0F] uppercase tracking-wider">{getDayName(day)}</span>
           </div>
-          <span className="text-[11px] text-foreground/25">{DAY_DATES[day]}</span>
+          <span className="text-[11px] text-foreground/25">{getDayLabel(day)}</span>
         </div>
         <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-foreground/[0.05] text-foreground/30">
           {items.length} événement{items.length > 1 ? "s" : ""}

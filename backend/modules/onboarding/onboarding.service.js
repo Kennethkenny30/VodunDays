@@ -28,17 +28,24 @@ export const upsert = async (uuid, data) => {
 };
 
 // Stats agregees pour le dashboard admin (repartition par tranche d'age,
-// nationalite, genre, edition).
-export const getStats = async () => {
+// nationalite, genre, edition). from/to (dates ISO) filtrent sur la date
+// d'enregistrement du profil (createdAt) - utilise par le dashboard INStaD.
+export const getStats = async ({ from, to } = {}) => {
+  const createdAt = {};
+  if (from) createdAt.gte = new Date(from);
+  if (to)   createdAt.lte = new Date(to);
+  const where = Object.keys(createdAt).length > 0 ? { createdAt } : {};
+
   const [total, byGender, byAgeRange, byEdition, byLanguage, topNationalities] = await Promise.all([
-    prisma.festivaliers.count(),
-    prisma.festivaliers.groupBy({ by: ["gender"], _count: true }),
-    prisma.festivaliers.groupBy({ by: ["ageRange"], _count: true }),
-    prisma.festivaliers.groupBy({ by: ["edition"], _count: true }),
-    prisma.festivaliers.groupBy({ by: ["language"], _count: true }),
+    prisma.festivaliers.count({ where }),
+    prisma.festivaliers.groupBy({ by: ["gender"],      _count: true, where }),
+    prisma.festivaliers.groupBy({ by: ["ageRange"],    _count: true, where }),
+    prisma.festivaliers.groupBy({ by: ["edition"],     _count: true, where }),
+    prisma.festivaliers.groupBy({ by: ["language"],    _count: true, where }),
     prisma.festivaliers.groupBy({
       by: ["nationality"],
       _count: true,
+      where,
       orderBy: { _count: { nationality: "desc" } },
       take: 10,
     }),

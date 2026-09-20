@@ -12,6 +12,7 @@ import { LOCALES, DEFAULT_LOCALE, type Locale } from '@/i18n/locale';
 import { IntlClientProvider } from '@/i18n/IntlClientProvider';
 import { SWRegister } from '@/components/sw-register';
 import { UpdatePrompt } from '@/components/update-prompt';
+import { PresencePing } from '@/components/presence-ping';
 
 const RAW_SITE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3001'
 const SITE_URL = RAW_SITE_URL.startsWith('http') ? RAW_SITE_URL : `https://${RAW_SITE_URL}`
@@ -113,6 +114,7 @@ export default async function RootLayout({
           <UpdatePrompt />
         </IntlClientProvider>
         <SWRegister />
+        <PresencePing />
         <Analytics />
         <Script id="json-ld-event" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org",

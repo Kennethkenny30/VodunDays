@@ -27,11 +27,11 @@ export async function getArtists(eventId?: string) {
   return api.get<Artist[]>(`/artists${query}`)
 }
 
-export async function createArtist(payload: { name: string; eventId: string }) {
+export async function createArtist(payload: ArtistCreatePayload) {
   return api.post<Artist>("/artists", payload)
 }
 
-export async function updateArtist(id: string, payload: Partial<{ name: string; eventId: string }>) {
+export async function updateArtist(id: string, payload: Partial<ArtistCreatePayload>) {
   return api.patch<Artist>(`/artists/${id}`, payload)
 }
 

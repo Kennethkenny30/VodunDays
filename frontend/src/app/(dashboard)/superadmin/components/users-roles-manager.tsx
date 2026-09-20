@@ -403,6 +403,7 @@ export function UsersRolesManager({ className }: UsersRolesManagerProps) {
                     <SelectContent>
                       <SelectItem value="ADMIN">Admin Culture</SelectItem>
                       <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                      <SelectItem value="INSTAD">Institut National de la Statistique</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -530,6 +531,7 @@ export function UsersRolesManager({ className }: UsersRolesManagerProps) {
                 <SelectContent>
                   <SelectItem value="ADMIN">Admin Culture</SelectItem>
                   <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                  <SelectItem value="INSTAD">Institut National de la Statistique</SelectItem>
                 </SelectContent>
               </Select>
             </div>

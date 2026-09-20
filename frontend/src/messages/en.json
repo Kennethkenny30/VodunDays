@@ -209,7 +209,8 @@
       "urgences": "Emergency",
       "transport": "Transport",
       "assistance": "Assistance",
-      "ar": "AR"
+      "ar": "AR",
+      "scene": "Stage"
     },
     "itinerary": {
       "title": "Set route",

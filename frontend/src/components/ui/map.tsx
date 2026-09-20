@@ -1474,6 +1474,120 @@ function MapClusterLayer<
   return null;
 }
 
+// ─── MapHeatmap ──────────────────────────────────────────────────────────────
+// Carte de chaleur à partir d'une collection de points GeoJSON - même
+// principe que MapRoute/MapClusterLayer (source+layer gérés par effet,
+// nettoyés au démontage). Chaque point compte pour une unité (pas de
+// pondération) : la densité reflète le nombre de positions, pas une
+// magnitude individuelle.
+
+type HeatmapRadiusStop = { zoom: number; value: number };
+type HeatmapColorStop = { at: number; color: string };
+
+interface MapHeatmapProps<P extends GeoJSON.GeoJsonProperties = GeoJSON.GeoJsonProperties> {
+  data: GeoJSON.FeatureCollection<GeoJSON.Point, P>;
+  /** Rayon (px) par palier de zoom - interpolé linéairement entre les paliers. */
+  radius?: HeatmapRadiusStop[];
+  /** Intensité globale de la chaleur (0-1+). */
+  intensity?: number;
+  /** Dégradé de couleur par densité normalisée (0 = transparent, "at" de 0 à 1). */
+  colors?: HeatmapColorStop[];
+  /** Zoom au-delà duquel la couche de chaleur disparaît. */
+  maxZoom?: number;
+}
+
+const DEFAULT_HEATMAP_RADIUS: HeatmapRadiusStop[] = [
+  { zoom: 8, value: 8 },
+  { zoom: 16, value: 30 },
+];
+
+const DEFAULT_HEATMAP_COLORS: HeatmapColorStop[] = [
+  { at: 0.2, color: "rgba(103,169,207,0.5)" },
+  { at: 0.4, color: "rgba(209,229,240,0.6)" },
+  { at: 0.6, color: "rgba(253,219,199,0.7)" },
+  { at: 0.8, color: "rgba(239,138,98,0.8)" },
+  { at: 1,   color: "rgba(178,24,43,0.9)" },
+];
+
+function MapHeatmap<P extends GeoJSON.GeoJsonProperties = GeoJSON.GeoJsonProperties>({
+  data,
+  radius = DEFAULT_HEATMAP_RADIUS,
+  intensity = 0.6,
+  colors = DEFAULT_HEATMAP_COLORS,
+  maxZoom = 18,
+}: MapHeatmapProps<P>) {
+  const { map, isLoaded } = useMap();
+  const sourceId = "vd-heatmap-source";
+  const layerId  = "vd-heatmap-layer";
+
+  // Création de la source/couche au montage
+  useEffect(() => {
+    if (!isLoaded || !map) return;
+
+    map.addSource(sourceId, { type: "geojson", data });
+
+    const radiusExpr = [
+      "interpolate", ["linear"], ["zoom"],
+      ...radius.flatMap((r) => [r.zoom, r.value]),
+    ];
+
+    const colorExpr = [
+      "interpolate", ["linear"], ["heatmap-density"],
+      0, "rgba(0,0,0,0)",
+      ...colors.flatMap((c) => [c.at, c.color]),
+    ];
+
+    map.addLayer({
+      id: layerId,
+      type: "heatmap",
+      source: sourceId,
+      maxzoom: maxZoom,
+      paint: {
+        "heatmap-weight": 1,
+        "heatmap-intensity": intensity,
+        "heatmap-color": colorExpr,
+        "heatmap-radius": radiusExpr,
+        "heatmap-opacity": 0.85,
+      },
+    });
+
+    return () => {
+      try {
+        if (map.getLayer(layerId)) map.removeLayer(layerId);
+        if (map.getSource(sourceId)) map.removeSource(sourceId);
+      } catch {
+        // ignore
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, map]);
+
+  // Mise à jour des données quand elles changent
+  useEffect(() => {
+    if (!isLoaded || !map) return;
+    const source = map.getSource(sourceId) as MapLibreGL.GeoJSONSource | undefined;
+    if (source) source.setData(data);
+  }, [isLoaded, map, data]);
+
+  // Mise à jour de l'intensité/rayon/couleurs si les props changent
+  useEffect(() => {
+    if (!isLoaded || !map || !map.getLayer(layerId)) return;
+    map.setPaintProperty(layerId, "heatmap-intensity", intensity);
+    map.setPaintProperty(layerId, "heatmap-radius", [
+      "interpolate", ["linear"], ["zoom"],
+      ...radius.flatMap((r) => [r.zoom, r.value]),
+    ]);
+    map.setPaintProperty(layerId, "heatmap-color", [
+      "interpolate", ["linear"], ["heatmap-density"],
+      0, "rgba(0,0,0,0)",
+      ...colors.flatMap((c) => [c.at, c.color]),
+    ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, map, intensity, radius, colors]);
+
+  return null;
+}
+
 export {
   Map,
   useMap,
@@ -1486,6 +1600,7 @@ export {
   MapControls,
   MapRoute,
   MapClusterLayer,
+  MapHeatmap,
 };
 
 export type { MapRef, MapViewport };

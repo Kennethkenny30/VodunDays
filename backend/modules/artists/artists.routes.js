@@ -8,12 +8,31 @@ import { create, getAll, getById, remove, update } from "./artists.controller.js
 const router = Router();
 
 const createSchema = Joi.object({
-  name: Joi.string().required(),
-  eventId: Joi.string().uuid().required(),
+  name:         Joi.string().required(),
+  eventId:      Joi.string().uuid().required(),
+  bio:          Joi.string().allow("", null).optional(),
+  bioEn:        Joi.string().allow("", null).optional(),
+  // Image encodée en base64 (même convention que Events.imageUrl) - jamais
+  // une URL, donc pas de .uri() ici.
+  imageUrl:     Joi.string().allow("", null).optional(),
+  genre:        Joi.string().allow("", null).optional(),
+  instagramUrl: Joi.string().uri().allow("", null).optional(),
+  spotifyUrl:   Joi.string().uri().allow("", null).optional(),
+  websiteUrl:   Joi.string().uri().allow("", null).optional(),
+  order:        Joi.number().integer().allow(null).optional(),
 });
+
 const updateSchema = Joi.object({
-  name: Joi.string().optional(),
-  eventId: Joi.string().uuid().optional(),
+  name:         Joi.string().optional(),
+  eventId:      Joi.string().uuid().optional(),
+  bio:          Joi.string().allow("", null).optional(),
+  bioEn:        Joi.string().allow("", null).optional(),
+  imageUrl:     Joi.string().allow("", null).optional(),
+  genre:        Joi.string().allow("", null).optional(),
+  instagramUrl: Joi.string().uri().allow("", null).optional(),
+  spotifyUrl:   Joi.string().uri().allow("", null).optional(),
+  websiteUrl:   Joi.string().uri().allow("", null).optional(),
+  order:        Joi.number().integer().allow(null).optional(),
 });
 
 router.get("/", getAll);

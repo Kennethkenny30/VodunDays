@@ -37,6 +37,12 @@ export const MARKER_CATEGORIES = {
     shape: "hexagon",
     icon:  "scan",
     },
+  scene: {
+    label: "Scène",
+    color: "#E91E8C",
+    shape: "star",
+    icon:  "music",
+    },
 } as const;
 
 export type MarkerCategory = keyof typeof MARKER_CATEGORIES;
@@ -66,6 +72,7 @@ const CATEGORY_MAP: Record<string, MarkerCategory> = {
   TRANSPORT:  "transport",
   ASSISTANCE: "assistance",
   PRA:        "pra",
+  SCENE:      "scene",
 };
 
 type BackendSite = {
