@@ -22,15 +22,13 @@ import {
   Check, X, Undo2, Trash2, Loader2, Hexagon, MapPin, Info,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { GeoJSONPolygon, Site } from "@/lib/types/api";
+import type { GeoJSONPolygon, MarkerCategory, Site } from "@/lib/types/api";
 import { getSiteZone, updateSiteZone } from "@/lib/api/sites";
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
 const DEFAULT_ZOOM = 17;
 const MAP_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
-
-type MarkerCategory = "SITE" | "TOILETTES" | "URGENCES" | "TRANSPORT" | "ASSISTANCE" | "PRA";
 
 const CATEGORY_COLORS: Record<MarkerCategory, string> = {
   SITE:       "#F56E0F",

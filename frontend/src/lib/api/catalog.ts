@@ -1,6 +1,6 @@
 // API Event Types & Artists - Vodun Days Dashboard
 import { api } from "./client"
-import type { EventType, Artist } from "@/lib/types/api"
+import type { EventType, Artist, ArtistCreatePayload } from "@/lib/types/api"
 
 // ─── Event Types ──────────────────────────────────────────────────────────────
 

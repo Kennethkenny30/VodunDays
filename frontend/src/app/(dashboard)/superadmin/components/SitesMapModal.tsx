@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button }   from "@/components/ui/button";
 import { MapPin, Navigation, Check, X, Crosshair, Layers } from "lucide-react";
-import type { Site } from "@/lib/types/api";
+import type { MarkerCategory, Site } from "@/lib/types/api";
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
@@ -31,8 +31,6 @@ const MAP_STYLES = {
 } as const;
 
 // ─── Couleurs par catégorie (identiques à markers.ts) ────────────────────────
-
-type MarkerCategory = "SITE" | "TOILETTES" | "URGENCES" | "TRANSPORT" | "ASSISTANCE" | "PRA"
 
 const CATEGORY_COLORS: Record<MarkerCategory, string> = {
   SITE:       "#F56E0F",

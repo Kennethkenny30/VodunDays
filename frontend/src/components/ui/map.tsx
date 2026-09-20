@@ -1,6 +1,10 @@
 "use client";
 
-import MapLibreGL, { type PopupOptions, type MarkerOptions } from "maplibre-gl";
+import MapLibreGL, {
+  type PopupOptions,
+  type MarkerOptions,
+  type ExpressionSpecification,
+} from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
   createContext,
@@ -1526,16 +1530,18 @@ function MapHeatmap<P extends GeoJSON.GeoJsonProperties = GeoJSON.GeoJsonPropert
 
     map.addSource(sourceId, { type: "geojson", data });
 
+    // Les expressions MapLibre sont des tuples : le spread de flatMap produit un
+    // tableau generique que TypeScript ne peut pas verifier, d'ou le cast.
     const radiusExpr = [
       "interpolate", ["linear"], ["zoom"],
       ...radius.flatMap((r) => [r.zoom, r.value]),
-    ];
+    ] as unknown as ExpressionSpecification;
 
     const colorExpr = [
       "interpolate", ["linear"], ["heatmap-density"],
       0, "rgba(0,0,0,0)",
       ...colors.flatMap((c) => [c.at, c.color]),
-    ];
+    ] as unknown as ExpressionSpecification;
 
     map.addLayer({
       id: layerId,
