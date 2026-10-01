@@ -3,25 +3,33 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Menu, X } from "lucide-react";
 import { GlassSurface } from "@/components/glass-surface";
 import { MobileGateModal } from "@/components/mobile-gate-modal";
 import { useMobileGate } from "@/hooks/use-mobile-gate";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 const LOGO_URL = "/images/logo.png";
 
-const navItems = [
-  { label: "Programme", href: "#programme" },
-  { label: "Lieux", href: "#lieux" },
-  { label: "Culture", href: "#culture" },
-  { label: "FAQ", href: "#faq" },
+const navKeys = [
+  { key: "programme", href: "#programme" },
+  { key: "lieux", href: "#lieux" },
+  { key: "culture", href: "#culture" },
+  { key: "faq", href: "#faq" },
 ];
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { gateState, intercept, closeGate } = useMobileGate();
+  const t = useTranslations("home.header");
+
+  const navItems = navKeys.map((item) => ({
+    label: t(`nav.${item.key}`),
+    href: item.href,
+  }));
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -68,7 +76,7 @@ export function Header() {
             <nav className="flex items-center gap-6">
               {navItems.map((item) => (
                 <Link
-                  key={item.label}
+                  key={item.href}
                   href={item.href}
                   className="text-sm font-medium tracking-wide text-foreground/90 transition-colors hover:text-primary"
                 >
@@ -79,12 +87,7 @@ export function Header() {
 
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              <Link
-                  href="/connexion"
-                className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
-              >
-                Connexion
-              </Link>
+              <LanguageSwitcher />
                 <Link
                   href="/programme"
                   onClick={(e) => intercept(e, "/programme", "le Programme")}
@@ -95,7 +98,7 @@ export function Header() {
                   displace={0.3}
                   className="px-4 py-2 transition-transform hover:scale-105"
                 >
-                  <span className="text-sm font-semibold text-foreground">Découvrir</span>
+                  <span className="text-sm font-semibold text-foreground">{t("cta")}</span>
                 </GlassSurface>
               </Link>
             </div>
@@ -146,7 +149,7 @@ export function Header() {
               <div className="flex flex-col gap-1 p-3">
                 {navItems.map((item) => (
                   <Link
-                    key={item.label}
+                    key={item.href}
                     href={item.href}
                     className="rounded-lg px-3 py-2 text-xs font-medium text-foreground/90 transition-colors hover:bg-foreground/5 hover:text-primary"
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -154,14 +157,8 @@ export function Header() {
                     {item.label}
                   </Link>
                 ))}
-                <div className="mt-2 flex flex-col gap-2 border-t border-foreground/10 pt-2">
-                  <Link
-                      href="/connexion"
-                    className="rounded-lg px-3 py-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-foreground/5"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Connexion
-                  </Link>
+                <div className="mt-2 flex items-center justify-between gap-6 border-t border-foreground/10 pt-2 px-3">
+                  <LanguageSwitcher />
                     <Link
                       href="/programme"
                       onClick={() => setIsMobileMenuOpen(false)}
@@ -169,9 +166,9 @@ export function Header() {
                   <GlassSurface
                     borderRadius={10}
                     brightness={50}
-                    className="mx-2 py-2 text-center transition-transform hover:scale-[1.02]"
+                    className="px-4 py-2 text-center transition-transform hover:scale-[1.02]"
                   >
-                    <span className="text-xs font-semibold text-foreground">Découvrir</span>
+                    <span className="text-xs font-semibold text-foreground">{t("cta")}</span>
                   </GlassSurface>
                     </Link>
                 </div>

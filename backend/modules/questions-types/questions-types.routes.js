@@ -9,6 +9,9 @@ const router = Router();
 
 const VALID_KINDS = ["RATING", "SINGLE", "MULTIPLE", "TEXT"];
 
+// Seul l'INStaD peut gérer les types de questions.
+const WRITE_ROLES = ["INSTAD"];
+
 const createSchema = Joi.object({
   types: Joi.string().required(),
   kind: Joi.string().valid(...VALID_KINDS).default("TEXT"),
@@ -20,9 +23,9 @@ const updateSchema = Joi.object({
 
 router.get("/", getAll);
 router.get("/:id", getById);
-router.post("/",     authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(createSchema), auditLog("questions-types", "CREATE", (req) => `Type de question créé : "${req.body.types}" (${req.body.kind})`), create);
-router.patch("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(updateSchema), auditLog("questions-types", "UPDATE"), update);
-router.put("/:id",   authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(updateSchema), auditLog("questions-types", "UPDATE"), update);
-router.delete("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), auditLog("questions-types", "DELETE"), remove);
+router.post("/",     authenticate, authorize(...WRITE_ROLES), validate(createSchema), auditLog("questions-types", "CREATE", (req) => `Type de question créé : "${req.body.types}" (${req.body.kind})`), create);
+router.patch("/:id", authenticate, authorize(...WRITE_ROLES), validate(updateSchema), auditLog("questions-types", "UPDATE"), update);
+router.put("/:id",   authenticate, authorize(...WRITE_ROLES), validate(updateSchema), auditLog("questions-types", "UPDATE"), update);
+router.delete("/:id", authenticate, authorize(...WRITE_ROLES), auditLog("questions-types", "DELETE"), remove);
 
 export default router;

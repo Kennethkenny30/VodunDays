@@ -16,7 +16,7 @@ export function AboutSection() {
     { value: "740K+", label: t("about.stats.festivaliers") },
     { value: "7",     label: t("about.stats.sites") },
     { value: "20+",   label: t("about.stats.animations") },
-    { value: "3",     label: t("about.stats.jours") },
+    { value: "8",     label: t("about.stats.jours") },
   ];
 
   useEffect(() => {

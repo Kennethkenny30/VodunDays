@@ -19,6 +19,7 @@ export const findPublic = async (eventId) => {
   const orConditions = [
     { scope: "FESTIVAL",   active: true },
     { scope: "ALL_EVENTS", active: true },
+    { scope: "ALL_SITES",  active: true },
   ];
 
   if (eventId) {
@@ -105,7 +106,23 @@ export const update = async (id, data) => {
   });
 };
 
+// Supprime le quiz et tout ce qui en dépend (questions, choix, réponses,
+// liaisons impressions). Sans ce nettoyage préalable, Prisma refuse la
+// suppression du quiz tant que des questions y sont rattachées
+// (Questions_quizId_fkey), et renvoie une erreur 500 brute au lieu d'un
+// message propre. Tout se fait dans une transaction : soit tout est
+// supprimé, soit rien ne l'est.
 export const remove = async (id) => {
-  await findById(id);
-  return prisma.quiz.delete({ where: { id } });
+  const existing = await findById(id); // 404 si le quiz n'existe pas
+  const questionIds = existing.questions.map((q) => q.id);
+
+  await prisma.$transaction(async (tx) => {
+    if (questionIds.length > 0) {
+      await tx.answers.deleteMany({ where: { questionId: { in: questionIds } } });
+      await tx.questions_impressions.deleteMany({ where: { questionId: { in: questionIds } } });
+      await tx.choices.deleteMany({ where: { questionId: { in: questionIds } } });
+      await tx.questions.deleteMany({ where: { id: { in: questionIds } } });
+    }
+    await tx.quiz.delete({ where: { id } });
+  });
 };

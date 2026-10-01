@@ -65,13 +65,13 @@
     "about": {
       "title": "About",
       "tagline": "The first international gathering around Vodun arts, culture, and spirituality.",
-      "description": "From January 8 to 10, 2026, Ouidah becomes the international capital of Vodun celebration. Hounve dances, Zangbeto and Egungun processions, ceremonies honoring the deities, open-air concerts by the sea...",
+      "description": "From January 2 to 9, 2027, Ouidah becomes the international capital of Vodun celebration. Hounve dances, Zangbeto and Egungun processions, ceremonies honoring the deities, open-air concerts by the sea...",
       "edition": "Edition",
-      "editionValue": "2026",
+      "editionValue": "2027",
       "location": "Location",
       "locationValue": "Ouidah, Benin",
       "duration": "Duration",
-      "durationValue": "3 days",
+      "durationValue": "8 days",
       "entry": "Entry",
       "entryValue": "Online ticketing",
       "place": "Gate of No Return, Ouidah Beach",
@@ -79,12 +79,12 @@
     },
     "help": {
       "title": "Help & Support",
-      "subtitle": "Frequently asked questions about Vodun Days 2026.",
+      "subtitle": "Frequently asked questions about Vodun Days 2027.",
       "moreInfo": "More info at vodundays.bj",
       "faq": [
         {
           "q": "What are the dates of Vodun Days?",
-          "a": "Vodun Days take place on January 8, 9, and 10, 2026 in Ouidah, near the Gate of No Return."
+          "a": "Vodun Days take place from January 2 to 9, 2027 in Ouidah, near the Gate of No Return."
         },
         {
           "q": "How to get to Ouidah from Cotonou?",
@@ -152,7 +152,7 @@
       "form": "Contact form"
     },
     "footer": {
-      "name": "Vodun Days 2026",
+      "name": "Vodun Days 2027",
       "location": "Ouidah, Benin"
     }
   },
@@ -165,12 +165,14 @@
       "live": "Live",
       "viewOnMap": "View on map",
       "addToAgenda": "Add to agenda",
-      "removeFromAgenda": "Remove from agenda"
+      "removeFromAgenda": "Remove from agenda",
+      "lineup": "Lineup",
+      "lineupTba": "Lineup to be announced"
     }
   },
   "pedagogie": {
     "heritage": "Living Heritage",
-    "intro": "Vodun Days celebrate January 10, Benin's national Vodun holiday. This celebration honors the deities and ancestors through millennia-old rituals, processions, and ceremonies, heirs to the traditions of the Slave Coast.",
+    "intro": "Vodun Days carry forward Benin's national Vodun holiday, celebrated every January 10th. This celebration honors the deities and ancestors through millennia-old rituals, processions, and ceremonies, heirs to the traditions of the Slave Coast.",
     "sites": {
       "placeMaro": {
         "name": "Place Maro",
@@ -492,10 +494,10 @@
   "home": {
     "hero": {
       "title": "Celebrate the Tradition",
-      "subtitle": "Three days where Ouidah awakens to the rhythm of drums. Rituals, sacred dances and ancestral traditions, the living soul of Benin.",
+      "subtitle": "Eight days where Ouidah awakens to the rhythm of drums. Rituals, sacred dances and ancestral traditions, the living soul of Benin.",
       "ctaProgramme": "Explore the Schedule",
       "ctaCarte": "View the Map",
-      "dates": "January 8-10, 2027",
+      "dates": "January 2-9, 2027",
       "location": "Ouidah, Benin",
       "attendees": "Expected attendees"
     },
@@ -507,13 +509,135 @@
         "word4": "Heritage"
       },
       "since": "Since 1996",
-      "para1": "Vodun Days celebrate the traditional religion of Benin. Every year on January 10th, Ouidah becomes the world center of Vodun spirituality.",
+      "para1": "Vodun Days celebrate the traditional religion of Benin. Every year in January, Ouidah becomes the world center of Vodun spirituality.",
       "para2": "Discover sacred ceremonies, ritual dances, and traditional crafts in an atmosphere of communion and cultural sharing unique in the world.",
       "stats": {
         "festivaliers": "Festival-goers",
         "sites": "Cultural Sites",
         "animations": "Animations",
         "jours": "Festival Days"
+      }
+    },
+    "header": {
+      "nav": {
+        "programme": "Schedule",
+        "lieux": "Venues",
+        "culture": "Culture",
+        "faq": "FAQ"
+      },
+      "cta": "Discover"
+    },
+    "gallery": {
+      "eyebrow": "Discover",
+      "title": "Festival Highlights",
+      "subtitle": "A sensory immersion at the heart of Benin's age-old traditions.",
+      "prevAria": "Previous card",
+      "nextAria": "Next card",
+      "items": {
+        "danses": {
+          "title": "Ritual Dances",
+          "description": "Bodily expressions in communion with the Vodun deities, carried by the rhythm of ancestral drums."
+        },
+        "foret": {
+          "title": "Sacred Forest of Kpasse",
+          "description": "A major spiritual site hosting ceremonies for the deities Hunve, Koku, Kabada, and Atchinan within a preserved natural setting."
+        },
+        "zangbeto": {
+          "title": "Zangbeto Ceremony",
+          "description": "The mystical guardians of the night in their spectacular performances, embodying justice and protection."
+        },
+        "egungun": {
+          "title": "Egungun Ceremony",
+          "description": "The sacred masks of ancestors returning among the living in an ancestral dance charged with spirituality."
+        },
+        "tofa": {
+          "title": "Tofa Consultation",
+          "description": "The national Fa consultation charting the year's major trends. A moment eagerly awaited by the entire Beninese people."
+        },
+        "concert": {
+          "title": "Giant Concert",
+          "description": "A grand musical evening celebrating Beninese culture with the biggest names on the African music scene."
+        }
+      }
+    },
+    "highlights": {
+      "eyebrow": "Highlights",
+      "title": "Unforgettable Moments",
+      "items": {
+        "ceremonies": {
+          "title": "Sacred Ceremonies",
+          "description": "Witness traditional rituals led by Vodun priests in historic temples."
+        },
+        "danses": {
+          "title": "Ritual Dances",
+          "description": "Discover ancestral dances accompanied by traditional drumming."
+        },
+        "artisanat": {
+          "title": "Local Crafts",
+          "description": "Explore artisan markets and discover creations inspired by Vodun."
+        },
+        "gastronomie": {
+          "title": "Gastronomy",
+          "description": "Savor traditional Beninese dishes prepared for the occasion."
+        }
+      }
+    },
+    "testimonials": {
+      "eyebrow": "They were there",
+      "title": "What they're saying"
+    },
+    "cta": {
+      "titleLine1": "Live the experience",
+      "titleLine2": "Vodun Days 2027",
+      "subtitle": "Download our app and access all the information to make the most of the festival.",
+      "start": "Get Started",
+      "install": "Install",
+      "iosHint": {
+        "prefix": "On Safari: tap",
+        "share": "Share",
+        "middle": "then",
+        "addHome": "Add to Home Screen"
+      }
+    },
+    "features": {
+      "eyebrow": "Features",
+      "title": {
+        "word1": "Your",
+        "word2": "digital",
+        "word3": "guide"
+      },
+      "explore": "Explore",
+      "cards": {
+        "programme": {
+          "badge": "Schedule",
+          "title": "Live Schedule",
+          "description": "Filter the 8 days by type and follow updates in real time."
+        },
+        "carte": {
+          "badge": "Navigation",
+          "title": "Interactive Map",
+          "description": "6 cultural sites and essential services geolocated to help you navigate the festival."
+        },
+        "ar": {
+          "badge": "Immersion",
+          "title": "Augmented Reality",
+          "description": "See the Vodun spirits through your camera at cultural sites."
+        },
+        "agenda": {
+          "badge": "Planning",
+          "title": "My Schedule",
+          "description": "Plan your favorite events, catch scheduling conflicts, and build your own custom itinerary."
+        },
+        "notifications": {
+          "badge": "Alerts",
+          "title": "Push Notifications",
+          "description": "Targeted alerts on festival events and changes."
+        },
+        "urgences": {
+          "badge": "Security",
+          "title": "Emergency Reporting",
+          "description": "Instantly report any incident - medical, security, fire - and access emergency services located on site."
+        }
       }
     }
   },

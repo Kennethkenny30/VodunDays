@@ -9,6 +9,9 @@ const router = Router();
 
 const VALID_SCOPES = ["FESTIVAL", "ALL_EVENTS", "ALL_SITES", "EVENT"];
 
+// Seul l'INStaD peut créer, modifier ou supprimer des quiz.
+const WRITE_ROLES = ["INSTAD"];
+
 const createSchema = Joi.object({
   title: Joi.string().required(),
   description: Joi.string().optional().allow(""),
@@ -33,14 +36,14 @@ const updateSchema = Joi.object({
 // Déclarée avant /:id pour éviter la collision de paramètre.
 router.get("/public", getPublic);
 
-// Lecture : festivaliers (quiz actifs) + admins (tous)
+// Lecture : festivaliers (quiz actifs) + dashboards (tous)
 router.get("/", getAll);
 router.get("/:id", getById);
 
-// Ecriture : ADMIN et SUPER_ADMIN
-router.post("/",    authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(createSchema), auditLog("quiz", "CREATE", (req) => `Quiz créé : "${req.body.title}"`), create);
-router.patch("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(updateSchema), auditLog("quiz", "UPDATE"), update);
-router.put("/:id",   authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(updateSchema), auditLog("quiz", "UPDATE"), update);
-router.delete("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), auditLog("quiz", "DELETE"), remove);
+// Ecriture : INSTAD uniquement
+router.post("/",     authenticate, authorize(...WRITE_ROLES), validate(createSchema), auditLog("quiz", "CREATE", (req) => `Quiz créé : "${req.body.title}"`), create);
+router.patch("/:id", authenticate, authorize(...WRITE_ROLES), validate(updateSchema), auditLog("quiz", "UPDATE"), update);
+router.put("/:id",   authenticate, authorize(...WRITE_ROLES), validate(updateSchema), auditLog("quiz", "UPDATE"), update);
+router.delete("/:id", authenticate, authorize(...WRITE_ROLES), auditLog("quiz", "DELETE"), remove);
 
 export default router;

@@ -220,6 +220,20 @@
   --color-vd-skeleton:     var(--vd-skeleton);
   --color-vd-border-soft:  var(--vd-border-soft);
   --color-vd-inner-tint:   var(--vd-inner-tint);
+
+  /* Animation marquee (composant TestimonialsSection) */
+  --animate-marquee: marquee var(--duration) linear infinite;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-100% - var(--gap))); }
+}
+
+@keyframes marquee-vertical {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(-100% - var(--gap))); }
 }
 
 /* Utilitaires globaux */

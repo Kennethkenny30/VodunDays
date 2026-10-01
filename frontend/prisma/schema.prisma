@@ -1,0 +1,400 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../src/generated/"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [pgcrypto, postgis, uuid_ossp(map: "uuid-ossp")]
+}
+
+enum MarkerCategory {
+  SITE
+  TOILETTES
+  URGENCES
+  TRANSPORT
+  ASSISTANCE
+  PRA
+  SCENE
+}
+
+enum QuestionKind {
+  RATING
+  SINGLE
+  MULTIPLE
+  TEXT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  UNDISCLOSED
+}
+
+enum AgeRange {
+  UNDER_18
+  FROM_18_TO_24
+  FROM_25_TO_34
+  FROM_35_TO_44
+  FROM_45_TO_54
+  FROM_55_AND_ABOVE
+}
+
+enum FestivalEdition {
+  FIRST
+  SECOND
+  THIRD
+  FOURTH_AND_ABOVE
+}
+
+model Sites {
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  latitude    Float
+  longitude   Float
+  type        String // sous-type libre : "Scène", "Navette", "PRA-Plage"...
+  category    MarkerCategory @default(SITE)
+  capacity    Int            @default(0)
+
+  arLabel   String? // texte affiché en AR
+  arContent String? // URL vidéo/image ou contenu JSON AR
+  arRadius  Float? // rayon de détection en mètres
+  zoneGeo   Unsupported("geometry")?
+  createdAt DateTime                 @default(now())
+  updatedAt DateTime                 @updatedAt
+
+  // Champs i18n EN - repli sur FR si null
+  nameEn        String?
+  descriptionEn String?
+  typeEn        String?
+  arLabelEn     String?
+  arContentEn   String?
+
+  alerts       Alerts[]
+  amenities    Amenities[]
+  events       Events[]
+  presenceLogs PresenceLog[]
+
+  @@index([category]) // filtrage map rapide
+}
+
+model Amenities {
+  id        String   @id @default(uuid())
+  name      String
+  nameEn    String?
+  siteId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  site      Sites    @relation(fields: [siteId], references: [id])
+}
+
+model EventsTypes {
+  id        String   @id @default(uuid())
+  name      String
+  nameEn    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  events    Events[]
+}
+
+model Events {
+  id            String      @id @default(uuid())
+  name          String
+  description   String?
+  status        String
+  siteId        String
+  eventTypeId   String
+  createdBy     String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  imageUrl      String?
+  // Champs i18n EN
+  nameEn        String?
+  descriptionEn String?
+  artists       Artists[]
+  eventType     EventsTypes @relation(fields: [eventTypeId], references: [id])
+  site          Sites       @relation(fields: [siteId], references: [id])
+  programs      Programs[]
+  quizzes       Quiz[]
+}
+
+model Programs {
+  id        String    @id @default(uuid())
+  startTime DateTime
+  endTime   DateTime
+  eventId   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  event     Events    @relation(fields: [eventId], references: [id])
+  // Artistes programmés sur ce créneau - plusieurs possibles (b2b, collectif)
+  artists   Artists[]
+}
+
+model Artists {
+  id           String     @id @default(uuid())
+  name         String
+  eventId      String
+  bio          String?
+  // Image encodée en base64 (même convention que Events.imageUrl) - pas une
+  // URL de stockage externe, cf. utils de recadrage côté frontend.
+  imageUrl     String?
+  genre        String?
+  instagramUrl String?
+  spotifyUrl   String?
+  websiteUrl   String?
+  // Ordre d'affichage / billing (tête d'affiche = plus petit nombre)
+  order        Int?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  // Champs i18n EN
+  bioEn        String?
+  event        Events     @relation(fields: [eventId], references: [id])
+  // Créneaux sur lesquels cet artiste est programmé
+  programs     Programs[]
+}
+
+model Quiz {
+  id            String      @id @default(uuid())
+  title         String
+  description   String?
+  active        Boolean     @default(false)
+  // FESTIVAL | ALL_EVENTS | ALL_SITES | EVENT
+  scope         String      @default("FESTIVAL")
+  eventId       String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  // Champs i18n EN
+  titleEn       String?
+  descriptionEn String?
+  questions     Questions[]
+  event         Events?     @relation(fields: [eventId], references: [id])
+}
+
+model QuestionsTypes {
+  id        String       @id @default(uuid())
+  types     String       @unique
+  kind      QuestionKind @default(TEXT)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  questions Questions[]
+}
+
+model Questions {
+  id             String                  @id @default(uuid())
+  wording        String
+  wordingEn      String?
+  questionTypeId String
+  quizId         String
+  order          Int                     @default(0)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  answers        Answers[]
+  choices        Choices[]
+  questionType   QuestionsTypes          @relation(fields: [questionTypeId], references: [id])
+  quiz           Quiz                    @relation(fields: [quizId], references: [id])
+  impressions    Questions_impressions[]
+
+  @@index([quizId, order])
+}
+
+model Impressions {
+  id        String                  @id @default(uuid())
+  name      String
+  nameEn    String?
+  emoji     String
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+  questions Questions_impressions[]
+}
+
+model Questions_impressions {
+  questionId   String
+  impressionId String
+  impression   Impressions @relation(fields: [impressionId], references: [id])
+  question     Questions   @relation(fields: [questionId], references: [id])
+
+  @@id([questionId, impressionId])
+}
+
+model Choices {
+  id         String    @id @default(uuid())
+  wording    String
+  wordingEn  String?
+  questionId String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  question   Questions @relation(fields: [questionId], references: [id])
+}
+
+model Answers {
+  id         String    @id @default(uuid())
+  // uuid festivalier pour déduplication - non-unique car plusieurs réponses d'un même festivalier
+  uuid       String?
+  response   String
+  questionId String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  question   Questions @relation(fields: [questionId], references: [id])
+}
+
+// Profil festivalier anonyme, rempli via le pop-up d'onboarding a la
+// premiere ouverture de l'app. Sert aux statistiques d'audience.
+model Festivaliers {
+  id                    String          @id @default(uuid())
+  // uuid festivalier cote client (localStorage vd_uuid), meme identifiant
+  // que celui utilise dans Answers.uuid
+  uuid                  String          @unique
+  language              String
+  notificationsEnabled  Boolean         @default(true)
+  gender                Gender
+  ageRange              AgeRange
+  nationality           String
+  edition               FestivalEdition
+  onboardingCompletedAt DateTime?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@index([createdAt])
+}
+
+// Historique de présence des festivaliers (ping GPS périodique, cf. Phase 2
+// statistiques). uuid en texte libre (pas de FK vers Festivaliers) car un
+// ping peut arriver avant que l'onboarding ne soit complété.
+// siteId : site détecté (zoneGeo en priorité, arRadius en repli) - null si
+// le festivalier n'est dans le périmètre d'aucun site connu.
+model PresenceLog {
+  id        String   @id @default(uuid())
+  uuid      String
+  siteId    String?
+  latitude  Float
+  longitude Float
+  createdAt DateTime @default(now())
+
+  site Sites? @relation(fields: [siteId], references: [id])
+
+  @@index([uuid, createdAt])
+  @@index([createdAt])
+  @@index([siteId])
+}
+
+// Abonnement push navigateur (Web Push API), un festivalier peut avoir
+// plusieurs abonnements actifs (plusieurs appareils/navigateurs).
+model PushSubscriptions {
+  id        String   @id @default(uuid())
+  // meme uuid festivalier que Festivaliers.uuid / Answers.uuid
+  uuid      String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([uuid])
+}
+
+model Users {
+  id                     String             @id @default(uuid())
+  email                  String             @unique
+  password               String
+  role                   String
+  active                 Boolean            @default(true)
+  firstname              String
+  lastname               String
+  phone                  String?
+  lastLoging             DateTime?
+  createdBy              String?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  alertTimelines         AlertTimeline[]
+  platformSettingChanges PlatformSettings[]
+}
+
+model Notifications {
+  id          String    @id @default(dbgenerated("(gen_random_uuid())::text"))
+  title       String
+  message     String
+  target      String    @default("ALL")
+  targetId    String?
+  status      String    @default("PENDING")
+  scheduledAt DateTime? @db.Timestamptz(6)
+  sentAt      DateTime? @db.Timestamptz(6)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+  // Champs i18n EN
+  titleEn     String?
+  messageEn   String?
+
+  @@index([status], map: "idx_notifications_status")
+}
+
+model Alerts {
+  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uuid        String
+  displayName String
+  type        String
+  description String
+  status      String          @default("OPEN")
+  siteId      String?
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+  timeline    AlertTimeline[]
+  site        Sites?          @relation(fields: [siteId], references: [id], onUpdate: NoAction)
+
+  @@index([status], map: "idx_alerts_status")
+  @@index([type], map: "idx_alerts_type")
+  @@index([uuid], map: "idx_alerts_uuid")
+}
+
+model AlertTimeline {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  alertId   String   @db.Uuid
+  status    String
+  note      String?
+  userId    String?
+  userName  String?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  alert     Alerts   @relation(fields: [alertId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user      Users?   @relation(fields: [userId], references: [id], onUpdate: NoAction)
+
+  @@index([alertId], map: "idx_timeline_alert")
+}
+
+// Interrupteurs de plateforme pilotés depuis le dashboard super admin.
+// Une ligne par clé fonctionnelle, deux familles distinguées côté service
+// (voir platform-settings.service.js) :
+// - modules   : fonctionnalités activables (ModulesCard)   ex: "map", "maintenance"
+// - incidents : mesures d'urgence (IncidentCenter)          ex: "degradedMode"
+// La liste des clés valides est fixée côté code (SETTING_KEYS), pas en base -
+// permet d'ajouter/retirer un interrupteur sans migration.
+model PlatformSettings {
+  key           String   @id
+  enabled       Boolean  @default(false)
+  updatedById   String?
+  updatedByName String?
+  updatedAt     DateTime @updatedAt
+  createdAt     DateTime @default(now())
+
+  updatedBy Users? @relation(fields: [updatedById], references: [id], onDelete: SetNull, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model AuditLogs {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  action      String
+  module      String
+  description String
+  metadata    Json?
+  userId      String?   @db.Uuid
+  userName    String?
+  ipAddress   String?
+  createdAt   DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([action])
+  @@index([createdAt(sort: Desc)])
+  @@index([module])
+}

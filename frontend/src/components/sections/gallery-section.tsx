@@ -2,61 +2,40 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-// Donnees de la galerie
-const galleryItems = [
-  {
-    title: "Danses Rituelles",
-    description:
-      "Expressions corporelles en communion avec les divinit\u00e9s Vodun, port\u00e9es par le rythme des percussions ancestrales.",
-    image: "/images/vodundays-2.jpg",
-  },
-  {
-    title: "For\u00eat Sacr\u00e9e de Kpass\u00e8",
-    description:
-      "Site spirituel majeur accueillant les animations des divinit\u00e9s Hunv\u025b, K\u0254ku, Kabada et Atchinan dans un cadre naturel pr\u00e9serv\u00e9.",
-    image: "/images/vodundays-17.jpg",
-  },
-  {
-    title: "Animation Zangbeto",
-    description:
-      "Les gardiens mystiques de la nuit dans leurs performances spectaculaires, incarnant la justice et la protection.",
-    image: "/images/vodundays-8.jpg",
-  },
-  {
-    title: "Animation Egungun",
-    description:
-      "Les masques sacr\u00e9s des anc\u00eatres revenant parmi les vivants dans une danse ancestrale charg\u00e9e de spiritualit\u00e9.",
-    image: "/images/vodundays-0019.jpg",
-  },
-  {
-    title: "Consultation Tof\u00e2",
-    description:
-      "Consultation nationale du F\u00e2 tra\u00e7ant les grandes tendances de l\u2019ann\u00e9e. Un moment tr\u00e8s attendu par tout le peuple b\u00e9ninois.",
-    image: "/images/vodundays-14.jpg",
-  },
-  {
-    title: "Concert G\u00e9ant",
-    description:
-      "Une soir\u00e9e musicale grandiose c\u00e9l\u00e9brant la culture b\u00e9ninoise avec les plus grands artistes de la sc\u00e8ne africaine.",
-    image: "/images/vodundays-16.jpg",
-  },
+// Association cle de traduction <-> image (les images restent codees en dur, le texte vient de fr.json/en.json)
+const galleryImageKeys = [
+  { key: "danses", image: "/images/vodundays-2.jpg" },
+  { key: "foret", image: "/images/vodundays-17.jpg" },
+  { key: "zangbeto", image: "/images/vodundays-8.jpg" },
+  { key: "egungun", image: "/images/vodundays-0019.jpg" },
+  { key: "tofa", image: "/images/vodundays-14.jpg" },
+  { key: "concert", image: "/images/vodundays-16.jpg" },
 ];
 
 // Hauteur de scroll allouee a la section (controle la vitesse du defilement horizontal)
 const SCROLL_HEIGHT = "250vh";
 
 export function GallerySection() {
+  const t = useTranslations("home.gallery");
   const outerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const scrollTriggerRef = useRef<{ start: number; end: number } | null>(null);
+
+  const galleryItems = galleryImageKeys.map((item) => ({
+    key: item.key,
+    title: t(`items.${item.key}.title`),
+    description: t(`items.${item.key}.description`),
+    image: item.image,
+  }));
 
   // Navigation carte par carte via les fleches
   const scrollParCarte = useCallback((direction: "left" | "right") => {
     const st = scrollTriggerRef.current;
     if (!st) return;
-    const pas = (st.end - st.start) / galleryItems.length;
+    const pas = (st.end - st.start) / galleryImageKeys.length;
     const cible =
       direction === "right"
         ? Math.min(window.scrollY + pas, st.end)
@@ -159,22 +138,22 @@ export function GallerySection() {
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="gallery-title">
               <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-primary md:text-sm">
-                {"D\u00e9couvrez"}
+                {t("eyebrow")}
               </p>
               <h2 className="text-2xl font-serif font-bold leading-none tracking-tight text-foreground md:text-3xl lg:text-4xl text-balance">
-                Les Temps Forts
+                {t("title")}
               </h2>
             </div>
             <div className="flex items-end gap-4">
               <p className="max-w-md text-sm text-muted-foreground md:text-base md:text-right leading-relaxed">
-                {"Une immersion sensorielle au c\u0153ur des traditions s\u00e9culaires du B\u00e9nin."}
+                {t("subtitle")}
               </p>
               {/* Boutons navigation gauche / droite */}
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => scrollParCarte("left")}
-                  aria-label="Carte pr\u00e9c\u00e9dente"
+                  aria-label={t("prevAria")}
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-foreground/20 bg-transparent text-foreground backdrop-blur-sm transition-all hover:bg-foreground hover:text-background"
                 >
                   <ChevronLeft className="h-5 w-5" />
@@ -182,7 +161,7 @@ export function GallerySection() {
                 <button
                   type="button"
                   onClick={() => scrollParCarte("right")}
-                  aria-label="Carte suivante"
+                  aria-label={t("nextAria")}
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-foreground/20 bg-transparent text-foreground backdrop-blur-sm transition-all hover:bg-foreground hover:text-background"
                 >
                   <ChevronRight className="h-5 w-5" />
@@ -200,7 +179,7 @@ export function GallerySection() {
             style={{ willChange: "transform" }}
           >
             {galleryItems.map((item, index) => (
-              <CarteDeLaGalerie key={item.title} item={item} index={index} />
+              <CarteDeLaGalerie key={item.key} item={item} index={index} />
             ))}
             <div className="shrink-0 w-4 md:w-8" aria-hidden="true" />
           </div>
@@ -215,7 +194,7 @@ function CarteDeLaGalerie({
   item,
   index,
 }: {
-  item: (typeof galleryItems)[number];
+  item: { title: string; description: string; image: string };
   index: number;
 }) {
   return (

@@ -7,6 +7,9 @@ import { create, getAll, getById, remove, reorder, update } from "./questions.co
 
 const router = Router();
 
+// Seul l'INStaD peut créer, modifier, supprimer ou réordonner des questions.
+const WRITE_ROLES = ["INSTAD"];
+
 const createSchema = Joi.object({
   wording: Joi.string().required(),
   questionTypeId: Joi.string().uuid().required(),
@@ -22,13 +25,13 @@ const reorderSchema = Joi.object({
 });
 
 // La route /reorder doit être déclarée avant /:id pour éviter la collision
-router.patch("/reorder", authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(reorderSchema), auditLog("questions", "UPDATE", (req) => `Réordonnancement de ${req.body.ids?.length ?? 0} questions`), reorder);
+router.patch("/reorder", authenticate, authorize(...WRITE_ROLES), validate(reorderSchema), auditLog("questions", "UPDATE", (req) => `Réordonnancement de ${req.body.ids?.length ?? 0} questions`), reorder);
 
 router.get("/", getAll);
 router.get("/:id", getById);
-router.post("/",     authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(createSchema), auditLog("questions", "CREATE", (req) => `Question créée dans le quiz [${req.body.quizId?.slice(0, 8)}...]`), create);
-router.patch("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(updateSchema), auditLog("questions", "UPDATE"), update);
-router.put("/:id",   authenticate, authorize("ADMIN", "SUPER_ADMIN"), validate(updateSchema), auditLog("questions", "UPDATE"), update);
-router.delete("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), auditLog("questions", "DELETE"), remove);
+router.post("/",     authenticate, authorize(...WRITE_ROLES), validate(createSchema), auditLog("questions", "CREATE", (req) => `Question créée dans le quiz [${req.body.quizId?.slice(0, 8)}...]`), create);
+router.patch("/:id", authenticate, authorize(...WRITE_ROLES), validate(updateSchema), auditLog("questions", "UPDATE"), update);
+router.put("/:id",   authenticate, authorize(...WRITE_ROLES), validate(updateSchema), auditLog("questions", "UPDATE"), update);
+router.delete("/:id", authenticate, authorize(...WRITE_ROLES), auditLog("questions", "DELETE"), remove);
 
 export default router;

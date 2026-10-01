@@ -65,13 +65,13 @@
     "about": {
       "title": "À propos",
       "tagline": "Premier rendez-vous international autour des arts, de la culture et de la spiritualité Vodun.",
-      "description": "Du 8 au 10 janvier 2026, Ouidah devient la capitale internationale de la célébration du Vodun. Danses Hounvè, sorties des Zangbétos et Egungun, processions en l'honneur des divinités, concerts en plein air sur le bord de mer…",
+      "description": "Du 2 au 9 janvier 2027, Ouidah devient la capitale internationale de la célébration du Vodun. Danses Hounvè, sorties des Zangbétos et Egungun, processions en l'honneur des divinités, concerts en plein air sur le bord de mer…",
       "edition": "Édition",
-      "editionValue": "2026",
+      "editionValue": "2027",
       "location": "Lieu",
       "locationValue": "Ouidah, Bénin",
       "duration": "Durée",
-      "durationValue": "3 jours",
+      "durationValue": "8 jours",
       "entry": "Entrée",
       "entryValue": "Billetterie en ligne",
       "place": "Porte du non-retour, Plage de Ouidah",
@@ -79,12 +79,12 @@
     },
     "help": {
       "title": "Aide & Support",
-      "subtitle": "Questions fréquentes sur les Vodun Days 2026.",
+      "subtitle": "Questions fréquentes sur les Vodun Days 2027.",
       "moreInfo": "Plus d'infos sur vodundays.bj",
       "faq": [
         {
           "q": "Quelles sont les dates des Vodun Days ?",
-          "a": "Les Vodun Days ont lieu les 8, 9 et 10 janvier 2026 à Ouidah, près de la Porte du non-retour."
+          "a": "Les Vodun Days ont lieu du 2 au 9 janvier 2027 à Ouidah, près de la Porte du non-retour."
         },
         {
           "q": "Comment se rendre à Ouidah depuis Cotonou ?",
@@ -152,7 +152,7 @@
       "form": "Formulaire de contact"
     },
     "footer": {
-      "name": "Vodun Days 2026",
+      "name": "Vodun Days 2027",
       "location": "Ouidah, Bénin"
     }
   },
@@ -165,12 +165,14 @@
       "live": "En Direct",
       "viewOnMap": "Voir sur la carte",
       "addToAgenda": "Ajouter à mon agenda",
-      "removeFromAgenda": "Retirer de mon agenda"
+      "removeFromAgenda": "Retirer de mon agenda",
+      "lineup": "Programmation",
+      "lineupTba": "Programmation à venir"
     }
   },
   "pedagogie": {
     "heritage": "Patrimoine Vivant",
-    "intro": "Les Vodun Days célèbrent le 10 janvier, fête nationale du Vodun au Bénin. Cette célébration honore les divinités et ancêtres à travers des rituels, processions et cérémonies millénaires, héritiers des traditions de la côte des esclaves.",
+    "intro": "Les Vodun Days s'inscrivent dans la continuité de la fête nationale du Vodun, célébrée chaque 10 janvier au Bénin. Cette célébration honore les divinités et ancêtres à travers des rituels, processions et cérémonies millénaires, héritiers des traditions de la côte des esclaves.",
     "sites": {
       "placeMaro": {
         "name": "Place Maro",
@@ -492,10 +494,10 @@
   "home": {
     "hero": {
       "title": "Célébrez la Tradition",
-      "subtitle": "Trois jours où Ouidah s'éveille au rythme des tambours. Rituels, danses sacrées et traditions ancestrales, l'âme vivante du Bénin.",
+      "subtitle": "Huit jours où Ouidah s'éveille au rythme des tambours. Rituels, danses sacrées et traditions ancestrales, l'âme vivante du Bénin.",
       "ctaProgramme": "Explorer le Programme",
       "ctaCarte": "Voir la Carte",
-      "dates": "08-10 Janvier 2027",
+      "dates": "02-09 Janvier 2027",
       "location": "Ouidah, Bénin",
       "attendees": "Festivaliers attendus"
     },
@@ -507,13 +509,135 @@
         "word4": "Millénaire"
       },
       "since": "Depuis 1996",
-      "para1": "Les Vodun Days célèbrent la religion traditionnelle du Bénin. Chaque année, le 10 janvier, Ouidah devient le centre mondial de la spiritualité Vodun.",
+      "para1": "Les Vodun Days célèbrent la religion traditionnelle du Bénin. Chaque année en janvier, Ouidah devient le centre mondial de la spiritualité Vodun.",
       "para2": "Découvrez les cérémonies sacrées, les danses rituelles, et l'artisanat traditionnel dans une atmosphère de communion et de partage culturel unique au monde.",
       "stats": {
         "festivaliers": "Festivaliers",
         "sites": "Sites Culturels",
         "animations": "Animations",
         "jours": "Jours de Fête"
+      }
+    },
+    "header": {
+      "nav": {
+        "programme": "Programme",
+        "lieux": "Lieux",
+        "culture": "Culture",
+        "faq": "FAQ"
+      },
+      "cta": "Découvrir"
+    },
+    "gallery": {
+      "eyebrow": "Découvrez",
+      "title": "Les Temps Forts",
+      "subtitle": "Une immersion sensorielle au cœur des traditions séculaires du Bénin.",
+      "prevAria": "Carte précédente",
+      "nextAria": "Carte suivante",
+      "items": {
+        "danses": {
+          "title": "Danses Rituelles",
+          "description": "Expressions corporelles en communion avec les divinités Vodun, portées par le rythme des percussions ancestrales."
+        },
+        "foret": {
+          "title": "Forêt Sacrée de Kpassè",
+          "description": "Site spirituel majeur accueillant les animations des divinités Hunvɛ, Kɔku, Kabada et Atchinan dans un cadre naturel préservé."
+        },
+        "zangbeto": {
+          "title": "Animation Zangbeto",
+          "description": "Les gardiens mystiques de la nuit dans leurs performances spectaculaires, incarnant la justice et la protection."
+        },
+        "egungun": {
+          "title": "Animation Egungun",
+          "description": "Les masques sacrés des ancêtres revenant parmi les vivants dans une danse ancestrale chargée de spiritualité."
+        },
+        "tofa": {
+          "title": "Consultation Tofâ",
+          "description": "Consultation nationale du Fâ traçant les grandes tendances de l'année. Un moment très attendu par tout le peuple béninois."
+        },
+        "concert": {
+          "title": "Concert Géant",
+          "description": "Une soirée musicale grandiose célébrant la culture béninoise avec les plus grands artistes de la scène africaine."
+        }
+      }
+    },
+    "highlights": {
+      "eyebrow": "Temps Forts",
+      "title": "Moments Inoubliables",
+      "items": {
+        "ceremonies": {
+          "title": "Cérémonies Sacrées",
+          "description": "Assistez aux rituels traditionnels menés par les prêtres Vodun dans les temples historiques."
+        },
+        "danses": {
+          "title": "Danses Rituelles",
+          "description": "Découvrez les danses ancestrales accompagnées de percussions traditionnelles."
+        },
+        "artisanat": {
+          "title": "Artisanat Local",
+          "description": "Explorez les marchés d'artisans et découvrez les créations inspirées du Vodun."
+        },
+        "gastronomie": {
+          "title": "Gastronomie",
+          "description": "Savourez les plats traditionnels béninois préparés pour l'occasion."
+        }
+      }
+    },
+    "testimonials": {
+      "eyebrow": "Ils y étaient",
+      "title": "Ce qu'ils en disent"
+    },
+    "cta": {
+      "titleLine1": "Vivez l'expérience",
+      "titleLine2": "Vodun Days 2027",
+      "subtitle": "Téléchargez notre application et accédez à toutes les informations pour profiter pleinement du festival.",
+      "start": "Commencer",
+      "install": "Installer",
+      "iosHint": {
+        "prefix": "Sur Safari : appuyer sur",
+        "share": "Partager",
+        "middle": "puis",
+        "addHome": "Sur l'écran d'accueil"
+      }
+    },
+    "features": {
+      "eyebrow": "Fonctionnalités",
+      "title": {
+        "word1": "Votre",
+        "word2": "guide",
+        "word3": "numérique"
+      },
+      "explore": "Explorer",
+      "cards": {
+        "programme": {
+          "badge": "Programme",
+          "title": "Programme en Direct",
+          "description": "Filtrez les 8 jours par type et suivez les mises à jour en temps réel."
+        },
+        "carte": {
+          "badge": "Navigation",
+          "title": "Carte Interactive",
+          "description": "6 sites culturels et services essentiels géolocalisés pour naviguer dans le festival."
+        },
+        "ar": {
+          "badge": "Immersion",
+          "title": "Réalité Augmentée",
+          "description": "Visualisez les esprits Vodun via votre caméra sur les sites culturels."
+        },
+        "agenda": {
+          "badge": "Planification",
+          "title": "Mon Agenda",
+          "description": "Planifiez vos événements favoris, détectez les conflits horaires et construisez votre programme sur mesure."
+        },
+        "notifications": {
+          "badge": "Alertes",
+          "title": "Notifications Push",
+          "description": "Alertes ciblées sur les événements et changements du festival."
+        },
+        "urgences": {
+          "badge": "Sécurité",
+          "title": "Signalement Urgences",
+          "description": "Signalez instantanément tout incident - médical, sécurité, incendie - et accédez aux services d'urgence localisés sur site."
+        }
       }
     }
   },

@@ -73,6 +73,17 @@ type BackendEvent = {
 
 // Mapper
 // Transporte maintenant siteId + siteLat + siteLng pour le deep-link carte.
+//
+// Regroupement des creneaux (ProgramCard) :
+// un evenement avec plusieurs `programs` (creneaux horaires) produisait
+// jusqu'ici une Program - donc une ProgramCard - par creneau, y compris
+// quand plusieurs creneaux tombaient le meme jour : deux cards quasi
+// identiques (meme image/titre/lieu, horaire different) se suivaient dans
+// la liste. On regroupe maintenant les creneaux d'un meme evenement par
+// jour : la card affiche le premier creneau du jour, les autres deviennent
+// `otherSlots`, consultables via l'accordeon de ProgramCard. La repartition
+// entre jours (DayFilter) n'est pas touchee - elle continue de fonctionner
+// creneau par creneau, seul le regroupement INTRA-jour change.
 
 function mapEventToPrograms(event: BackendEvent): Program[] {
   const typeName = event.eventType?.name?.toUpperCase() ?? "ANIMATION";
@@ -115,7 +126,8 @@ function mapEventToPrograms(event: BackendEvent): Program[] {
     }];
   }
 
-  return event.programs.map((program): Program => {
+  // 1. Un Program independant par creneau (comportement d'origine)
+  const slots: Program[] = event.programs.map((program): Program => {
     const startDate = new Date(program.startTime);
     const endDate   = new Date(program.endTime);
 
@@ -155,6 +167,23 @@ function mapEventToPrograms(event: BackendEvent): Program[] {
       artists: program.artists,
     };
   });
+
+  // 2. Regroupement par jour : le creneau le plus tot devient la card
+  //    "primaire", les suivants du meme jour passent en otherSlots.
+  const byDay = new Map<number, Program[]>();
+  for (const slot of slots) {
+    const group = byDay.get(slot.day) ?? [];
+    group.push(slot);
+    byDay.set(slot.day, group);
+  }
+
+  const grouped: Program[] = [];
+  for (const daySlots of byDay.values()) {
+    const [primary, ...rest] = [...daySlots].sort((a, b) => a.startTime.localeCompare(b.startTime));
+    grouped.push(rest.length > 0 ? { ...primary, otherSlots: rest } : primary);
+  }
+
+  return grouped;
 }
 
 // Animations

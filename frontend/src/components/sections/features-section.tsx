@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { motion, type Variants } from "framer-motion";
@@ -144,10 +145,10 @@ function BezelCard({
 }
 
 // CTA Button-in-Button : ArrowUpRight dans son propre cercle imbriqué
-function CardCTA() {
+function CardCTA({ label }: { label: string }) {
   return (
     <div className="flex w-fit items-center gap-2 rounded-full border border-border/40 bg-foreground/[0.04] px-4 py-2 text-xs font-medium text-muted-foreground opacity-0 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:border-primary/30 group-hover:bg-primary/[0.08] group-hover:text-primary group-hover:opacity-100">
-      Explorer
+      {label}
       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-foreground/[0.06] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:bg-primary/20">
         <ArrowUpRight className="h-3 w-3" strokeWidth={1.5} />
       </span>
@@ -178,6 +179,7 @@ const cardVariants: Variants = {
 };
 
 export function FeaturesSection() {
+  const t = useTranslations("home.features");
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -255,14 +257,14 @@ export function FeaturesSection() {
           style={{ perspective: "800px" }}
         >
           <p className="features-eyebrow mb-4 text-xs font-medium uppercase tracking-[0.2em] text-primary md:text-sm">
-            Fonctionnalités
+            {t("eyebrow")}
           </p>
           <h2 className="max-w-lg font-serif text-3xl font-bold leading-none tracking-tight text-foreground md:text-6xl lg:text-7xl">
-            <span className="features-title-word inline-block">Votre</span>{" "}
-            <span className="features-title-word inline-block">guide</span>
+            <span className="features-title-word inline-block">{t("title.word1")}</span>{" "}
+            <span className="features-title-word inline-block">{t("title.word2")}</span>
             <br />
             <span className="features-title-word inline-block text-primary">
-              numérique
+              {t("title.word3")}
             </span>
           </h2>
         </div>
@@ -305,18 +307,18 @@ export function FeaturesSection() {
             <div className="relative flex h-full max-w-[75%] flex-col justify-between p-6 md:max-w-[19rem] md:p-7">
               <div className="flex items-center justify-between">
                 <span className="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest text-foreground/60">
-                  Programme
+                  {t("cards.programme.badge")}
                 </span>
                 <CalendarDays className="h-4 w-4 text-primary/70" strokeWidth={1} />
               </div>
               <div>
                 <h3 className="mb-2 text-2xl font-bold leading-tight text-foreground md:text-3xl">
-                  Programme en Direct
+                  {t("cards.programme.title")}
                 </h3>
                 <p className="mb-5 text-sm text-muted-foreground">
-                  Filtrez les 3 jours par type et suivez les mises à jour en temps réel.
+                  {t("cards.programme.description")}
                 </p>
-                <CardCTA />
+                <CardCTA label={t("explore")} />
               </div>
             </div>
           </BezelCard>
@@ -346,17 +348,17 @@ export function FeaturesSection() {
                 <div className="mb-3 flex items-center gap-2">
                   <MapPin className="h-3.5 w-3.5 text-primary/70" strokeWidth={1} />
                   <span className="rounded-full border border-border/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    Navigation
+                    {t("cards.carte.badge")}
                   </span>
                 </div>
                 <h3 className="mb-2 text-xl font-bold leading-tight text-foreground">
-                  Carte Interactive
+                  {t("cards.carte.title")}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  6 sites culturels et services essentiels géolocalisés pour naviguer dans le festival.
+                  {t("cards.carte.description")}
                 </p>
               </div>
-              <CardCTA />
+              <CardCTA label={t("explore")} />
             </div>
           </BezelCard>
 
@@ -380,13 +382,13 @@ export function FeaturesSection() {
               <Scan className="accent-float-icon h-14 w-14 text-primary" strokeWidth={1} />
               <div>
                 <span className="mb-2 inline-block rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-primary">
-                  Immersion
+                  {t("cards.ar.badge")}
                 </span>
                 <h3 className="mt-2 text-xl font-bold leading-tight text-foreground">
-                  Réalité Augmentée
+                  {t("cards.ar.title")}
                 </h3>
                 <p className="mt-2 max-w-[22ch] text-sm text-muted-foreground">
-                  Visualisez les esprits Vodun via votre caméra sur les sites culturels.
+                  {t("cards.ar.description")}
                 </p>
               </div>
             </div>
@@ -415,17 +417,17 @@ export function FeaturesSection() {
                 <div className="mb-3 flex items-center gap-2">
                   <BookHeart className="h-3.5 w-3.5 text-primary/70" strokeWidth={1} />
                   <span className="rounded-full border border-border/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    Planification
+                    {t("cards.agenda.badge")}
                   </span>
                 </div>
                 <h3 className="mb-2 text-lg font-bold leading-tight text-foreground md:text-2xl">
-                  Mon Agenda
+                  {t("cards.agenda.title")}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Planifiez vos événements favoris, détectez les conflits horaires et construisez votre programme sur mesure.
+                  {t("cards.agenda.description")}
                 </p>
               </div>
-              <CardCTA />
+              <CardCTA label={t("explore")} />
             </div>
           </BezelCard>
 
@@ -453,14 +455,14 @@ export function FeaturesSection() {
               <div className="mb-2 flex items-center gap-2">
                 <Bell className="h-3.5 w-3.5 text-primary/70" strokeWidth={1} />
                 <span className="rounded-full border border-border/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Alertes
+                  {t("cards.notifications.badge")}
                 </span>
               </div>
               <h3 className="text-base font-bold leading-tight text-foreground">
-                Notifications Push
+                {t("cards.notifications.title")}
               </h3>
               <p className="mt-1 text-xs text-muted-foreground">
-                Alertes ciblées sur les événements et changements du festival.
+                {t("cards.notifications.description")}
               </p>
             </div>
           </BezelCard>
@@ -495,15 +497,15 @@ export function FeaturesSection() {
                   <ShieldAlert className="h-4 w-4 text-destructive" strokeWidth={1} />
                 </div>
                 <span className="rounded-full border border-destructive/30 bg-destructive/[0.08] px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-destructive/80">
-                  Sécurité
+                  {t("cards.urgences.badge")}
                 </span>
               </div>
               <div className="relative">
                 <h3 className="mb-2 text-xl font-bold leading-tight text-foreground md:text-2xl">
-                  Signalement Urgences
+                  {t("cards.urgences.title")}
                 </h3>
                 <p className="max-w-md text-sm text-muted-foreground">
-                  Signalez instantanément tout incident - médical, sécurité, incendie - et accédez aux services d'urgence localisés sur site.
+                  {t("cards.urgences.description")}
                 </p>
               </div>
             </div>

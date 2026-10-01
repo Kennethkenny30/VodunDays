@@ -5,6 +5,7 @@ import { AboutSection } from "@/components/sections/about-section";
 import { GallerySection } from "@/components/sections/gallery-section";
 import { FeaturesSection } from "@/components/sections/features-section";
 import { HighlightsSection } from "@/components/sections/highlights-section";
+import { TestimonialsSection } from "@/components/sections/testimonials-section";
 import { CTASection } from "@/components/sections/cta-section";
 import { Footer } from "@/components/footer";
 
@@ -33,6 +34,7 @@ export default function Home() {
           <GallerySection />
           <FeaturesSection />
           <HighlightsSection />
+          <TestimonialsSection />
           <CTASection />
           <Footer />
         </div>

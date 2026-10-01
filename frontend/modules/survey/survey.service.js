@@ -1,0 +1,209 @@
+/**
+ * Module Survey - Enquête satisfaction
+ *
+ * Exploite les modèles existants (Answers, Questions, Quiz)
+ * pour produire des statistiques de satisfaction.
+ *
+ * Convention : la "note" d'un festivalier est une réponse numérique (1-5)
+ * à une question dont QuestionType.types contient RATING_TYPE_KEYWORD.
+ * Les commentaires sont les réponses texte libres dont le type contient TEXT_TYPE_KEYWORD.
+ * Si les libellés changent en base, mettre à jour ces deux constantes.
+ *
+ * Filtrage : eventId cible un événement précis ; scope cible tous les quiz
+ * d'une portée donnée (FESTIVAL, ALL_EVENTS, ALL_SITES, EVENT).
+ * Si ni l'un ni l'autre n'est fourni, toutes les réponses sont agrégées.
+ */
+
+import prisma from "../../prisma/prisma.client.js";
+
+const RATING_TYPE_KEYWORD = "Note";
+const TEXT_TYPE_KEYWORD   = "Texte";
+
+// Construit le filtre Prisma sur le quiz selon eventId et/ou scope
+function buildQuizFilter(eventId, scope) {
+  if (eventId) return { quiz: { eventId } };
+  if (scope)   return { quiz: { scope } };
+  return {};
+}
+
+// Construit la liste des uuid de festivaliers correspondant aux filtres
+// démographiques (genre, tranche d'âge, nationalité) - null si aucun filtre
+// démographique n'est actif (pas de restriction à appliquer).
+export async function resolveDemographicUuids({ gender, ageRange, nationality }) {
+  if (!gender && !ageRange && !nationality) return null;
+  const where = {};
+  if (gender)      where.gender      = gender;
+  if (ageRange)    where.ageRange    = ageRange;
+  if (nationality) where.nationality = nationality;
+  const festivaliers = await prisma.festivaliers.findMany({ where, select: { uuid: true } });
+  return festivaliers.map((f) => f.uuid);
+}
+
+export const getStats = async ({ eventId, scope, from, to, gender, ageRange, nationality } = {}) => {
+  const quizFilter = buildQuizFilter(eventId, scope);
+
+  const createdAt = {};
+  if (from) createdAt.gte = new Date(from);
+  if (to)   createdAt.lte = new Date(to);
+
+  const demographicUuids = await resolveDemographicUuids({ gender, ageRange, nationality });
+  // Filtre actif sans aucun festivalier correspondant : aucune réponse ne peut matcher
+  if (demographicUuids !== null && demographicUuids.length === 0) {
+    return {
+      averageRating: 0,
+      totalResponses: 0,
+      satisfactionRate: 0,
+      ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      trend: [],
+    };
+  }
+
+  const ratingAnswers = await prisma.answers.findMany({
+    where: {
+      question: {
+        ...quizFilter,
+        questionType: { types: { contains: RATING_TYPE_KEYWORD, mode: "insensitive" } },
+      },
+      ...(Object.keys(createdAt).length > 0 ? { createdAt } : {}),
+      ...(demographicUuids !== null ? { uuid: { in: demographicUuids } } : {}),
+    },
+    select: { response: true, createdAt: true },
+  });
+
+  const validRatings = ratingAnswers
+    .map((a) => parseInt(a.response, 10))
+    .filter((n) => n >= 1 && n <= 5);
+
+  const totalResponses = validRatings.length;
+
+  if (totalResponses === 0) {
+    return {
+      averageRating: 0,
+      totalResponses: 0,
+      satisfactionRate: 0,
+      ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      trend: [],
+    };
+  }
+
+  const averageRating = validRatings.reduce((sum, n) => sum + n, 0) / totalResponses;
+
+  const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  validRatings.forEach((n) => { ratingDistribution[n]++; });
+
+  const satisfied = validRatings.filter((n) => n >= 4).length;
+  const satisfactionRate = Math.round((satisfied / totalResponses) * 100);
+
+  const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const recentAnswers = ratingAnswers.filter((a) => new Date(a.createdAt) >= since7d);
+
+  const trendMap = {};
+  recentAnswers.forEach((a) => {
+    const day = a.createdAt.toISOString().slice(0, 10);
+    if (!trendMap[day]) trendMap[day] = { date: day, count: 0, sum: 0 };
+    const n = parseInt(a.response, 10);
+    if (n >= 1 && n <= 5) { trendMap[day].count++; trendMap[day].sum += n; }
+  });
+
+  const trend = Object.values(trendMap)
+    .map((d) => ({ date: d.date, count: d.count, avg: d.count > 0 ? Math.round((d.sum / d.count) * 10) / 10 : 0 }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  return {
+    averageRating: Math.round(averageRating * 10) / 10,
+    totalResponses,
+    satisfactionRate,
+    ratingDistribution,
+    trend,
+  };
+};
+
+export const getComments = async ({
+  eventId,
+  scope,
+  page = 1,
+  limit = 20,
+} = {}) => {
+  const skip = (Number(page) - 1) * Number(limit);
+  const quizFilter = buildQuizFilter(eventId, scope);
+
+  const where = {
+    question: {
+      ...quizFilter,
+      questionType: { types: { contains: TEXT_TYPE_KEYWORD, mode: "insensitive" } },
+    },
+    NOT: { response: "" },
+  };
+
+  const [answers, total] = await Promise.all([
+    prisma.answers.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: Number(limit),
+      include: {
+        question: {
+          select: {
+            wording: true,
+            quiz: { select: { title: true, event: { select: { name: true } } } },
+          },
+        },
+      },
+    }),
+    prisma.answers.count({ where }),
+  ]);
+
+  const comments = answers.map((a) => ({
+    id:        a.id,
+    text:      a.response,
+    question:  a.question?.wording || "",
+    quiz:      a.question?.quiz?.title || "",
+    event:     a.question?.quiz?.event?.name || "",
+    uuid:      a.uuid,
+    createdAt: a.createdAt,
+  }));
+
+  return {
+    comments,
+    pagination: {
+      total,
+      page:       Number(page),
+      limit:      Number(limit),
+      totalPages: Math.ceil(total / Number(limit)),
+    },
+  };
+};
+
+export const exportCsv = async ({ eventId, scope } = {}) => {
+  const quizFilter = buildQuizFilter(eventId, scope);
+
+  const answers = await prisma.answers.findMany({
+    where: quizFilter.quiz ? { question: quizFilter } : {},
+    orderBy: { createdAt: "desc" },
+    include: {
+      question: {
+        select: {
+          wording:      true,
+          questionType: { select: { types: true } },
+          quiz:         { select: { title: true } },
+        },
+      },
+    },
+  });
+
+  const header = "uuid,quiz,question,type,réponse,date\n";
+  const rows = answers
+    .map((a) =>
+      [
+        a.uuid || "",
+        `"${(a.question?.quiz?.title || "").replace(/"/g, '""')}"`,
+        `"${(a.question?.wording || "").replace(/"/g, '""')}"`,
+        `"${(a.question?.questionType?.types || "").replace(/"/g, '""')}"`,
+        `"${(a.response || "").replace(/"/g, '""')}"`,
+        a.createdAt.toISOString(),
+      ].join(",")
+    )
+    .join("\n");
+
+  return header + rows;
+};

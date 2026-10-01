@@ -82,6 +82,11 @@ export interface Program {
   isFavorite?: boolean;
   siteLat?: number | null;
   siteLng?: number | null;
+  // Regroupement ProgramCard : creneaux additionnels du meme evenement,
+  // tombant le meme jour (voir mapEventToPrograms). Chaque entree est un
+  // Program complet et independant - ajoutable/retirable du planner comme
+  // n'importe quel autre creneau. Absent ou vide = pas de regroupement.
+  otherSlots?: Program[];
 }
 
 export interface EventSite {

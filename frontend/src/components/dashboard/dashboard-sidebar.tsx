@@ -5,10 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
-import { Separator } from "@/components/ui/separator"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
 import { useSidebarStore } from "@/lib/stores/sidebar-store"
 import { useSession } from "@/hooks/useSession"
 import {
@@ -22,8 +19,9 @@ import {
   IconShield,
   IconClock,
   IconStar,
+  IconPlus,
 } from "@/components/icons"
-import { ChevronLeft, ChevronRight, LogOut, ShieldAlert } from "lucide-react"
+import { LogOut, ShieldAlert } from "lucide-react"
 import { useState } from "react"
 import type { UserRole } from "@/lib/types/api"
 
@@ -72,7 +70,6 @@ const adminNav = [
     items: [
       { label: "Notifications",  icon: IconBell,  href: "/admin/notifications" },
       { label: "Enquête & avis", icon: IconChart, href: "/admin/survey" },
-      { label: "Questionnaires", icon: IconStar,  href: "/admin/quiz" },
     ],
   },
   {
@@ -94,97 +91,175 @@ const instadNav = [
     group: "Enquêtes",
     items: [
       { label: "Questionnaires", icon: IconStar, href: "/instad/questionnaires" },
+      { label: "Création de questionnaires", icon: IconPlus, href: "/instad/questionnaires/creation" },
     ],
   },
 ]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+// Liens racine ou parents d'un autre lien du menu : correspondance exacte,
+// sinon ils resteraient actifs sur leurs sous-pages (ex. /instad/questionnaires
+// sur /instad/questionnaires/creation).
+const EXACT_MATCH_HREFS = [
+  "/superadmin",
+  "/admin",
+  "/instad",
+  "/instad/questionnaires",
+]
+
 function isActiveLink(href: string, pathname: string) {
-  if (href === "/superadmin" || href === "/admin" || href === "/instad") {
+  if (EXACT_MATCH_HREFS.includes(href)) {
     return pathname === href
   }
   return pathname === href || pathname.startsWith(href + "/")
 }
 
-// ─── NavItem ──────────────────────────────────────────────────────────────────
+// ─── RailIcon ─────────────────────────────────────────────────────────────────
+// Icône du rail avec son flyout : au survol, une carte se "déroule" depuis le
+// haut (scaleY 0 → 1, transform-origin: top) reliée par un petit connecteur —
+// même logique visuelle que le flyout "Activity / Trafic / Statistic" de la
+// référence, appliquée ici à une étiquette unique par icône.
 
-interface NavItemProps {
+interface RailIconProps {
   label: string
   icon: React.ComponentType<{ className?: string }>
-  href: string
-  isActive: boolean
-  collapsed: boolean
+  href?: string
+  active?: boolean
+  danger?: boolean
+  onClick?: () => void
 }
 
-function NavItem({ label, icon: Icon, href, isActive, collapsed }: NavItemProps) {
-  const link = (
-    <Link
-      href={href}
-      className={cn(
-        "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
-        isActive
-          ? "bg-[var(--vd-gold)]/12 text-[var(--vd-gold)]"
-          : "text-muted-foreground hover:bg-white/6 hover:text-foreground"
-      )}
-    >
-      {/* Indicateur actif */}
-      {isActive && (
-        <motion.div
-          layoutId="active-indicator"
-          className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[var(--vd-gold)]"
-          transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        />
-      )}
+function RailIcon({ label, icon: Icon, href, active, danger, onClick }: RailIconProps) {
+  const [open, setOpen] = useState(false)
 
-      <Icon
-        className={cn(
-          "size-[18px] shrink-0 transition-colors",
-          isActive ? "text-[var(--vd-gold)]" : "text-muted-foreground group-hover:text-foreground"
-        )}
-      />
-
-      <AnimatePresence initial={false}>
-        {!collapsed && (
-          <motion.span
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: "auto" }}
-            exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="overflow-hidden whitespace-nowrap"
-          >
-            {label}
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </Link>
+  const buttonClass = cn(
+    "flex size-11 shrink-0 items-center justify-center rounded-2xl transition-all duration-200",
+    active
+      ? "bg-[var(--vd-gold)] text-background"
+      : danger
+      ? "text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+      : "text-muted-foreground hover:bg-white/8 hover:text-foreground"
   )
 
-  if (collapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{link}</TooltipTrigger>
-        <TooltipContent side="right" sideOffset={8} className="text-xs">
-          {label}
-        </TooltipContent>
-      </Tooltip>
-    )
-  }
+  const button = href ? (
+    <Link href={href} className={buttonClass}>
+      <Icon className="size-[19px]" />
+    </Link>
+  ) : (
+    <button type="button" onClick={onClick} className={buttonClass} aria-label={label}>
+      <Icon className="size-[19px]" />
+    </button>
+  )
 
-  return link
+  return (
+    <div
+      className="relative flex items-center justify-center"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      {button}
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scaleY: 0 }}
+            animate={{ opacity: 1, scaleY: 1, transition: { duration: 0.32, ease: [0.65, 0, 0.35, 1] } }}
+            exit={{ opacity: 0, scaleY: 0, transition: { duration: 0.15, ease: "easeIn" } }}
+            style={{ transformOrigin: "top" }}
+            className="pointer-events-none absolute left-full top-0 z-50 ml-3"
+          >
+            <div className="relative">
+              {/* connecteur */}
+              <span className="absolute -left-3 top-1/2 h-px w-3 -translate-y-1/2 bg-white/15" />
+              <div
+                className={cn(
+                  "whitespace-nowrap rounded-xl border border-white/10 bg-[oklch(0.15_0.02_260/0.98)] px-3.5 py-2 text-xs font-medium shadow-xl backdrop-blur-xl",
+                  danger ? "text-destructive" : active ? "text-[var(--vd-gold)]" : "text-foreground"
+                )}
+              >
+                {label}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
 }
 
-// ─── SidebarContent ───────────────────────────────────────────────────────────
+// ─── IconRail (desktop) ───────────────────────────────────────────────────────
 
-interface SidebarContentProps {
+interface IconRailProps {
   role: UserRole
-  collapsed: boolean
-  onToggle?: () => void
-  showToggle?: boolean
   onLogout: () => void
 }
 
-function SidebarContent({ role, collapsed, onToggle, showToggle = false, onLogout }: SidebarContentProps) {
+function IconRail({ role, onLogout }: IconRailProps) {
+  const pathname = usePathname()
+  const navConfig = role === "SUPER_ADMIN" ? superAdminNav : role === "INSTAD" ? instadNav : adminNav
+  const homeHref  = role === "SUPER_ADMIN" ? "/superadmin" : role === "INSTAD" ? "/instad" : "/admin"
+  const roleShort = role === "SUPER_ADMIN" ? "SUPER" : role === "INSTAD" ? "INSTAD" : "ADMIN"
+
+  return (
+    <aside
+      className={cn(
+        "hidden md:flex w-[76px] shrink-0 flex-col items-center gap-1 py-5",
+        "relative z-40",
+        "rounded-2xl md:rounded-3xl shadow-[0_25px_70px_-20px_rgba(0,0,0,0.65)]",
+        "bg-[oklch(0.13_0.02_260/0.95)] backdrop-blur-xl"
+      )}
+    >
+      {/* Statut */}
+      <div className="mb-4 flex items-center gap-1.5">
+        <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
+        <span className="size-1.5 rounded-full bg-white/15" />
+        <span className="size-1.5 rounded-full bg-white/15" />
+      </div>
+
+      {/* Logo */}
+      <Link href={homeHref} className="mb-1.5 shrink-0">
+        <Image
+          src="/images/logo.png"
+          alt="Vodun Days"
+          width={40}
+          height={40}
+          className="rounded-full ring-1 ring-white/10 transition-transform hover:scale-105"
+        />
+      </Link>
+      <span className="mb-5 text-[9px] font-semibold uppercase tracking-[0.22em] text-muted-foreground/70">
+        {roleShort}
+      </span>
+
+      {/* Navigation */}
+      <nav className="flex w-full flex-1 flex-col items-center gap-1.5 px-2">
+        {navConfig.map((section, idx) => (
+          <div key={section.group} className="flex w-full flex-col items-center gap-1.5">
+            {idx > 0 && <div className="my-1.5 h-px w-6 bg-white/8" />}
+            {section.items.map((item) => (
+              <RailIcon
+                key={item.href}
+                label={item.label}
+                icon={item.icon}
+                href={item.href}
+                active={isActiveLink(item.href, pathname)}
+              />
+            ))}
+          </div>
+        ))}
+      </nav>
+
+      {/* Déconnexion */}
+      <div className="mt-2 flex flex-col items-center gap-2 border-t border-white/8 pt-3">
+        <RailIcon label="Déconnexion" icon={LogOut} onClick={onLogout} danger />
+      </div>
+    </aside>
+  )
+}
+
+// ─── MobileNavList (Sheet mobile — nav complète avec labels) ─────────────────
+
+function MobileNavList({ role, onLogout }: { role: UserRole; onLogout: () => void }) {
   const pathname = usePathname()
   const navConfig = role === "SUPER_ADMIN" ? superAdminNav : role === "INSTAD" ? instadNav : adminNav
   const homeHref  = role === "SUPER_ADMIN" ? "/superadmin" : role === "INSTAD" ? "/instad" : "/admin"
@@ -192,130 +267,60 @@ function SidebarContent({ role, collapsed, onToggle, showToggle = false, onLogou
 
   return (
     <div className="flex h-full flex-col">
-
-      {/* ── Header ── */}
-      <div className={cn(
-        "flex items-center border-b border-white/8 transition-all duration-300",
-        collapsed ? "h-[64px] justify-center px-3" : "h-[64px] gap-3 px-4"
-      )}>
+      <div className="flex h-[64px] items-center gap-3 border-b border-white/8 px-4">
         <Link href={homeHref} className="shrink-0">
           <Image
             src="/images/logo.png"
             alt="Vodun Days"
             width={36}
             height={36}
-            className="rounded-full ring-1 ring-white/10 transition-transform hover:scale-105"
+            className="rounded-full ring-1 ring-white/10"
           />
         </Link>
-
-        <AnimatePresence initial={false}>
-          {!collapsed && (
-            <motion.div
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -8 }}
-              transition={{ duration: 0.2 }}
-              className="flex-1 overflow-hidden"
-            >
-              <p className="truncate text-sm font-semibold tracking-tight text-foreground">
-                Vodun Days
-              </p>
-              <p className="truncate text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                {roleLabel}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Bouton collapse desktop */}
-        {showToggle && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onToggle}
-            className={cn(
-              "size-7 shrink-0 rounded-lg text-muted-foreground hover:text-foreground",
-              collapsed && "ml-0"
-            )}
-          >
-            {collapsed ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
-          </Button>
-        )}
+        <div className="flex-1 overflow-hidden">
+          <p className="truncate text-sm font-semibold tracking-tight text-foreground">Vodun Days</p>
+          <p className="truncate text-[10px] uppercase tracking-[0.15em] text-muted-foreground">{roleLabel}</p>
+        </div>
       </div>
 
-      {/* ── Navigation ── */}
       <nav className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden p-2 py-3">
         {navConfig.map((section, idx) => (
           <div key={section.group} className={cn(idx > 0 && "mt-3")}>
-            <AnimatePresence initial={false}>
-              {!collapsed && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60"
-                >
-                  {section.group}
-                </motion.p>
-              )}
-            </AnimatePresence>
-
-            {collapsed && idx > 0 && (
-              <div className="my-2 mx-3">
-                <Separator className="bg-white/8" />
-              </div>
-            )}
-
+            <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
+              {section.group}
+            </p>
             <div className="space-y-0.5">
-              {section.items.map((item) => (
-                <NavItem
-                  key={item.href}
-                  label={item.label}
-                  icon={item.icon}
-                  href={item.href}
-                  isActive={isActiveLink(item.href, pathname)}
-                  collapsed={collapsed}
-                />
-              ))}
+              {section.items.map((item) => {
+                const active = isActiveLink(item.href, pathname)
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+                      active
+                        ? "bg-[var(--vd-gold)]/12 text-[var(--vd-gold)]"
+                        : "text-muted-foreground hover:bg-white/6 hover:text-foreground"
+                    )}
+                  >
+                    <item.icon className={cn("size-[18px] shrink-0", active ? "text-[var(--vd-gold)]" : "text-muted-foreground")} />
+                    {item.label}
+                  </Link>
+                )
+              })}
             </div>
           </div>
         ))}
       </nav>
 
-      {/* ── Footer ── */}
       <div className="border-t border-white/8 p-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={onLogout}
-              className={cn(
-                "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive",
-                collapsed && "justify-center"
-              )}
-            >
-              <LogOut className="size-[18px] shrink-0" />
-              <AnimatePresence initial={false}>
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: "auto" }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden whitespace-nowrap"
-                  >
-                    Déconnexion
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
-          </TooltipTrigger>
-          {collapsed && (
-            <TooltipContent side="right" sideOffset={8} className="text-xs">
-              Déconnexion
-            </TooltipContent>
-          )}
-        </Tooltip>
+        <button
+          onClick={onLogout}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive"
+        >
+          <LogOut className="size-[18px] shrink-0" />
+          Déconnexion
+        </button>
       </div>
     </div>
   )
@@ -324,18 +329,13 @@ function SidebarContent({ role, collapsed, onToggle, showToggle = false, onLogou
 // ─── DashboardSidebar (export principal) ─────────────────────────────────────
 
 export function DashboardSidebar() {
-  const pathname = usePathname()
   const { isOpen, close } = useSidebarStore()
-  const [collapsed, setCollapsed] = useState(false)
   const { user, loading, logout } = useSession()
 
   // Placeholder invisible pendant le chargement - évite le flash ADMIN sur un compte SUPER_ADMIN
   if (loading) {
     return (
-      <div
-        className="hidden md:flex shrink-0 border-r border-white/8 bg-[oklch(0.13_0.02_260/0.95)]"
-        style={{ width: collapsed ? 64 : 240 }}
-      />
+      <div className="hidden md:flex w-[76px] shrink-0 border-r border-white/8 bg-[oklch(0.13_0.02_260/0.95)]" />
     )
   }
 
@@ -346,26 +346,10 @@ export function DashboardSidebar() {
 
   return (
     <>
-      {/* ── Desktop sidebar ── */}
-      <motion.aside
-        animate={{ width: collapsed ? 64 : 240 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className={cn(
-          "hidden md:flex flex-col shrink-0 border-r border-white/8",
-          "bg-[oklch(0.13_0.02_260/0.95)] backdrop-blur-xl"
-        )}
-        style={{ overflow: "visible" }}
-      >
-        <SidebarContent
-          role={role}
-          collapsed={collapsed}
-          onToggle={() => setCollapsed((v) => !v)}
-          showToggle
-          onLogout={logout}
-        />
-      </motion.aside>
+      {/* ── Desktop : rail fixe en icônes + flyout au survol ── */}
+      <IconRail role={role} onLogout={logout} />
 
-      {/* ── Mobile sidebar (Sheet) ── */}
+      {/* ── Mobile sidebar (Sheet, labels complets) ── */}
       <Sheet open={isOpen} onOpenChange={close}>
         <SheetContent
           side="left"
@@ -374,7 +358,7 @@ export function DashboardSidebar() {
           <SheetHeader className="sr-only">
             <SheetTitle>Menu de navigation</SheetTitle>
           </SheetHeader>
-          <SidebarContent role={role} collapsed={false} onLogout={logout} />
+          <MobileNavList role={role} onLogout={logout} />
         </SheetContent>
       </Sheet>
     </>

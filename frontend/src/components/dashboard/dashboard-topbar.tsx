@@ -66,10 +66,10 @@ function Breadcrumbs() {
   }
 
   return (
-    <nav className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
+    <nav className="hidden md:flex items-center gap-1.5 text-sm text-muted-foreground">
       {segments.map((segment, idx) => (
-        <span key={segment} className="flex items-center gap-1">
-          {idx > 0 && <IconChevronRight className="size-3" />}
+        <span key={segment} className="flex items-center gap-1.5">
+          {idx > 0 && <IconChevronRight className="size-3 text-muted-foreground/50" />}
           <Link
             href={`/${segments.slice(0, idx + 1).join("/")}`}
             className={cn(
@@ -107,12 +107,12 @@ export function DashboardTopBar() {
   }, [handleKeyDown])
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6">
+    <header className="relative z-20 flex h-16 items-center gap-4 rounded-2xl md:rounded-3xl bg-background/70 shadow-[0_25px_70px_-20px_rgba(0,0,0,0.65)] backdrop-blur-xl px-4 md:px-6">
       {/* Bouton hamburger mobile */}
       <Button
         variant="ghost"
         size="icon"
-        className="md:hidden"
+        className="md:hidden rounded-xl"
         onClick={toggle}
         aria-label="Ouvrir le menu"
       >
@@ -128,12 +128,12 @@ export function DashboardTopBar() {
         <Button
           variant="outline"
           size="sm"
-          className="hidden sm:flex items-center gap-2 text-muted-foreground"
+          className="hidden sm:flex items-center gap-2 rounded-xl text-muted-foreground transition-all hover:border-[var(--vd-gold)]/30 hover:text-foreground"
           onClick={() => setCommandOpen(true)}
         >
           <IconSearch className="size-4" />
           <span className="hidden lg:inline">Rechercher...</span>
-          <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 text-[10px] font-medium text-muted-foreground">
+          <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded-md border bg-muted px-1.5 text-[10px] font-medium text-muted-foreground">
             <span className="text-xs">Ctrl</span>K
           </kbd>
         </Button>
@@ -142,7 +142,7 @@ export function DashboardTopBar() {
         <Button
           variant="ghost"
           size="icon"
-          className="sm:hidden"
+          className="sm:hidden rounded-xl"
           onClick={() => setCommandOpen(true)}
           aria-label="Rechercher"
         >
@@ -156,14 +156,14 @@ export function DashboardTopBar() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
-              <Avatar className="size-8">
+              <Avatar className="size-8 ring-2 ring-white/10 transition-all hover:ring-[var(--vd-gold)]/40">
                 <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                   {getInitials(user)}
                 </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-56 rounded-2xl">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium">{getDisplayName(user)}</p>
@@ -171,12 +171,15 @@ export function DashboardTopBar() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push(pathname.startsWith("/superadmin") ? "/superadmin/profil" : "/admin/profil")}>
+            <DropdownMenuItem
+              className="rounded-lg"
+              onClick={() => router.push(pathname.startsWith("/superadmin") ? "/superadmin/profil" : "/admin/profil")}
+            >
               <IconUser className="mr-2 size-4" />
               Profil
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onClick={logout}>
+            <DropdownMenuItem className="rounded-lg" variant="destructive" onClick={logout}>
               <IconLogout className="mr-2 size-4" />
               Déconnexion
             </DropdownMenuItem>
@@ -253,16 +256,16 @@ function NotificationsBell() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+        <Button variant="ghost" size="icon" className="relative rounded-xl" aria-label="Notifications">
           <IconBell className="size-5" />
           {pending > 0 && (
-            <span className="absolute -top-1 -right-1 size-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[var(--vd-gold)] text-[10px] font-medium text-background shadow-[0_0_8px_rgba(212,175,55,0.7)]">
               {pending > 9 ? "9+" : pending}
             </span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80">
+      <PopoverContent align="end" className="w-80 rounded-2xl">
         <div className="space-y-3">
           <p className="text-sm font-medium">
             {pending > 0 ? `${pending} notification${pending > 1 ? "s" : ""} en attente` : "Notifications"}
@@ -273,7 +276,7 @@ function NotificationsBell() {
             ) : (
               notifications.map((n) => (
                 <div key={n.id} className="flex items-start gap-3 rounded-lg p-2 hover:bg-accent transition-colors cursor-pointer">
-                  <div className="size-2 mt-1.5 rounded-full bg-primary shrink-0" />
+                  <div className="size-2 mt-1.5 rounded-full bg-[var(--vd-gold)] shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{n.title}</p>
                     <p className="text-xs text-muted-foreground truncate">{n.message}</p>

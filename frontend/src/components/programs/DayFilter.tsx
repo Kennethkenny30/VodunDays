@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
@@ -10,29 +10,58 @@ interface DayFilterProps {
   totalDays?: number;
 }
 
-// Nombre de boutons affiches en meme temps, quel que soit totalDays -
-// c'est ce qui garde le composant compact comme la version d'origine.
+// Nombre de boutons entierement visibles a la fois dans le conteneur scrollable.
 const VISIBLE_COUNT = 3;
 
 export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterProps) {
   const t = useTranslations("programme");
   const allDays = Array.from({ length: totalDays }, (_, i) => i + 1);
-  // Cle par numero de jour (pas par index) : la fenetre se decale, donc la
-  // position d'un jour dans la liste rendue change, mais pas son numero.
+  const containerRef = useRef<HTMLDivElement>(null);
   const btnRefs = useRef<Record<number, HTMLButtonElement | null>>({});
   // Ne focus le bouton apres changement de jour que si ce changement vient
   // du clavier - pas au montage, pas sur un clic souris (deja focus par le navigateur).
   const pendingKeyboardFocus = useRef(false);
-
-  // Fenetre de VISIBLE_COUNT jours centree sur le jour actif quand possible,
-  // et clampee aux bornes [1, totalDays] sinon (ex: jour 7 -> [5,6,7]).
-  const windowSize = Math.min(VISIBLE_COUNT, totalDays);
-  let windowStart = activeDay - 1;
-  windowStart = Math.max(1, windowStart);
-  windowStart = Math.min(windowStart, totalDays - windowSize + 1);
-  const visibleDays = Array.from({ length: windowSize }, (_, i) => windowStart + i);
+  // Largeur exacte (en px) de VISIBLE_COUNT boutons, recalculee dynamiquement -
+  // necessaire car le bouton actif est plus large (marges de detachement),
+  // donc une largeur fixe en CSS couperait parfois le 3e bouton a moitie.
+  const [containerWidth, setContainerWidth] = useState<number>();
 
   useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    function recompute() {
+      const windowSize = Math.min(VISIBLE_COUNT, totalDays);
+      let windowStart = activeDay - 1;
+      windowStart = Math.max(1, windowStart);
+      windowStart = Math.min(windowStart, totalDays - windowSize + 1);
+      const visible = Array.from({ length: windowSize }, (_, i) => windowStart + i);
+
+      let total = 0;
+      for (const day of visible) {
+        const el = btnRefs.current[day];
+        if (!el) return;
+        const style = getComputedStyle(el);
+        total += el.offsetWidth + parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+      }
+      setContainerWidth(total);
+    }
+
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    Array.from(container.children).forEach((child) => ro.observe(child));
+    return () => ro.disconnect();
+  }, [activeDay, totalDays]);
+
+  // Tous les jours sont rendus dans un conteneur overflow-x-auto de largeur
+  // fixe (~3 boutons) : on scrolle jusqu'au bouton actif au lieu de swap
+  // une sous-liste, ce qui permet un vrai defilement fluide + swipe tactile.
+  useEffect(() => {
+    btnRefs.current[activeDay]?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
     if (pendingKeyboardFocus.current) {
       btnRefs.current[activeDay]?.focus();
       pendingKeyboardFocus.current = false;
@@ -62,15 +91,24 @@ export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterPr
       onKeyDown={handleKeyDown}
     >
       {/* Principe morphic : seuls les boutons ont un style, pas le wrapper.
-          Fenetre fixe de VISIBLE_COUNT jours : la taille du composant ne
-          bouge jamais, seul le contenu de la fenetre change selon le jour actif. */}
-      <div className="flex items-center overflow-hidden rounded-full">
-        {visibleDays.map((day, index) => {
+          Largeur fixe (~3 boutons) + overflow-x-auto : le composant garde
+          sa taille compacte, le defilement se fait par scroll (snap) au lieu
+          d'un swap de sous-liste - scrollbar masquee pour garder le look. */}
+      <div
+        ref={containerRef}
+        style={containerWidth ? { width: containerWidth } : undefined}
+        className={cn(
+          "flex items-center overflow-x-auto rounded-full",
+          "snap-x snap-mandatory scroll-smooth",
+          "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
+        )}
+      >
+        {allDays.map((day, index) => {
           const isActive     = activeDay === day;
           const isFirst      = index === 0;
-          const isLast       = index === visibleDays.length - 1;
-          const prevDay      = index > 0 ? visibleDays[index - 1] : null;
-          const nextDay      = index < visibleDays.length - 1 ? visibleDays[index + 1] : null;
+          const isLast       = index === allDays.length - 1;
+          const prevDay      = index > 0 ? allDays[index - 1] : null;
+          const nextDay      = index < allDays.length - 1 ? allDays[index + 1] : null;
           const isPrevActive = prevDay !== null && activeDay === prevDay;
           const isNextActive = nextDay !== null && activeDay === nextDay;
 
@@ -85,12 +123,11 @@ export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterPr
               style={{
                 WebkitTapHighlightColor: "transparent",
                 background: "var(--vd-dayfilter-bg)",
-                borderColor: "var(--vd-dayfilter-border)",
               }}
               className={cn(
                 "relative flex items-center justify-center min-h-11 p-2 px-5 text-sm",
                 "transition-all duration-300 select-none active:scale-[0.96]",
-                "backdrop-blur-xl border",
+                "backdrop-blur-xl border-none shrink-0 snap-center",
 
                 // Actif : se detache du flux avec mx + rounded + orange
                 isActive && cn(
@@ -104,8 +141,6 @@ export function DayFilter({ activeDay, onDayChange, totalDays = 3 }: DayFilterPr
                   "font-semibold text-muted-foreground hover:text-foreground",
                   (isPrevActive || isFirst) ? "rounded-l-full" : "rounded-l-none",
                   (isNextActive || isLast)  ? "rounded-r-full" : "rounded-r-none",
-                  !isFirst && !isPrevActive && "border-l-0",
-                  !isLast  && !isNextActive && "border-r-0",
                   "shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]",
                 ),
               )}

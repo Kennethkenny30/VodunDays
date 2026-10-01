@@ -121,8 +121,8 @@ export default async function RootLayout({
           "@type":    "Event",
           "name":     "Vodun Days",
           "description": "Festival culturel et spirituel international célébrant les traditions vodoun du Bénin à Ouidah.",
-          "startDate": "2026-01-10",
-          "endDate":   "2026-01-12",
+          "startDate": "2027-01-02",
+          "endDate":   "2027-01-09",
           "eventStatus":     "https://schema.org/EventScheduled",
           "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
           "location": {
