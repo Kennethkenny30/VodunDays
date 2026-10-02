@@ -10,9 +10,13 @@ interface CameraViewProps {
   onBack: () => void;
 }
 
-// Cibles Image Target 8th Wall - noms devant correspondre exactement a ceux
-// utilises lors du traitement des images par l'Image Target Processor
-const IMAGE_TARGETS = [{ name: "lissa" }, { name: "aziza" }];
+// Cibles Image Target 8th Wall - generees via npx @8thwall/image-target-cli
+// imagePath pointe vers l'image luminance (traitee pour la detection),
+// deposee a ce chemin exact dans public/8thwall/image-targets/
+const IMAGE_TARGETS = [
+  { imagePath: "/8thwall/image-targets/lissa_luminance.jpg", name: "lissa", isRotated: true },
+  { imagePath: "/8thwall/image-targets/aziza_luminance.jpg", name: "aziza", isRotated: false },
+];
 
 declare global {
   interface Window {
@@ -167,11 +171,18 @@ export function CameraView({ onBack }: CameraViewProps) {
       if (mounted) setCameraState("loading");
 
       try {
-        // Self-hosting : scripts servis depuis /public/8thwall/, aucune
-        // dependance a apps.8thwall.com ni appKey
-        await loadScript("/8thwall/xr8.js");
-        await loadScript("/8thwall/xrextras.js");
-        await loadScript("/8thwall/xrimageextras.js");
+        // Self-hosting confirme contre un projet officiel genere par 8th
+        // Wall Desktop (ex. "Image Targets") :
+        // - runtime.js = XRExtras, deja self-hoste dans ce type de projet
+        // - xr.js = XR8 (moteur principal), a copier depuis
+        //   node_modules/@8thwall/engine-binary/dist/xr.js vers
+        //   public/8thwall/ pour un self-hosting complet (sinon laisser
+        //   l'URL jsdelivr ci-dessous, aucun appKey requis dans les deux cas)
+        await loadScript("/8thwall/runtime.js");
+        await loadScript("/8thwall/xr.js");
+        // Variante CDN (pas de self-hosting complet mais pas de compte 8th
+        // Wall requis non plus) :
+        // await loadScript("https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js");
 
         if (!mounted) return;
 
@@ -187,12 +198,12 @@ export function CameraView({ onBack }: CameraViewProps) {
           imageTargetPipelineModule(),
         ]);
 
-        // SLAM desactive : uniquement du tracking d'image ici. imageTargets
-        // remplace l'ensemble des cibles actives par cette liste de noms
-        // (verifie contre la doc 8thwall.org courante)
+        // SLAM desactive : uniquement du tracking d'image ici. imageTargetData
+        // definit les cibles directement depuis le code (imagePath/name/isRotated),
+        // genere par l'Image Target Processor - verifie contre doc 8thwall.org
         XR8.XrController.configure({
           disableWorldTracking: true,
-          imageTargets: IMAGE_TARGETS.map((t) => t.name),
+          imageTargetData: IMAGE_TARGETS,
         });
 
         XR8.run({ canvas: canvasRef.current });

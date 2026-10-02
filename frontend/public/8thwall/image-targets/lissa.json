@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/lissa_luminance.jpg",
+  "metadata": null,
+  "name": "lissa",
+  "type": "PLANAR",
+  "properties": {
+    "left": 80,
+    "top": 0,
+    "width": 480,
+    "height": 640,
+    "isRotated": true,
+    "originalWidth": 640,
+    "originalHeight": 640
+  },
+  "resources": {
+    "originalImage": "lissa_original.jpg",
+    "croppedImage": "lissa_cropped.jpg",
+    "thumbnailImage": "lissa_thumbnail.jpg",
+    "luminanceImage": "lissa_luminance.jpg"
+  },
+  "created": 1790949993688,
+  "updated": 1790949993688
+}

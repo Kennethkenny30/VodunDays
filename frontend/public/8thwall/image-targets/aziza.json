@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/aziza_luminance.jpg",
+  "metadata": null,
+  "name": "aziza",
+  "type": "PLANAR",
+  "properties": {
+    "left": 7,
+    "top": 0,
+    "width": 768,
+    "height": 1024,
+    "isRotated": false,
+    "originalWidth": 781,
+    "originalHeight": 1024
+  },
+  "resources": {
+    "originalImage": "aziza_original.jpg",
+    "croppedImage": "aziza_cropped.jpg",
+    "thumbnailImage": "aziza_thumbnail.jpg",
+    "luminanceImage": "aziza_luminance.jpg"
+  },
+  "created": 1790950099022,
+  "updated": 1790950099022
+}
