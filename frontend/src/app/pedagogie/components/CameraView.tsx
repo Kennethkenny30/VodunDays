@@ -242,6 +242,26 @@ export function CameraView({ onBack }: CameraViewProps) {
         name: "image-target-handler",
         onStart: () => {
           if (mounted) setCameraState("active");
+
+          // Diagnostic temporaire - compare la resolution du buffer de
+          // rendu (canvas.width/height) a la taille affichee reelle
+          // (clientWidth/clientHeight) et au viewport. Un ecart de ratio
+          // important confirme un rendu en letterbox plutot qu'un probleme
+          // de mise en page CSS. A retirer une fois la cause confirmee.
+          setTimeout(() => {
+            const c = canvasRef.current;
+            if (!c) return;
+            console.log("[AR] Diagnostic buffer vs affichage :", {
+              "canvas.width (buffer)": c.width,
+              "canvas.height (buffer)": c.height,
+              "canvas.clientWidth (affiche)": c.clientWidth,
+              "canvas.clientHeight (affiche)": c.clientHeight,
+              "window.innerWidth": window.innerWidth,
+              "window.innerHeight": window.innerHeight,
+              "ratio buffer": (c.width / c.height).toFixed(3),
+              "ratio affiche": (c.clientWidth / c.clientHeight).toFixed(3),
+            });
+          }, 1500);
         },
         onException: (error: unknown) => {
           console.error("[AR] Exception pipeline XR8 :", error);
