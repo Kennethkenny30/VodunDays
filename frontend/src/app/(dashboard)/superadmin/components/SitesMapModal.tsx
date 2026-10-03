@@ -8,6 +8,7 @@
  *   2. mode "pick" → clic sur la carte pour définir lat/lng
  */
 
+import type * as MapLibreGL from "maplibre-gl";
 import { useCallback, useRef, useState, useEffect } from "react";
 import {
   Map, MapMarker, MarkerContent, MarkerLabel, MapControls, useMap, type MapRef,
@@ -61,7 +62,7 @@ function MapClickCapture({
   const { map } = useMap();
   useEffect(() => {
     if (!map || !enabled) return;
-    const handler = (e: maplibregl.MapMouseEvent) => {
+    const handler = (e: MapLibreGL.MapMouseEvent) => {
       onPick(
         Math.round(e.lngLat.lng * 1e6) / 1e6,
         Math.round(e.lngLat.lat * 1e6) / 1e6,

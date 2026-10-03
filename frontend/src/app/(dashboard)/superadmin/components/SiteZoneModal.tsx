@@ -9,7 +9,7 @@
  * PATCH /api/sites/:id/zone (voir lib/api/sites.ts).
  */
 
-import MapLibreGL from "maplibre-gl";
+import type * as MapLibreGL from "maplibre-gl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Map, MapMarker, MarkerContent, MapControls, useMap, type MapRef,
@@ -53,7 +53,7 @@ function ZoneClickCapture({
   const { map } = useMap();
   useEffect(() => {
     if (!map || !enabled) return;
-    const handler = (e: maplibregl.MapMouseEvent) => {
+    const handler = (e: MapLibreGL.MapMouseEvent) => {
       onAddPoint(
         Math.round(e.lngLat.lng * 1e6) / 1e6,
         Math.round(e.lngLat.lat * 1e6) / 1e6,

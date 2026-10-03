@@ -1,9 +1,10 @@
 "use client";
 
-import MapLibreGL, {
-  type PopupOptions,
-  type MarkerOptions,
-  type ExpressionSpecification,
+import * as MapLibreGL from "maplibre-gl";
+import type {
+  PopupOptions,
+  MarkerOptions,
+  ExpressionSpecification,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
