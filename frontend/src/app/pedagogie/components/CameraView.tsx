@@ -112,11 +112,18 @@ function ensureXR8Ready(): Promise<void> {
 // peut passer derriere l'UI de la page et reste orphelin apres demontage.
 function containerCanvasPipelineModule() {
   let canvas: HTMLCanvasElement | null = null;
+  let resizeObserver: ResizeObserver | null = null;
 
   const resize = () => {
     if (!canvas) return;
-    canvas.width = canvas.clientWidth || window.innerWidth;
-    canvas.height = canvas.clientHeight || window.innerHeight;
+    const width = canvas.clientWidth || window.innerWidth;
+    const height = canvas.clientHeight || window.innerHeight;
+    // Evite de re-assigner width/height inutilement (chaque assignation
+    // reinitialise le contexte GL meme si la valeur ne change pas)
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
   };
 
   return {
@@ -124,8 +131,17 @@ function containerCanvasPipelineModule() {
     onAttach: ({ canvas: attached }: { canvas: HTMLCanvasElement }) => {
       canvas = attached;
       resize();
+      // La mesure au moment d'onAttach peut survenir avant que la mise en
+      // page du conteneur React soit finalisee (taille incorrecte figee
+      // dans le buffer de rendu, cause du bug "canvas dans un coin"). Un
+      // ResizeObserver recalcule en continu, quelle qu'en soit la cause
+      // (layout tardif, rotation, barre d'adresse Safari qui se retracte)
+      resizeObserver = new ResizeObserver(() => resize());
+      resizeObserver.observe(canvas);
     },
     onDetach: () => {
+      resizeObserver?.disconnect();
+      resizeObserver = null;
       canvas = null;
     },
     onDeviceOrientationChange: () => {
