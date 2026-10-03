@@ -106,6 +106,34 @@ function ensureXR8Ready(): Promise<void> {
   return xr8ReadyPromise;
 }
 
+// Dimensionne le buffer du canvas sur celui de son conteneur React.
+// Remplace XR8.FullWindowCanvas, qui deplace le canvas dans <body>
+// (document.body.appendChild) : il sort alors du conteneur du composant,
+// peut passer derriere l'UI de la page et reste orphelin apres demontage.
+function containerCanvasPipelineModule() {
+  let canvas: HTMLCanvasElement | null = null;
+
+  const resize = () => {
+    if (!canvas) return;
+    canvas.width = canvas.clientWidth || window.innerWidth;
+    canvas.height = canvas.clientHeight || window.innerHeight;
+  };
+
+  return {
+    name: "container-canvas",
+    onAttach: ({ canvas: attached }: { canvas: HTMLCanvasElement }) => {
+      canvas = attached;
+      resize();
+    },
+    onDetach: () => {
+      canvas = null;
+    },
+    onDeviceOrientationChange: () => {
+      requestAnimationFrame(resize);
+    },
+  };
+}
+
 export function CameraView({ onBack }: CameraViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [cameraState, setCameraState] = useState<CameraState>("idle");
@@ -258,14 +286,14 @@ export function CameraView({ onBack }: CameraViewProps) {
         // composant (ex. bascule Contenu/Realite AR) doit reconfigurer son
         // propre pipeline proprement, et le nettoyage ci-dessous le retire
         // a chaque demontage via clearCameraPipelineModules.
-        // XRExtras n'est pas fourni par le binaire self-hosted : le canvas
-        // plein ecran passe par XR8.FullWindowCanvas (deprecie mais present),
-        // et Loading/RuntimeError sont geres par l'UI React de ce composant
+        // XRExtras n'est pas fourni par le binaire self-hosted : le canvas est
+        // dimensionne par containerCanvasPipelineModule (reste dans son
+        // conteneur), et Loading/RuntimeError sont geres par l'UI React
         XR8.addCameraPipelineModules([
+          containerCanvasPipelineModule(),
           XR8.GlTextureRenderer.pipelineModule(),
           XR8.Threejs.pipelineModule(),
           XR8.XrController.pipelineModule(),
-          XR8.FullWindowCanvas.pipelineModule(),
           imageTargetPipelineModule(),
         ]);
         pipelineRegistered = true;
