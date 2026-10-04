@@ -91,9 +91,21 @@ function ensureXR8Ready(): Promise<void> {
       // Le moteur self-hosted laisse XR8.XrController a null tant que le
       // chunk "slam" (xr-slam.js, dans public/8thwall/) n'est pas charge.
       // xrloaded se declenche AVANT, donc on le charge explicitement ici.
-      // Requis aussi pour les Image Targets, meme avec disableWorldTracking
+      // Requis aussi pour les Image Targets, meme avec disableWorldTracking.
+      // Timeout explicite : si xr-slam.js est absent/bloque, loadChunk peut
+      // ne jamais resoudre ni rejeter - sans ce garde-fou, initXR8 reste
+      // bloque indefiniment sur "Activation du tracking AR..." sans la
+      // moindre erreur en console, impossible a diagnostiquer autrement.
       if (!window.XR8.XrController) {
-        await window.XR8.loadChunk("slam");
+        await Promise.race([
+          window.XR8.loadChunk("slam"),
+          new Promise((_, reject) =>
+            setTimeout(
+              () => reject(new Error("Timeout chargement chunk slam (xr-slam.js) - verifier qu'il est deploye dans public/8thwall/")),
+              8000
+            )
+          ),
+        ]);
       }
     })();
 
@@ -106,39 +118,50 @@ function ensureXR8Ready(): Promise<void> {
   return xr8ReadyPromise;
 }
 
-// Dimensionne le buffer du canvas sur celui de son conteneur React.
-// Remplace XR8.FullWindowCanvas, qui deplace le canvas dans <body>
-// (document.body.appendChild) : il sort alors du conteneur du composant,
-// peut passer derriere l'UI de la page et reste orphelin apres demontage.
-function containerCanvasPipelineModule() {
+// window.XRExtras est undefined dans ce build self-hoste, donc
+// FullWindowCanvas est inutilisable. Ce module dimensionne le buffer du canvas
+// (canvas.width/height) sur la taille du CONTENEUR React.
+//
+// Deux pieges a eviter :
+// 1) Le cycle de vie 8th Wall est onStart -> onAttach : XR8.Threejs cree son
+//    renderer dans onStart et appelle renderer.setSize(canvas.width,
+//    canvas.height). Si le buffer vaut encore 300x150 (defaut du canvas) a ce
+//    moment, three ecrit style.width/height = 300px/150px en inline.
+//    => le canvas doit etre dimensionne AVANT XR8.run() (voir initXR8) et des
+//    onStart, pas seulement dans onAttach.
+// 2) On ne mesure jamais le canvas lui-meme : son clientWidth/clientHeight
+//    refletent le style inline pose par three (boucle auto-referente qui
+//    fige la taille). On mesure le conteneur, stable et independant.
+function sizeCanvasToContainer(canvas: HTMLCanvasElement, container: HTMLElement) {
+  const width = container.clientWidth || window.innerWidth;
+  const height = container.clientHeight || window.innerHeight;
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+  }
+}
+
+function containerCanvasPipelineModule(container: HTMLElement) {
   let canvas: HTMLCanvasElement | null = null;
   let resizeObserver: ResizeObserver | null = null;
 
   const resize = () => {
-    if (!canvas) return;
-    const width = canvas.clientWidth || window.innerWidth;
-    const height = canvas.clientHeight || window.innerHeight;
-    // Evite de re-assigner width/height inutilement (chaque assignation
-    // reinitialise le contexte GL meme si la valeur ne change pas)
-    if (canvas.width !== width || canvas.height !== height) {
-      canvas.width = width;
-      canvas.height = height;
+    if (canvas) sizeCanvasToContainer(canvas, container);
+  };
+
+  const attach = (attached: HTMLCanvasElement) => {
+    canvas = attached;
+    resize();
+    if (!resizeObserver) {
+      resizeObserver = new ResizeObserver(() => resize());
+      resizeObserver.observe(container);
     }
   };
 
   return {
     name: "container-canvas",
-    onAttach: ({ canvas: attached }: { canvas: HTMLCanvasElement }) => {
-      canvas = attached;
-      resize();
-      // La mesure au moment d'onAttach peut survenir avant que la mise en
-      // page du conteneur React soit finalisee (taille incorrecte figee
-      // dans le buffer de rendu, cause du bug "canvas dans un coin"). Un
-      // ResizeObserver recalcule en continu, quelle qu'en soit la cause
-      // (layout tardif, rotation, barre d'adresse Safari qui se retracte)
-      resizeObserver = new ResizeObserver(() => resize());
-      resizeObserver.observe(canvas);
-    },
+    onStart: ({ canvas: started }: { canvas: HTMLCanvasElement }) => attach(started),
+    onAttach: ({ canvas: attached }: { canvas: HTMLCanvasElement }) => attach(attached),
     onDetach: () => {
       resizeObserver?.disconnect();
       resizeObserver = null;
@@ -152,6 +175,7 @@ function containerCanvasPipelineModule() {
 
 export function CameraView({ onBack }: CameraViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [cameraState, setCameraState] = useState<CameraState>("idle");
   const [activeTarget, setActiveTarget] = useState<string | null>(null);
   const [targetRect, setTargetRect] = useState<ScreenRect | null>(null);
@@ -242,26 +266,6 @@ export function CameraView({ onBack }: CameraViewProps) {
         name: "image-target-handler",
         onStart: () => {
           if (mounted) setCameraState("active");
-
-          // Diagnostic temporaire - compare la resolution du buffer de
-          // rendu (canvas.width/height) a la taille affichee reelle
-          // (clientWidth/clientHeight) et au viewport. Un ecart de ratio
-          // important confirme un rendu en letterbox plutot qu'un probleme
-          // de mise en page CSS. A retirer une fois la cause confirmee.
-          setTimeout(() => {
-            const c = canvasRef.current;
-            if (!c) return;
-            console.log("[AR] Diagnostic buffer vs affichage :", {
-              "canvas.width (buffer)": c.width,
-              "canvas.height (buffer)": c.height,
-              "canvas.clientWidth (affiche)": c.clientWidth,
-              "canvas.clientHeight (affiche)": c.clientHeight,
-              "window.innerWidth": window.innerWidth,
-              "window.innerHeight": window.innerHeight,
-              "ratio buffer": (c.width / c.height).toFixed(3),
-              "ratio affiche": (c.clientWidth / c.clientHeight).toFixed(3),
-            });
-          }, 1500);
         },
         onException: (error: unknown) => {
           console.error("[AR] Exception pipeline XR8 :", error);
@@ -322,11 +326,14 @@ export function CameraView({ onBack }: CameraViewProps) {
         // composant (ex. bascule Contenu/Realite AR) doit reconfigurer son
         // propre pipeline proprement, et le nettoyage ci-dessous le retire
         // a chaque demontage via clearCameraPipelineModules.
-        // XRExtras n'est pas fourni par le binaire self-hosted : le canvas est
-        // dimensionne par containerCanvasPipelineModule (reste dans son
-        // conteneur), et Loading/RuntimeError sont geres par l'UI React
+        // XRExtras indisponible dans ce build self-hoste (voir note plus
+        // haut) - containerCanvasPipelineModule gere le dimensionnement
+        const canvasEl = canvasRef.current;
+        const containerEl = containerRef.current;
+        if (!canvasEl || !containerEl) throw new Error("Canvas AR introuvable");
+
         XR8.addCameraPipelineModules([
-          containerCanvasPipelineModule(),
+          containerCanvasPipelineModule(containerEl),
           XR8.GlTextureRenderer.pipelineModule(),
           XR8.Threejs.pipelineModule(),
           XR8.XrController.pipelineModule(),
@@ -341,7 +348,11 @@ export function CameraView({ onBack }: CameraViewProps) {
           imageTargetData,
         });
 
-        XR8.run({ canvas: canvasRef.current });
+        // Buffer dimensionne AVANT le run : XR8.Threejs lit canvas.width/height
+        // dans onStart pour creer son renderer
+        sizeCanvasToContainer(canvasEl, containerEl);
+
+        XR8.run({ canvas: canvasEl });
 
         rafId = requestAnimationFrame(projectTrackedTargetToScreen);
       } catch (err) {
@@ -381,9 +392,12 @@ export function CameraView({ onBack }: CameraViewProps) {
   const isLoading = cameraState === "idle" || cameraState === "loading";
 
   return (
-    <div className="absolute inset-0 bg-black overflow-hidden">
+    <div ref={containerRef} className="absolute inset-0 bg-black overflow-hidden">
       {/* Canvas controle directement par XR8 (camera + rendu Three.js) */}
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+      {/* w-full!/h-full! (important) : three.js ecrit style.width/height en px
+          inline via renderer.setSize - sans !important le canvas resterait fige
+          a cette taille au lieu de remplir le conteneur */}
+      <canvas ref={canvasRef} className="absolute inset-0 w-full! h-full!" />
 
       {/* Contour flouté progressif + texte mot par mot sur cible detectee */}
       <ImageTargetOverlay targetName={activeTarget} rect={targetRect} />
