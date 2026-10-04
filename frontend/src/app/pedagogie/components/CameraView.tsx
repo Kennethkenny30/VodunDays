@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AlertCircle, Camera, VideoOff } from "lucide-react";
 import * as THREE from "three";
-import { ImageTargetOverlay, type ScreenRect } from "./ImageTargetOverlay";
+import { ImageTargetOverlay, type TargetCorners } from "./ImageTargetOverlay";
 
 type CameraState = "idle" | "loading" | "active" | "denied" | "unavailable";
 
@@ -132,6 +132,11 @@ function ensureXR8Ready(): Promise<void> {
 // 2) On ne mesure jamais le canvas lui-meme : son clientWidth/clientHeight
 //    refletent le style inline pose par three (boucle auto-referente qui
 //    fige la taille). On mesure le conteneur, stable et independant.
+// Delai avant de considerer une cible comme perdue : le suivi decroche souvent
+// une fraction de seconde (mouvement, reflet). Evite de defaire le flou et de
+// relancer la narration a chaque micro-perte.
+const LOST_GRACE_MS = 1500;
+
 function sizeCanvasToContainer(canvas: HTMLCanvasElement, container: HTMLElement) {
   const width = container.clientWidth || window.innerWidth;
   const height = container.clientHeight || window.innerHeight;
@@ -149,19 +154,27 @@ function containerCanvasPipelineModule(container: HTMLElement) {
     if (canvas) sizeCanvasToContainer(canvas, container);
   };
 
-  const attach = (attached: HTMLCanvasElement) => {
-    canvas = attached;
-    resize();
-    if (!resizeObserver) {
-      resizeObserver = new ResizeObserver(() => resize());
-      resizeObserver.observe(container);
+  // Un module ne doit JAMAIS lever d'exception dans onStart/onAttach : le
+  // moteur interromprait son demarrage sans rien afficher (ecran bloque sur
+  // "Activation du tracking AR..."). Garde + try/catch + log explicite.
+  const attach = (attached: HTMLCanvasElement | undefined, phase: string) => {
+    try {
+      if (!attached) return;
+      canvas = attached;
+      resize();
+      if (!resizeObserver) {
+        resizeObserver = new ResizeObserver(() => resize());
+        resizeObserver.observe(container);
+      }
+    } catch (err) {
+      console.error(`[AR] container-canvas ${phase} a echoue :`, err);
     }
   };
 
   return {
     name: "container-canvas",
-    onStart: ({ canvas: started }: { canvas: HTMLCanvasElement }) => attach(started),
-    onAttach: ({ canvas: attached }: { canvas: HTMLCanvasElement }) => attach(attached),
+    onStart: (args: { canvas?: HTMLCanvasElement }) => attach(args?.canvas, "onStart"),
+    onAttach: (args: { canvas?: HTMLCanvasElement }) => attach(args?.canvas, "onAttach"),
     onDetach: () => {
       resizeObserver?.disconnect();
       resizeObserver = null;
@@ -178,24 +191,40 @@ export function CameraView({ onBack }: CameraViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [cameraState, setCameraState] = useState<CameraState>("idle");
   const [activeTarget, setActiveTarget] = useState<string | null>(null);
-  const [targetRect, setTargetRect] = useState<ScreenRect | null>(null);
 
   // Ref pour la transform courante de la cible suivie, mise a jour par les
   // evenements 8th Wall et lue par la boucle de projection ecran
   const trackedTransformRef = useRef<{
     position: { x: number; y: number; z: number };
     rotation: { x: number; y: number; z: number; w: number };
+    scale: number;
     scaledWidth: number;
     scaledHeight: number;
   } | null>(null);
+
+  // Nom de la cible actuellement suivie : les evenements des autres cibles
+  // sont ignores (sinon deux cibles visibles se melangeraient dans la ref)
+  const trackedNameRef = useRef<string | null>(null);
+
+  // 4 coins de la cible projetes a l'ecran, ecrits a chaque frame et lus
+  // directement par l'overlay (aucun setState par frame)
+  const cornersRef = useRef<TargetCorners | null>(null);
+
+  const lostTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let mounted = true;
     let pipelineRegistered = false;
     let rafId: number | null = null;
 
-    // Projette la position 3D de la cible suivie vers des coordonnees ecran
-    // (px) pour positionner l'overlay HTML
+    // Vecteurs reutilises pour ne pas allouer a chaque frame
+    const cornerVec = new THREE.Vector3();
+    const rotationQuat = new THREE.Quaternion();
+
+    // Projette les 4 coins de la cible vers des coordonnees ecran (px).
+    // Dimensions reelles = scaledWidth/scaledHeight (normalisees) x scale, puis
+    // coins orientes par la rotation de la cible (plan de l'image = XY local)
+    // et deplaces a sa position : le contour suit donc la perspective.
     function projectTrackedTargetToScreen() {
       const transform = trackedTransformRef.current;
       const canvas = canvasRef.current;
@@ -207,52 +236,41 @@ export function CameraView({ onBack }: CameraViewProps) {
       try {
         const { camera } = window.XR8.Threejs.xrScene();
 
-        // Dimensions reelles de la cible dans la scene, fournies par 8th
-        // Wall (imagefound.detail.scaledWidth/scaledHeight pour type FLAT)
-        const halfWidth = transform.scaledWidth / 2;
-        const halfHeight = transform.scaledHeight / 2;
-
-        const left = new THREE.Vector3(
-          transform.position.x - halfWidth,
-          transform.position.y,
-          transform.position.z
-        ).project(camera);
-        const right = new THREE.Vector3(
-          transform.position.x + halfWidth,
-          transform.position.y,
-          transform.position.z
-        ).project(camera);
-        const top = new THREE.Vector3(
-          transform.position.x,
-          transform.position.y + halfHeight,
-          transform.position.z
-        ).project(camera);
-        const bottom = new THREE.Vector3(
-          transform.position.x,
-          transform.position.y - halfHeight,
-          transform.position.z
-        ).project(camera);
+        const scale = transform.scale || 1;
+        const halfWidth = (transform.scaledWidth * scale) / 2;
+        const halfHeight = (transform.scaledHeight * scale) / 2;
+        const { rotation, position } = transform;
+        rotationQuat.set(rotation.x, rotation.y, rotation.z, rotation.w);
 
         const w = canvas.clientWidth;
         const h = canvas.clientHeight;
-        const toPx = (v: { x: number; y: number }) => ({
-          x: ((v.x + 1) / 2) * w,
-          y: ((1 - v.y) / 2) * h,
-        });
+        let behindCamera = false;
 
-        const l = toPx(left).x;
-        const r = toPx(right).x;
-        const t = toPx(top).y;
-        const b = toPx(bottom).y;
+        const project = (signX: number, signY: number) => {
+          cornerVec
+            .set(signX * halfWidth, signY * halfHeight, 0)
+            .applyQuaternion(rotationQuat);
+          cornerVec.x += position.x;
+          cornerVec.y += position.y;
+          cornerVec.z += position.z;
+          cornerVec.project(camera);
+          if (cornerVec.z > 1) behindCamera = true;
+          return {
+            x: ((cornerVec.x + 1) / 2) * w,
+            y: ((1 - cornerVec.y) / 2) * h,
+          };
+        };
 
-        if (mounted) {
-          setTargetRect({
-            x: Math.min(l, r),
-            y: Math.min(t, b),
-            width: Math.abs(r - l),
-            height: Math.abs(b - t),
-          });
-        }
+        const corners: TargetCorners = [
+          project(-1, 1), // haut-gauche
+          project(1, 1), // haut-droit
+          project(1, -1), // bas-droit
+          project(-1, -1), // bas-gauche
+        ];
+
+        // Coin derriere la camera : projection incoherente, on garde la
+        // derniere position valide
+        if (!behindCamera) cornersRef.current = corners;
       } catch {
         // Camera ou scene pas encore prete - on reessaie a la frame suivante
       }
@@ -275,8 +293,23 @@ export function CameraView({ onBack }: CameraViewProps) {
             event: "reality.imagefound",
             process: (event: any) => {
               if (!mounted) return;
-              const { name, position, rotation, scaledWidth, scaledHeight } = event.detail;
-              trackedTransformRef.current = { position, rotation, scaledWidth, scaledHeight };
+              const { name, position, rotation, scale, scaledWidth, scaledHeight } =
+                event.detail;
+
+              // Cible retrouvee pendant le delai de grace : on annule la perte
+              if (lostTimerRef.current) {
+                clearTimeout(lostTimerRef.current);
+                lostTimerRef.current = null;
+              }
+
+              trackedNameRef.current = name;
+              trackedTransformRef.current = {
+                position,
+                rotation,
+                scale,
+                scaledWidth,
+                scaledHeight,
+              };
               setActiveTarget(name);
             },
           },
@@ -284,17 +317,35 @@ export function CameraView({ onBack }: CameraViewProps) {
             event: "reality.imageupdated",
             process: (event: any) => {
               if (!mounted) return;
-              const { position, rotation, scaledWidth, scaledHeight } = event.detail;
-              trackedTransformRef.current = { position, rotation, scaledWidth, scaledHeight };
+              const { name, position, rotation, scale, scaledWidth, scaledHeight } =
+                event.detail;
+              if (name !== trackedNameRef.current) return;
+              trackedTransformRef.current = {
+                position,
+                rotation,
+                scale,
+                scaledWidth,
+                scaledHeight,
+              };
             },
           },
           {
             event: "reality.imagelost",
-            process: () => {
+            process: (event: any) => {
               if (!mounted) return;
-              trackedTransformRef.current = null;
-              setActiveTarget(null);
-              setTargetRect(null);
+              if (event.detail?.name !== trackedNameRef.current) return;
+
+              // Delai de grace : on garde la derniere pose (le flou et le
+              // texte restent en place) avant de conclure que la cible a
+              // vraiment disparu
+              if (lostTimerRef.current) clearTimeout(lostTimerRef.current);
+              lostTimerRef.current = setTimeout(() => {
+                lostTimerRef.current = null;
+                trackedNameRef.current = null;
+                trackedTransformRef.current = null;
+                cornersRef.current = null;
+                if (mounted) setActiveTarget(null);
+              }, LOST_GRACE_MS);
             },
           },
         ],
@@ -374,6 +425,10 @@ export function CameraView({ onBack }: CameraViewProps) {
     return () => {
       mounted = false;
       if (rafId !== null) cancelAnimationFrame(rafId);
+      if (lostTimerRef.current) {
+        clearTimeout(lostTimerRef.current);
+        lostTimerRef.current = null;
+      }
 
       // Nettoyage systematique du pipeline de CE montage, pour que le
       // prochain montage reel reparte propre (bascule AR on/off repetee,
@@ -399,8 +454,8 @@ export function CameraView({ onBack }: CameraViewProps) {
           a cette taille au lieu de remplir le conteneur */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full! h-full!" />
 
-      {/* Contour flouté progressif + texte mot par mot sur cible detectee */}
-      <ImageTargetOverlay targetName={activeTarget} rect={targetRect} />
+      {/* Flou progressif hors cible + texte machine a ecrire sur cible detectee */}
+      <ImageTargetOverlay targetName={activeTarget} cornersRef={cornersRef} />
 
       {cameraState !== "active" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-vd-page-bg gap-5 px-8 text-center">
