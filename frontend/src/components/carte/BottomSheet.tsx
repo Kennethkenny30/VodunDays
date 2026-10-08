@@ -28,21 +28,23 @@ export type RoutePoint =
   | { type: "gps"; label: string }
   | { type: "poi"; poi: POI };
 
+// Couleurs
+
+// Accent unique du sheet, surchargeable via --vd-accent dans globals.css
+const ACCENT = "var(--vd-accent, #F56E0F)";
+// Texte sur l'accent : sombre pour garder un contraste AA (le blanc reste à environ 3:1)
+const ACCENT_FG = "var(--vd-accent-foreground, #1A1208)";
+// Bordure des éléments actifs, dérivée du texte pour rester neutre
+const BORDER_ACTIVE = "color-mix(in srgb, var(--foreground) 35%, transparent)";
+// Rouge réservé à l'état d'erreur de géolocalisation
+const DENIED = "#FF4444";
+
 // Modes de déplacement proposés dans l'en-tête (icônes Lucide)
 const TRAVEL_MODE_ITEMS: { key: TravelMode; Icon: LucideIcon; labelKey: string }[] = [
   { key: "foot", Icon: Footprints, labelKey: "itinerary.modeWalk" },
   { key: "bike", Icon: Bike,       labelKey: "itinerary.modeBike" },
   { key: "car",  Icon: Car,        labelKey: "itinerary.modeCar"  },
 ];
-
-// Utils
-
-function hexToRgb(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `${r}, ${g}, ${b}`;
-}
 
 // Snap points
 
@@ -56,26 +58,30 @@ function useSnapPoints() {
     return () => window.removeEventListener("resize", handler);
   }, []);
 
-  // SNAP_PEEK > hauteur BottomNav (~94px) avec marge pour que le contenu soit visible
-  const SNAP_PEEK = 240;
-  const SNAP_HALF = Math.round(winH * 0.52);
-  const SNAP_FULL = Math.round(winH * 0.90);
+  // Mémoïsé : sans cela, offsets change de référence à chaque rendu et invalide snapTo
+  return useMemo(() => {
+    // SNAP_PEEK > hauteur BottomNav (~94px) avec marge pour que le contenu soit visible
+    const SNAP_PEEK = 240;
+    const SNAP_HALF = Math.round(winH * 0.52);
+    const SNAP_FULL = Math.round(winH * 0.90);
 
-  return {
-    containerH: SNAP_FULL,
-    offsets: [
-      SNAP_FULL - SNAP_PEEK, // 0 = peek
-      SNAP_FULL - SNAP_HALF, // 1 = half
-      0,                     // 2 = full
-    ] as [number, number, number],
-  };
+    return {
+      containerH: SNAP_FULL,
+      offsets: [
+        SNAP_FULL - SNAP_PEEK, // 0 = peek
+        SNAP_FULL - SNAP_HALF, // 1 = half
+        0,                     // 2 = full
+      ] as [number, number, number],
+    };
+  }, [winH]);
 }
 
 // RoutePointSelector
 
 interface RoutePointSelectorProps {
   label: string;
-  dotColor: string;
+  /** Départ : pastille en anneau neutre. Arrivée : pastille pleine à l'accent */
+  kind: "from" | "to";
   value: RoutePoint | null;
   userLocation: UserLocation | null;
   allPois: POI[];
@@ -90,11 +96,11 @@ interface RoutePointSelectorProps {
 
 // Normalise pour une recherche insensible à la casse et aux accents
 function normalizeSearch(s: string): string {
-  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
 function RoutePointSelector({
-  label, dotColor, value, userLocation, allPois, onChange, onSelectGps, pending = false, denied = false,
+  label, kind, value, userLocation, allPois, onChange, onSelectGps, pending = false, denied = false,
 }: RoutePointSelectorProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -115,20 +121,21 @@ function RoutePointSelector({
 
   const isGps = value?.type === "gps";
 
-  // Accent du champ : rouge en cas de refus, couleur du point sinon
-  const accent    = denied ? "#FF4444" : dotColor;
-  const accentRgb = hexToRgb(accent);
-
   const fieldBg = denied
     ? "rgba(255,68,68,0.08)"
     : open
-      ? `rgba(${accentRgb}, 0.10)`
+      ? "var(--vd-inner-tint)"
       : "var(--vd-filter-bg-inactive)";
   const fieldBorder = denied
     ? "rgba(255,68,68,0.30)"
     : open
-      ? `rgba(${accentRgb}, 0.40)`
+      ? BORDER_ACTIVE
       : "var(--vd-filter-border-inactive)";
+
+  // Pastille : pleine à l'accent pour l'arrivée, anneau neutre pour le départ
+  const dotStyle = kind === "to"
+    ? { background: ACCENT }
+    : { background: "transparent", border: `2px solid ${denied ? DENIED : "var(--muted-foreground)"}` };
 
   // Recherche affichée seulement au-delà d'une liste courte
   const showSearch = allPois.length > 6;
@@ -194,21 +201,21 @@ function RoutePointSelector({
         onClick={toggleOpen}
         style={{ position: "relative", width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "11px 14px 11px 38px", borderRadius: 16, background: fieldBg, border: `1px solid ${fieldBorder}`, cursor: "pointer", transition: "background 160ms, border-color 160ms", textAlign: "left" }}
       >
-        {/* Pastille indicatrice avec anneau teinté */}
-        <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", width: 8, height: 8, borderRadius: "50%", background: accent, boxShadow: `0 0 0 4px rgba(${accentRgb}, 0.18)`, flexShrink: 0 }} />
+        {/* Pastille indicatrice */}
+        <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", width: 10, height: 10, borderRadius: "50%", flexShrink: 0, ...dotStyle }} />
 
         <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-          <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: accent }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: denied ? DENIED : "var(--muted-foreground)" }}>
             {label}
           </span>
-          <span style={{ fontSize: 14, fontWeight: 600, color: denied ? "#FF4444" : value ? "var(--foreground)" : "var(--muted-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: denied ? DENIED : value ? "var(--foreground)" : "var(--muted-foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {displayLabel}
           </span>
         </span>
 
         {/* Indice "position actuelle" quand la valeur est GPS */}
-        {isGps && !open && <LocateFixed size={15} style={{ flexShrink: 0, color: "#4488FF" }} />}
-        <ChevronDown size={16} style={{ flexShrink: 0, color: denied ? "#FF4444" : "var(--muted-foreground)", transform: open ? "rotate(180deg)" : "none", transition: "transform 160ms ease" }} />
+        {isGps && !open && <LocateFixed size={15} style={{ flexShrink: 0, color: ACCENT }} />}
+        <ChevronDown size={16} style={{ flexShrink: 0, color: denied ? DENIED : "var(--muted-foreground)", transform: open ? "rotate(180deg)" : "none", transition: "transform 160ms ease" }} />
       </button>
 
       {open && coords && createPortal(
@@ -230,7 +237,7 @@ function RoutePointSelector({
             </div>
           )}
 
-          {/* Option "Ma position" mise en avant */}
+          {/* Option "Ma position" */}
           {(userLocation || onSelectGps) && (
             <button
               onClick={() => {
@@ -238,15 +245,15 @@ function RoutePointSelector({
                 else onSelectGps?.();
                 closeDropdown();
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(68,136,255,0.14)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isGps ? "rgba(68,136,255,0.10)" : "transparent"; }}
-              style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: isGps ? "rgba(68,136,255,0.10)" : "transparent", border: "none", borderBottom: "1px solid var(--vd-glass-border-color)", color: "#4488FF", fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "left" }}
+              onMouseEnter={hoverOn}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isGps ? "var(--vd-inner-tint)" : "transparent"; }}
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: isGps ? "var(--vd-inner-tint)" : "transparent", border: "none", borderBottom: "1px solid var(--vd-glass-border-color)", color: "var(--foreground)", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left" }}
             >
-              <span style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(68,136,255,0.16)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <span style={{ width: 24, height: 24, borderRadius: "50%", background: "var(--vd-inner-tint)", color: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <LocateFixed size={14} />
               </span>
               <span style={{ flex: 1 }}>{tCarte("itinerary.myPosition")}</span>
-              {isGps && <Check size={16} style={{ flexShrink: 0 }} />}
+              {isGps && <Check size={16} style={{ flexShrink: 0, color: ACCENT }} />}
             </button>
           )}
 
@@ -259,15 +266,14 @@ function RoutePointSelector({
                 key={poi.id}
                 onClick={() => { onChange({ type: "poi", poi }); closeDropdown(); }}
                 onMouseEnter={hoverOn}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = selected ? `rgba(${hexToRgb(poiCat.color)}, 0.10)` : "transparent"; }}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: selected ? `rgba(${hexToRgb(poiCat.color)}, 0.10)` : "transparent", border: "none", borderBottom: "1px solid var(--vd-inner-tint)", color: "var(--foreground)", fontSize: 13, fontWeight: 500, cursor: "pointer", textAlign: "left" }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = selected ? "var(--vd-inner-tint)" : "transparent"; }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: selected ? "var(--vd-inner-tint)" : "transparent", border: "none", borderBottom: "1px solid var(--vd-inner-tint)", color: "var(--foreground)", fontSize: 13, fontWeight: 500, cursor: "pointer", textAlign: "left" }}
               >
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: poiCat.color, flexShrink: 0 }} />
                 <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}>
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{localize(poi, "name", locale)}</span>
-                  <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted-foreground)" }}>{poiCat.label}</span>
+                  <span style={{ fontSize: 11, fontWeight: 500, color: "var(--muted-foreground)" }}>{poiCat.label}</span>
                 </span>
-                {selected && <Check size={15} style={{ flexShrink: 0, color: poiCat.color }} />}
+                {selected && <Check size={15} style={{ flexShrink: 0, color: ACCENT }} />}
               </button>
             );
           })}
@@ -426,7 +432,6 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
   if (!site || !mounted) return null;
 
   const cat  = MARKER_CATEGORIES[site.category];
-  const rgb  = hexToRgb(cat.color);
   // Métriques du mode sélectionné (itinéraire position -> site) pour l'en-tête
   const selectedMetric = routePreview.metrics?.[travelMode] ?? null;
   // Départ et arrivée sont tous deux éditables : on peut choisir sa position actuelle ou un POI.
@@ -471,7 +476,8 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
       {/* Sheet - z-index 60, au-dessus de la BottomNav (z-50) */}
       <motion.div
         role="dialog"
-        aria-modal="true"
+        // Modal seulement au-delà du peek : en peek la carte reste interactive
+        aria-modal={snapIdx > 0}
         aria-label={localize(site, "name", locale)}
         className="fixed left-0 right-0"
         style={{
@@ -479,19 +485,18 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
           height: containerH,
           y,
           zIndex: 60,
-          // Fond glass renforcé
-          background: `linear-gradient(180deg, rgba(${rgb}, 0.06) 0%, var(--vd-sheet-body) 60px)`,
+          // Surface unie, sans teinte de catégorie
+          background: "var(--vd-sheet-body)",
           backdropFilter: "blur(32px)",
           WebkitBackdropFilter: "blur(32px)",
-          // Bordure catégorie en haut + coins arrondis
-          borderTop: `2px solid rgba(${rgb}, 0.55)`,
-          borderLeft: "1px solid var(--vd-glass-border-color)",
-          borderRight: "1px solid var(--vd-glass-border-color)",
+          border: "1px solid var(--vd-glass-border-color)",
+          borderBottom: "none",
           borderRadius: "24px 24px 0 0",
           // Pas de touchAction:none ici : il bloquerait le scroll tactile du contenu.
           // Le drag ne part que du grabber (dragListener=false), qui garde son touchAction.
           willChange: "transform",
-          boxShadow: `0 -8px 48px rgba(${rgb}, 0.10), 0 -2px 0 rgba(${rgb}, 0.30)`,
+          // Ombre neutre d'élévation uniquement
+          boxShadow: "0 -6px 24px rgba(0,0,0,0.28)",
         }}
         drag="y"
         dragControls={dragControls}
@@ -508,9 +513,9 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
           style={{ paddingTop: 12, paddingBottom: 8, touchAction: "none" }}
           onPointerDown={(e) => dragControls.start(e)}
         >
-          <div style={{ width: 44, height: 4, borderRadius: 99, background: `rgba(${rgb}, 0.40)` }} />
+          <div style={{ width: 40, height: 4, borderRadius: 99, background: "color-mix(in srgb, var(--muted-foreground) 50%, transparent)" }} />
           {/* Indicateur de snap - chevrons */}
-          <div style={{ marginTop: 6, color: `rgba(${rgb}, 0.50)`, display: "flex" }}>
+          <div style={{ marginTop: 6, color: "var(--muted-foreground)", display: "flex" }}>
             {snapIdx < 2
               ? <ChevronUp size={16} />
               : <ChevronDown size={16} />
@@ -518,25 +523,25 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
           </div>
         </div>
 
-        {/* Contenu */}
+        {/* Contenu : scrollable dès le half, avec un bas compensé pour atteindre la fin du panneau */}
         <div
           style={{
             height: "calc(100% - 56px)",
-            overflowY: snapIdx === 2 ? "auto" : "hidden",
-            paddingBottom: `max(24px, env(safe-area-inset-bottom, 24px))`,
+            overflowY: snapIdx >= 1 ? "auto" : "hidden",
+            overscrollBehavior: "contain",
+            paddingBottom: `calc(${offsets[snapIdx]}px + max(24px, env(safe-area-inset-bottom, 24px)))`,
           }}
         >
           {/* En-tête catégorie + fermer */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "0 20px", marginBottom: 14 }}>
             <div style={{ minWidth: 0 }}>
-              {/* Badge catégorie */}
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: `rgba(${rgb}, 0.10)`, border: `1px solid rgba(${rgb}, 0.30)`, borderRadius: 99, padding: "5px 12px 5px 9px", marginBottom: 12 }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: cat.color, display: "inline-block", flexShrink: 0 }} />
-                <span style={{ color: cat.color, fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em" }}>{cat.label}</span>
-              </div>
+              {/* Badge catégorie neutre */}
+              <span style={{ display: "inline-block", background: "var(--vd-filter-bg-inactive)", border: "1px solid var(--vd-filter-border-inactive)", borderRadius: 99, padding: "4px 12px", marginBottom: 12, color: "var(--muted-foreground)", fontSize: 12, fontWeight: 600 }}>
+                {cat.label}
+              </span>
 
               {/* Nom du site */}
-              <h2 style={{ fontSize: 27, fontWeight: 800, color: "var(--foreground)", lineHeight: 1.15, letterSpacing: "-0.02em", margin: 0 }}>
+              <h2 style={{ fontSize: 26, fontWeight: 700, color: "var(--foreground)", lineHeight: 1.15, letterSpacing: "-0.02em", margin: 0 }}>
                 {localize(site, "name", locale)}
               </h2>
             </div>
@@ -565,7 +570,7 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
                       onClick={() => onSelectMode(key)}
                       aria-label={`${tCarte(labelKey)} - ${timeLabel}`}
                       aria-pressed={active}
-                      style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "9px 4px", borderRadius: 14, cursor: "pointer", background: active ? `rgba(${rgb}, 0.14)` : "var(--vd-filter-bg-inactive)", border: `1px solid ${active ? `rgba(${rgb}, 0.45)` : "var(--vd-filter-border-inactive)"}`, color: active ? cat.color : "var(--muted-foreground)", transition: "background 160ms, border-color 160ms, color 160ms" }}
+                      style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "9px 4px", borderRadius: 14, cursor: "pointer", background: active ? "var(--vd-inner-tint)" : "var(--vd-filter-bg-inactive)", border: `1px solid ${active ? BORDER_ACTIVE : "var(--vd-filter-border-inactive)"}`, color: active ? "var(--foreground)" : "var(--muted-foreground)", transition: "background 160ms, border-color 160ms, color 160ms" }}
                     >
                       <Icon size={17} style={{ flexShrink: 0 }} />
                       <span style={{ fontSize: 12, fontWeight: 700 }}>{timeLabel}</span>
@@ -575,15 +580,15 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
               </div>
               {/* Distance du mode sélectionné (identique entre modes : un seul tracé) */}
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--muted-foreground)", background: "var(--vd-filter-bg-inactive)", border: "1px solid var(--vd-filter-border-inactive)", borderRadius: 99, padding: "6px 14px" }}>
-                <MapPin size={13} style={{ color: cat.color, flexShrink: 0 }} />
+                <MapPin size={13} style={{ flexShrink: 0 }} />
                 {selectedMetric ? formatDistanceMeters(selectedMetric.distance) : "..."} - {tCarte("itinerary.fromYou")}
                 {routePreview.estimated && ` (${tCarte("itinerary.asCrowFlies")})`}
               </div>
             </div>
           )}
 
-          {/* Séparateur dégradé */}
-          <div style={{ height: 1, background: "linear-gradient(to right, transparent, var(--vd-glass-border-color), transparent)", margin: "0 20px 18px" }} />
+          {/* Séparateur */}
+          <div style={{ height: 1, background: "var(--vd-glass-border-color)", margin: "0 20px 18px" }} />
 
           <div style={{ padding: "0 20px" }}>
             {/* Description */}
@@ -607,13 +612,13 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
             {/* Panneau itinéraire */}
             {showRoutePanel ? (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 800, color: "var(--muted-foreground)", textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 14 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "var(--foreground)", marginBottom: 12 }}>
                   {tCarte("itinerary.title")}
                 </p>
 
                 <RoutePointSelector
                   label={tCarte("itinerary.from")}
-                  dotColor="#4488FF"
+                  kind="from"
                   value={fromPoint}
                   userLocation={userLocation}
                   allPois={allPois}
@@ -629,7 +634,7 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
                     onClick={handleSwap}
                     disabled={!canSwap}
                     aria-label={tCarte("itinerary.swap")}
-                    style={{ pointerEvents: "auto", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--vd-sheet-body)", border: "1px solid var(--vd-glass-border-color)", color: "var(--muted-foreground)", cursor: canSwap ? "pointer" : "not-allowed", opacity: canSwap ? 1 : 0.5, boxShadow: "0 4px 14px rgba(0,0,0,0.28)", transition: "transform 160ms ease" }}
+                    style={{ pointerEvents: "auto", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--vd-sheet-body)", border: "1px solid var(--vd-glass-border-color)", color: "var(--muted-foreground)", cursor: canSwap ? "pointer" : "not-allowed", opacity: canSwap ? 1 : 0.5, transition: "transform 160ms ease" }}
                     onMouseEnter={e => { if (canSwap) (e.currentTarget as HTMLButtonElement).style.transform = "rotate(180deg)"; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = ""; }}
                   >
@@ -637,16 +642,16 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
                   </button>
                 </div>
 
-                <RoutePointSelector label={tCarte("itinerary.to")} dotColor={cat.color} value={toPoint} userLocation={userLocation} allPois={allPois} onChange={setToPoint} />
+                <RoutePointSelector label={tCarte("itinerary.to")} kind="to" value={toPoint} userLocation={userLocation} allPois={allPois} onChange={setToPoint} />
 
                 <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
-                  <button onClick={() => setShowRoutePanel(false)} style={{ flex: 1, padding: "13px 0", borderRadius: 99, background: "var(--vd-filter-bg-inactive)", border: "1px solid var(--vd-glass-border-color)", color: "var(--foreground)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                  <button onClick={() => setShowRoutePanel(false)} style={{ flex: 1, padding: "13px 0", borderRadius: 99, background: "var(--vd-filter-bg-inactive)", border: "1px solid var(--vd-glass-border-color)", color: "var(--foreground)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                     {tCarte("itinerary.cancel")}
                   </button>
                   <button
                     disabled={!canStart}
                     onClick={() => { if (fromPoint && toPoint) { onNavigateFromTo(fromPoint, toPoint, travelMode); onClose(); } }}
-                    style={{ flex: 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px 0", borderRadius: 99, background: canStart ? `linear-gradient(135deg, ${cat.color}, ${cat.color}CC)` : "var(--vd-filter-bg-inactive)", border: "none", color: canStart ? "#fff" : "var(--muted-foreground)", fontSize: 14, fontWeight: 800, cursor: canStart ? "pointer" : "not-allowed", transition: "opacity 160ms", boxShadow: canStart ? `0 6px 20px rgba(${rgb}, 0.40)` : "none" }}
+                    style={{ flex: 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px 0", borderRadius: 99, background: canStart ? ACCENT : "var(--vd-filter-bg-inactive)", border: "none", color: canStart ? ACCENT_FG : "var(--muted-foreground)", fontSize: 14, fontWeight: 700, cursor: canStart ? "pointer" : "not-allowed", transition: "opacity 160ms" }}
                   >
                     <Navigation size={15} />
                     {tCarte("itinerary.start")}
@@ -657,14 +662,14 @@ export function BottomSheet({ site, userLocation, onClose, onNavigateFromTo, all
               /* CTA Itinéraire */
               <button
                 onClick={handleOpenRoute}
-                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "16px 20px", borderRadius: 99, cursor: "pointer", border: "none", background: `linear-gradient(135deg, ${cat.color} 0%, ${cat.color}CC 100%)`, color: "#fff", fontSize: 15, fontWeight: 800, letterSpacing: "0.01em", boxShadow: `0 8px 26px rgba(${rgb}, 0.42), inset 0 1px 0 rgba(255,255,255,0.20)`, transition: "filter 150ms ease" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.filter = "brightness(1.08)"; }}
+                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "16px 20px", borderRadius: 99, cursor: "pointer", border: "none", background: ACCENT, color: ACCENT_FG, fontSize: 15, fontWeight: 700, transition: "filter 150ms ease" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.filter = "brightness(1.06)"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.filter = ""; }}
               >
                 <Navigation size={16} />
                 {tCarte("itinerary.cta")}
                 {userLocation && (
-                  <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.70 }}>
+                  <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.75 }}>
                     - {tCarte("itinerary.fromMyPosition")}
                   </span>
                 )}
