@@ -2,7 +2,7 @@
 
 import { Landmark, Toilet, Siren, Bus, LifeBuoy, Scan, Music2, LayoutGrid } from "lucide-react";
 import type React from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "use-intl";
 
 const FILTER_CONFIG = [
   { value: "all",        key: "all",        color: "#F56E0F", Icon: LayoutGrid },

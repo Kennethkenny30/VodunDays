@@ -9,8 +9,8 @@ import {
   useDragControls,
   useReducedMotion,
   animate,
-} from "framer-motion";
-import { useLocale, useTranslations } from "next-intl";
+} from "motion/react";
+import { useLocale, useTranslations } from "use-intl";
 import { MARKER_CATEGORIES, type POI } from "@/lib/markers";
 import { localize } from "@/lib/i18n/localize";
 import { type TravelMode, type RoutePreview, formatDuration, formatDistanceMeters } from "@/lib/routing";

@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "node scripts/copy-maplibre-worker.mjs",
+    "predev": "node scripts/copy-maplibre-worker.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/copy-maplibre-worker.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -24,7 +27,7 @@
     "geist": "^1.7.0",
     "gsap": "^3.14.2",
     "lucide-react": "^0.563.0",
-    "maplibre-gl": "^5.20.2",
+    "maplibre-gl": "^6.11.2",
     "motion": "^12.35.1",
     "next": "^16.1.6",
     "next-themes": "^0.4.6",

@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
+import { motion } from "motion/react";
+import { useTranslations } from "use-intl";
 
 // En-tête de la page Carte Interactive
 export function CartePageHeader() {
@@ -21,6 +21,7 @@ export function CartePageHeader() {
             src="/images/logo.png"
             alt="Vodun Days Logo"
             fill
+            sizes="48px"
             className="object-contain"
             priority
           />

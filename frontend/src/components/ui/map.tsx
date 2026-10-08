@@ -25,6 +25,13 @@ import { X, Minus, Plus, Locate, Maximize, Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+// MapLibre v6 déduit l'URL de son worker de import.meta.url. Avec Turbopack ce n'est
+// pas une URL http(s), donc l'URL est vide -> "Worker failed to load".
+// On sert le worker depuis /public (copié par scripts/copy-maplibre-worker.mjs).
+if (typeof window !== "undefined") {
+  MapLibreGL.setWorkerUrl("/maplibre-gl-worker.mjs");
+}
+
 const defaultStyles = {
   dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
   light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",

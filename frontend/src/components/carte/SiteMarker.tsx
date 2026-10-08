@@ -9,7 +9,7 @@ import {
   useMap,
 } from "@/components/ui/map";
 import { Landmark, Toilet, Siren, Bus, LifeBuoy, Navigation, Scan, Music2 } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale } from "use-intl";
 import { MARKER_CATEGORIES, type POI, type MarkerCategory } from "@/lib/markers";
 import { localize } from "@/lib/i18n/localize";
 
