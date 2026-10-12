@@ -26,6 +26,8 @@ export default function QuizCreationPage() {
   const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null)
   const [loading, setLoading]             = useState(true)
   const [showTypesSheet, setShowTypesSheet] = useState(false)
+  // Nombre de questions par questionnaire, alimenté par le QuizBuilder une fois les questions chargées
+  const [questionCounts, setQuestionCounts] = useState<Record<string, number>>({})
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -46,9 +48,9 @@ export default function QuizCreationPage() {
       else toast.error("Impossible de charger les impressions")
 
       if (eventsRes.success)      setEvents(eventsRes.data)
-      else toast.error("Impossible de charger les evenements")
+      else toast.error("Impossible de charger les événements")
     } catch {
-      toast.error("Erreur reseau lors du chargement")
+      toast.error("Erreur réseau lors du chargement")
     } finally {
       setLoading(false)
     }
@@ -70,15 +72,9 @@ export default function QuizCreationPage() {
     if (selectedQuizId === id) setSelectedQuizId(null)
   }
 
-  // Met a jour le compteur de questions dans la liste sans refetch global
+  // Met à jour le compteur de questions dans la liste sans refetch global
   const handleQuestionsChanged = (quizId: string, count: number) => {
-    setQuizzes((prev) =>
-      prev.map((q) =>
-        q.id === quizId
-          ? { ...q, questions: Array.from({ length: count }) as Quiz["questions"] }
-          : q
-      )
-    )
+    setQuestionCounts((prev) => (prev[quizId] === count ? prev : { ...prev, [quizId]: count }))
   }
 
   const handleTypesChanged = (types: QuestionType[]) => {
@@ -86,14 +82,15 @@ export default function QuizCreationPage() {
   }
 
   const selectedQuiz = quizzes.find((q) => q.id === selectedQuizId) ?? null
-  const hasNoTypes   = questionTypes.length === 0
+  // Évite le clignotement rouge du bouton pendant le chargement initial
+  const hasNoTypes   = !loading && questionTypes.length === 0
 
   return (
     <PageTransition>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Création de questionnaires</h1>
-          <p className="text-muted-foreground">Creez et configurez les questionnaires du festival</p>
+          <p className="text-muted-foreground">Créez et configurez les questionnaires du festival</p>
         </div>
 
         {/* Bouton d'acces au gestionnaire de types - ouvre une Sheet */}
@@ -127,7 +124,7 @@ export default function QuizCreationPage() {
       {loading ? (
         <div className="flex items-center justify-center h-48 text-muted-foreground gap-2">
           <Loader2 className="size-4 animate-spin" />
-          Chargement...
+          Chargement…
         </div>
       ) : (
         <div
@@ -142,6 +139,7 @@ export default function QuizCreationPage() {
             selectedQuizId={selectedQuizId}
             onSelect={setSelectedQuizId}
             onCreated={handleQuizCreated}
+            questionCounts={questionCounts}
           />
 
           {/* Editeur de quiz (panneau principal) */}
@@ -162,7 +160,7 @@ export default function QuizCreationPage() {
                 <div className="size-12 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
                   <ClipboardList className="size-6 opacity-30" />
                 </div>
-                <p className="text-[13px]">Selectionnez ou creez un questionnaire</p>
+                <p className="text-[13px]">Sélectionnez ou créez un questionnaire</p>
               </div>
             )}
           </div>

@@ -72,7 +72,7 @@ export async function createChoice(payload: { wording: string; questionId: strin
   return api.post<Choice>("/choices", payload)
 }
 
-export async function updateChoice(id: string, payload: { wording: string }) {
+export async function updateChoice(id: string, payload: { wording?: string; wordingEn?: string }) {
   return api.patch<Choice>(`/choices/${id}`, payload)
 }
 

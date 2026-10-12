@@ -82,8 +82,8 @@ export function GlassLoginCard() {
 
       const { user } = json.data
 
-      // Vérification du rôle : seuls ADMIN et SUPER_ADMIN ont accès au dashboard
-      if (user.role !== "SUPER_ADMIN" && user.role !== "ADMIN") {
+      // Vérification du rôle : seuls ADMIN, SUPER_ADMIN et INSTAD ont accès à un dashboard
+      if (user.role !== "SUPER_ADMIN" && user.role !== "ADMIN" && user.role !== "INSTAD") {
         setError("Accès non autorisé à cette interface.")
         return
       }
@@ -99,7 +99,9 @@ export function GlassLoginCard() {
       })
 
       // Redirection selon le rôle
-      router.push(user.role === "SUPER_ADMIN" ? "/superadmin" : "/admin")
+      router.push(
+        user.role === "SUPER_ADMIN" ? "/superadmin" : user.role === "INSTAD" ? "/instad" : "/admin"
+      )
     } catch {
       setError("Impossible de contacter le serveur. Vérifiez votre connexion.")
     } finally {

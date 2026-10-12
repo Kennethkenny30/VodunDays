@@ -135,7 +135,10 @@ async function cropTo16x10(file: File): Promise<string> {
 
 function formatSlot(s: string, e: string) {
   try {
-    return `${format(new Date(s), "dd MMM yyyy, HH:mm", { locale: fr })} → ${format(new Date(e), "HH:mm", { locale: fr })}`
+    const start   = new Date(s)
+    const end     = new Date(e)
+    const sameDay = format(start, "yyyy-MM-dd") === format(end, "yyyy-MM-dd")
+    return `${format(start, "dd MMM yyyy, HH:mm", { locale: fr })} → ${format(end, sameDay ? "HH:mm" : "dd MMM, HH:mm", { locale: fr })}`
   } catch { return `${s} → ${e}` }
 }
 
@@ -143,22 +146,184 @@ function completionScore(data: Partial<EventCreatePayload>): number {
   return Math.round([data.name, data.eventTypeId, data.siteId, data.description].filter(Boolean).length / 4 * 100)
 }
 
+// Types d'evenement disposant d'un line-up (bloc Artistes + assignation par creneau).
+// A etendre ici si d'autres types doivent exposer les artistes.
+const LINEUP_TYPE_KEYWORDS = ["concert"]
+
+function typeHasLineup(name?: string | null): boolean {
+  if (!name) return false
+  const n = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+  return LINEUP_TYPE_KEYWORDS.some((k) => n.includes(k))
+}
+
 // ─── Sous-composants ──────────────────────────────────────────────────────────
 
 // ─── Dates du festival ────────────────────────────────────────────────────────
-// Le festival se tient les 8, 9 et 10 janvier chaque année.
-// Après le 10 janvier, on pointe automatiquement vers l'édition suivante.
+// Le festival se tient chaque année du 2 janvier (00:00) au 11 janvier (06:00).
+// Une fois l'édition terminée, on pointe automatiquement vers l'édition suivante.
+
+const FESTIVAL_MONTH     = 0  // janvier
+const FESTIVAL_START_DAY = 2
+const FESTIVAL_END_DAY   = 11
+const FESTIVAL_END_HOUR  = 6
+
+function getFestivalBounds(year: number): { start: Date; end: Date } {
+  return {
+    start: new Date(year, FESTIVAL_MONTH, FESTIVAL_START_DAY, 0, 0, 0),
+    end:   new Date(year, FESTIVAL_MONTH, FESTIVAL_END_DAY, FESTIVAL_END_HOUR, 0, 0),
+  }
+}
 
 function getFestivalYear(): number {
-  const now = new Date();
-  const cutoff = new Date(now.getFullYear(), 0, 10, 23, 59, 59);
-  return now > cutoff ? now.getFullYear() + 1 : now.getFullYear();
+  const now = new Date()
+  const { end } = getFestivalBounds(now.getFullYear())
+  return now > end ? now.getFullYear() + 1 : now.getFullYear()
+}
+
+// Ramène une valeur "YYYY-MM-DDTHH:mm" dans la fenêtre du festival
+function clampToFestival(value: string): string {
+  const d = new Date(value)
+  if (isNaN(d.getTime())) return value
+  const { start, end } = getFestivalBounds(getFestivalYear())
+  const bounded = d < start ? start : d > end ? end : d
+  return format(bounded, "yyyy-MM-dd'T'HH:mm")
+}
+
+// ── iOS-style scroll wheel for hours & minutes ────────────────────────────
+const HOURS   = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"))
+const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"))
+
+const ITEM_H = 36 // px per item in the wheel
+const VISIBLE = 5 // visible items (must be odd)
+const WHEEL_H = ITEM_H * VISIBLE
+
+function TimeWheel({
+  items, selected, onSelect, label,
+}: { items: string[]; selected: string; onSelect: (v: string) => void; label: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const selectedIdx = Math.max(0, items.indexOf(selected))
+  const isScrollingRef = useRef(false)
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Scroll to selected item on mount / external change
+  useEffect(() => {
+    const el = ref.current
+    if (!el || isScrollingRef.current) return
+    el.scrollTop = selectedIdx * ITEM_H
+  }, [selectedIdx])
+
+  const snapToNearest = (el: HTMLDivElement) => {
+    const idx = Math.round(el.scrollTop / ITEM_H)
+    const clamped = Math.max(0, Math.min(items.length - 1, idx))
+    // Snap scroll position
+    el.scrollTo({ top: clamped * ITEM_H, behavior: "smooth" })
+    if (items[clamped] !== selected) onSelect(items[clamped])
+  }
+
+  const handleScroll = () => {
+    isScrollingRef.current = true
+    if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current)
+    scrollTimerRef.current = setTimeout(() => {
+      isScrollingRef.current = false
+      if (ref.current) snapToNearest(ref.current)
+    }, 120)
+  }
+
+  // Allow mouse wheel scroll when hovering the wheel (no page scroll)
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const el = ref.current
+    if (!el) return
+    el.scrollTop += e.deltaY > 0 ? ITEM_H : -ITEM_H
+  }
+
+  const step = (dir: 1 | -1) => {
+    const next = Math.max(0, Math.min(items.length - 1, selectedIdx + dir))
+    onSelect(items[next])
+    ref.current?.scrollTo({ top: next * ITEM_H, behavior: "smooth" })
+  }
+
+  const half = Math.floor(VISIBLE / 2)
+
+  return (
+    <div className="flex flex-col items-center gap-0.5 select-none">
+      {/* Label */}
+      <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground/40 mb-0.5">{label}</span>
+
+      {/* Up button */}
+      <button
+        type="button"
+        onClick={() => step(-1)}
+        className="flex items-center justify-center w-8 h-5 rounded text-muted-foreground/30 hover:text-[var(--vd-gold)] hover:bg-[var(--vd-gold)]/8 transition-all"
+      >
+        <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 5L5 1L9 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </button>
+
+      {/* Wheel */}
+      <div className="relative" style={{ width: 40, height: WHEEL_H }}>
+        {/* Selection highlight band */}
+        <div
+          className="pointer-events-none absolute inset-x-0 rounded-lg bg-[var(--vd-gold)]/10 border border-[var(--vd-gold)]/30 z-10"
+          style={{ top: half * ITEM_H, height: ITEM_H }}
+        />
+        {/* Top fade */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 rounded-t-lg"
+          style={{ height: half * ITEM_H, background: "linear-gradient(to bottom, oklch(0.14 0.018 260 / 0.98), oklch(0.14 0.018 260 / 0.3))" }} />
+        {/* Bottom fade */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 rounded-b-lg"
+          style={{ height: half * ITEM_H, background: "linear-gradient(to top, oklch(0.14 0.018 260 / 0.98), oklch(0.14 0.018 260 / 0.3))" }} />
+
+        <div
+          ref={ref}
+          onScroll={handleScroll}
+          onWheel={handleWheel}
+          className="absolute inset-0 overflow-y-auto"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
+        >
+          {/* Top padding - half items above center */}
+          <div style={{ height: half * ITEM_H }} />
+          {items.map((item) => (
+            <div
+              key={item}
+              onClick={() => {
+                onSelect(item)
+                ref.current?.scrollTo({ top: items.indexOf(item) * ITEM_H, behavior: "smooth" })
+              }}
+              className="flex items-center justify-center cursor-pointer"
+              style={{ height: ITEM_H, width: 40 }}
+            >
+              <span className={cn(
+                "font-mono text-[14px] transition-all duration-100",
+                item === selected
+                  ? "text-[var(--vd-gold)] font-bold"
+                  : "text-muted-foreground/35 hover:text-muted-foreground/60"
+              )}>
+                {item}
+              </span>
+            </div>
+          ))}
+          {/* Bottom padding */}
+          <div style={{ height: half * ITEM_H }} />
+        </div>
+      </div>
+
+      {/* Down button */}
+      <button
+        type="button"
+        onClick={() => step(1)}
+        className="flex items-center justify-center w-8 h-5 rounded text-muted-foreground/30 hover:text-[var(--vd-gold)] hover:bg-[var(--vd-gold)]/8 transition-all"
+      >
+        <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </button>
+    </div>
+  )
 }
 
 /**
  * Sélecteur date + heure custom shadcn.
  * value / onChange : chaîne ISO-like "YYYY-MM-DDTHH:mm" (compatible datetime-local).
- * Le calendrier est restreint aux 3 dates du festival (8, 9, 10 janvier).
+ * Le calendrier est restreint à la fenêtre du festival (2 janvier 00:00 → 11 janvier 06:00).
  */
 function DateTimePicker({
   value,
@@ -189,28 +354,22 @@ function DateTimePicker({
   const mm = value?.split("T")[1]?.slice(3, 5) ?? ""
   const datepart = value?.split("T")[0] ?? ""
 
-  // ── Dates autorisées : 8, 9, 10 janvier de l'année du festival ──────────
+  // ── Dates autorisées : du 2 janvier 00:00 au 11 janvier 06:00 ───────────
   const festivalYear  = getFestivalYear()
-  const festivalDates = [
-    new Date(festivalYear, 0, 8),
-    new Date(festivalYear, 0, 9),
-    new Date(festivalYear, 0, 10),
-  ]
-  const festivalMonth = new Date(festivalYear, 0, 1)
+  const festivalMonth = new Date(festivalYear, FESTIVAL_MONTH, 1)
 
   const isDisabledDate = (date: Date): boolean =>
-    !festivalDates.some(
-      (fd) =>
-        fd.getFullYear() === date.getFullYear() &&
-        fd.getMonth()    === date.getMonth()    &&
-        fd.getDate()     === date.getDate()
-    )
+    date.getFullYear() !== festivalYear ||
+    date.getMonth()    !== FESTIVAL_MONTH ||
+    date.getDate()     <  FESTIVAL_START_DAY ||
+    date.getDate()     >  FESTIVAL_END_DAY
 
   const updateTime = (newHH: string, newMM: string) => {
-    const d = datepart || format(new Date(), "yyyy-MM-dd")
+    // Sans jour choisi, on part du premier jour du festival (jamais d'une date hors festival)
+    const d = datepart || format(getFestivalBounds(festivalYear).start, "yyyy-MM-dd")
     const h = newHH.padStart(2, "0")
     const m = newMM.padStart(2, "0")
-    onChange(`${d}T${h}:${m}`)
+    onChange(clampToFestival(`${d}T${h}:${m}`))
   }
 
   const handleDaySelect = (day: Date | undefined) => {
@@ -218,139 +377,8 @@ function DateTimePicker({
     const d = format(day, "yyyy-MM-dd")
     const h = hh || "00"
     const m = mm || "00"
-    onChange(`${d}T${h}:${m}`)
+    onChange(clampToFestival(`${d}T${h}:${m}`))
     // Ne ferme pas le popover : l'utilisateur va souvent régler l'heure ensuite
-  }
-
-  // ── iOS-style scroll wheel for hours & minutes ────────────────────────────
-  const HOURS   = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"))
-  const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"))
-
-  const ITEM_H = 36 // px per item in the wheel
-  const VISIBLE = 5 // visible items (must be odd)
-  const WHEEL_H = ITEM_H * VISIBLE
-
-  function TimeWheel({
-    items, selected, onSelect, label,
-  }: { items: string[]; selected: string; onSelect: (v: string) => void; label: string }) {
-    const ref = useRef<HTMLDivElement>(null)
-    const selectedIdx = Math.max(0, items.indexOf(selected))
-    const isScrollingRef = useRef(false)
-    const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-    // Scroll to selected item on mount / external change
-    useEffect(() => {
-      const el = ref.current
-      if (!el || isScrollingRef.current) return
-      el.scrollTop = selectedIdx * ITEM_H
-    }, [selectedIdx])
-
-    const snapToNearest = (el: HTMLDivElement) => {
-      const idx = Math.round(el.scrollTop / ITEM_H)
-      const clamped = Math.max(0, Math.min(items.length - 1, idx))
-      // Snap scroll position
-      el.scrollTo({ top: clamped * ITEM_H, behavior: "smooth" })
-      if (items[clamped] !== selected) onSelect(items[clamped])
-    }
-
-    const handleScroll = () => {
-      isScrollingRef.current = true
-      if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current)
-      scrollTimerRef.current = setTimeout(() => {
-        isScrollingRef.current = false
-        if (ref.current) snapToNearest(ref.current)
-      }, 120)
-    }
-
-    // Allow mouse wheel scroll when hovering the wheel (no page scroll)
-    const handleWheel = (e: React.WheelEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      const el = ref.current
-      if (!el) return
-      el.scrollTop += e.deltaY > 0 ? ITEM_H : -ITEM_H
-    }
-
-    const step = (dir: 1 | -1) => {
-      const next = Math.max(0, Math.min(items.length - 1, selectedIdx + dir))
-      onSelect(items[next])
-      ref.current?.scrollTo({ top: next * ITEM_H, behavior: "smooth" })
-    }
-
-    const half = Math.floor(VISIBLE / 2)
-
-    return (
-      <div className="flex flex-col items-center gap-0.5 select-none">
-        {/* Label */}
-        <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground/40 mb-0.5">{label}</span>
-
-        {/* Up button */}
-        <button
-          type="button"
-          onClick={() => step(-1)}
-          className="flex items-center justify-center w-8 h-5 rounded text-muted-foreground/30 hover:text-[var(--vd-gold)] hover:bg-[var(--vd-gold)]/8 transition-all"
-        >
-          <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 5L5 1L9 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </button>
-
-        {/* Wheel */}
-        <div className="relative" style={{ width: 40, height: WHEEL_H }}>
-          {/* Selection highlight band */}
-          <div
-            className="pointer-events-none absolute inset-x-0 rounded-lg bg-[var(--vd-gold)]/10 border border-[var(--vd-gold)]/30 z-10"
-            style={{ top: half * ITEM_H, height: ITEM_H }}
-          />
-          {/* Top fade */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 rounded-t-lg"
-            style={{ height: half * ITEM_H, background: "linear-gradient(to bottom, oklch(0.14 0.018 260 / 0.98), oklch(0.14 0.018 260 / 0.3))" }} />
-          {/* Bottom fade */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 rounded-b-lg"
-            style={{ height: half * ITEM_H, background: "linear-gradient(to top, oklch(0.14 0.018 260 / 0.98), oklch(0.14 0.018 260 / 0.3))" }} />
-
-          <div
-            ref={ref}
-            onScroll={handleScroll}
-            onWheel={handleWheel}
-            className="absolute inset-0 overflow-y-auto"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}
-          >
-            {/* Top padding - half items above center */}
-            <div style={{ height: half * ITEM_H }} />
-            {items.map((item) => (
-              <div
-                key={item}
-                onClick={() => {
-                  onSelect(item)
-                  ref.current?.scrollTo({ top: items.indexOf(item) * ITEM_H, behavior: "smooth" })
-                }}
-                className="flex items-center justify-center cursor-pointer"
-                style={{ height: ITEM_H, width: 40 }}
-              >
-                <span className={cn(
-                  "font-mono text-[14px] transition-all duration-100",
-                  item === selected
-                    ? "text-[var(--vd-gold)] font-bold"
-                    : "text-muted-foreground/35 hover:text-muted-foreground/60"
-                )}>
-                  {item}
-                </span>
-              </div>
-            ))}
-            {/* Bottom padding */}
-            <div style={{ height: half * ITEM_H }} />
-          </div>
-        </div>
-
-        {/* Down button */}
-        <button
-          type="button"
-          onClick={() => step(1)}
-          className="flex items-center justify-center w-8 h-5 rounded text-muted-foreground/30 hover:text-[var(--vd-gold)] hover:bg-[var(--vd-gold)]/8 transition-all"
-        >
-          <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </button>
-      </div>
-    )
   }
 
   return (
@@ -393,7 +421,7 @@ function DateTimePicker({
       >
         {/* Layout : calendrier à gauche, roues à droite */}
         <div className="flex items-stretch">
-          {/* Calendrier - restreint aux 3 dates du festival */}
+          {/* Calendrier - restreint à la fenêtre du festival */}
           <Calendar
             mode="single"
             selected={parsed && !isNaN(parsed.getTime()) ? parsed : undefined}
@@ -602,6 +630,8 @@ export function EventCreateModal({
 
   const [step,          setStep]          = useState(1)
   const [formData,      setFormData]      = useState<Partial<EventCreatePayload>>({ status: "DRAFT" })
+  const selectedType = eventTypes.find((t) => t.id === formData.eventTypeId)
+  const hasLineup    = typeHasLineup(selectedType?.name) || typeHasLineup(selectedType?.nameEn)
   const [errors,        setErrors]        = useState<Record<string, string>>({})
   const [creatingEvent, setCreatingEvent] = useState(false)
 
@@ -630,6 +660,7 @@ export function EventCreateModal({
   const [slotDraft,     setSlotDraft]     = useState<SlotDraft>({ startTime: "", endTime: "" })
   const [addingSlot,    setAddingSlot]    = useState(false)
   const [removingSlot,  setRemovingSlot]  = useState<string | null>(null)
+  const [editingSlotId, setEditingSlotId] = useState<string | null>(null)
   const [assigningSlot, setAssigningSlot] = useState<string | null>(null)
   const [publishing,    setPublishing]    = useState(false)
 
@@ -684,6 +715,7 @@ export function EventCreateModal({
     setCropOffset({ x: 0, y: 0 }); cropOffsetRef.current = { x: 0, y: 0 }
     setCropScale(1); cropScaleRef.current = 1
     setSlotDraft({ startTime: "", endTime: "" })
+    setEditingSlotId(null)
     setArtistDraft({ name: "", genre: "", imageUrl: null })
     setArtistImageError(null)
     setArtistImageLoading(false)
@@ -990,6 +1022,30 @@ export function EventCreateModal({
     )
   }
 
+  // Persiste les créneaux dans le brouillon localStorage (mode hors ligne)
+  const persistLocalSlots = (nextSlots: Program[]) => {
+    if (!activeEventId) return
+    const drafts = getOfflineDrafts()
+    const draft = drafts.find((d) => d.id === activeEventId)
+    if (draft) {
+      draft.slots = nextSlots.map((s) => ({ id: s.id, startTime: s.startTime, endTime: s.endTime }))
+      saveOfflineDraft(draft)
+    }
+  }
+
+  const cancelEditSlot = () => {
+    setEditingSlotId(null)
+    setSlotDraft({ startTime: "", endTime: "" })
+  }
+
+  const handleEditSlot = (slot: Program) => {
+    setEditingSlotId(slot.id)
+    setSlotDraft({
+      startTime: format(new Date(slot.startTime), "yyyy-MM-dd'T'HH:mm"),
+      endTime:   format(new Date(slot.endTime),   "yyyy-MM-dd'T'HH:mm"),
+    })
+  }
+
   const handleAddSlot = async () => {
     if (!activeEventId || !slotDraft.startTime || !slotDraft.endTime) {
       toast.error("Renseignez les dates de début et de fin"); return
@@ -999,8 +1055,17 @@ export function EventCreateModal({
     if (newEnd <= newStart) {
       toast.error("La fin doit être après le début"); return
     }
-    // Vérifie le chevauchement avec les créneaux existants
+    // Le créneau doit tenir dans la fenêtre du festival
+    const { start: festStart, end: festEnd } = getFestivalBounds(getFestivalYear())
+    if (newStart < festStart || newEnd > festEnd) {
+      toast.error("Créneau hors festival", {
+        description: "Les créneaux doivent se situer entre le 2 janvier 00:00 et le 11 janvier 06:00.",
+      })
+      return
+    }
+    // Vérifie le chevauchement avec les autres créneaux (le créneau en cours de modification est exclu)
     const overlapping = slots.find((s) => {
+      if (s.id === editingSlotId) return false
       const sStart = new Date(s.startTime)
       const sEnd   = new Date(s.endTime)
       // Chevauchement si : newStart < sEnd ET newEnd > sStart
@@ -1013,22 +1078,42 @@ export function EventCreateModal({
       })
       return
     }
+    const startIso = newStart.toISOString()
+    const endIso   = newEnd.toISOString()
+
+    // ── Modification d'un créneau existant (les artistes assignés sont conservés) ──
+    if (editingSlotId) {
+      if (!backendSynced || editingSlotId.startsWith("local-")) {
+        const nextSlots = slots.map((s) => (s.id === editingSlotId ? { ...s, startTime: startIso, endTime: endIso } : s))
+        setSlots(nextSlots)
+        persistLocalSlots(nextSlots)
+        cancelEditSlot()
+        toast.success("Créneau modifié")
+        return
+      }
+      setAddingSlot(true)
+      try {
+        const res = await updateProgram(editingSlotId, { startTime: startIso, endTime: endIso } as Parameters<typeof updateProgram>[1])
+        if (res.success && res.data) {
+          setSlots((p) => p.map((s) => (s.id === editingSlotId ? { ...s, ...res.data, artists: res.data.artists ?? s.artists } : s)))
+          cancelEditSlot()
+          toast.success("Créneau modifié")
+        } else { toast.error(res.message) }
+      } catch { toast.error("Erreur réseau") }
+      finally { setAddingSlot(false) }
+      return
+    }
+
     if (!backendSynced) {
       const localSlot = {
         id: genLocalId(), eventId: activeEventId,
-        startTime: new Date(slotDraft.startTime).toISOString(),
-        endTime:   new Date(slotDraft.endTime).toISOString(),
+        startTime: startIso,
+        endTime:   endIso,
       } as Program
       const nextSlots = [...slots, localSlot]
       setSlots(nextSlots)
       setSlotDraft({ startTime: "", endTime: "" })
-      // Persister les créneaux dans le draft localStorage
-      const drafts = getOfflineDrafts()
-      const draft = drafts.find((d) => d.id === activeEventId)
-      if (draft) {
-        draft.slots = nextSlots.map((s) => ({ id: s.id, startTime: s.startTime, endTime: s.endTime }))
-        saveOfflineDraft(draft)
-      }
+      persistLocalSlots(nextSlots)
       toast.success("Créneau ajouté")
       return
     }
@@ -1036,8 +1121,8 @@ export function EventCreateModal({
     try {
       const res = await createProgram({
         eventId: activeEventId,
-        startTime: new Date(slotDraft.startTime).toISOString(),
-        endTime:   new Date(slotDraft.endTime).toISOString(),
+        startTime: startIso,
+        endTime:   endIso,
       } as ProgramCreatePayload)
       if (res.success && res.data) {
         setSlots((p) => [...p, res.data])
@@ -1049,6 +1134,7 @@ export function EventCreateModal({
   }
 
   const handleRemoveSlot = async (id: string) => {
+    if (editingSlotId === id) cancelEditSlot()
     if (!backendSynced || id.startsWith("local-")) {
       const nextSlots = slots.filter((s) => s.id !== id)
       setSlots(nextSlots)
@@ -1185,13 +1271,18 @@ export function EventCreateModal({
         if (res.success && res.data?.id) {
           const realId = res.data.id
           // Sync des créneaux
-          await Promise.allSettled(
+          const slotResults = await Promise.allSettled(
             slots.map((s) => createProgram({ eventId: realId, startTime: s.startTime, endTime: s.endTime } as ProgramCreatePayload))
           )
+          const failedSlots = slotResults.filter((r) => r.status === "rejected" || !r.value.success).length
           // Brouillon local synchronisé - on le retire du localStorage
           if (activeEventId) removeOfflineDraft(activeEventId)
           toast.success(publish ? "Événement publié" : "Événement enregistré",
             { description: publish ? "Visible par les festivaliers." : undefined })
+          if (failedSlots > 0) {
+            toast.error(`${failedSlots} créneau${failedSlots > 1 ? "x" : ""} non synchronisé${failedSlots > 1 ? "s" : ""}`,
+              { description: "Rouvrez l'événement pour les ajouter à nouveau." })
+          }
           onDone(); onClose()
         } else {
           // Toujours offline - on met à jour le draft avec les dernières données (image, description…)
@@ -1674,136 +1765,138 @@ export function EventCreateModal({
                 </FormField>
 
                 {/* ── Artistes (line-up) ─────────────────────────────── */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-1.5">
-                    <Label className="text-[13px] font-medium text-foreground/80 flex items-center gap-2">
-                      <Music2 className="size-4 text-[var(--vd-gold)]" />
-                      Artistes
-                    </Label>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="size-3.5 text-muted-foreground/40 hover:text-muted-foreground/70 cursor-help transition-colors" />
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="text-xs max-w-[240px]">
-                        Ajoutez les artistes de cet événement, puis assignez-les à un ou plusieurs créneaux ci-dessous.
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
+                {hasLineup && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-1.5">
+                      <Label className="text-[13px] font-medium text-foreground/80 flex items-center gap-2">
+                        <Music2 className="size-4 text-[var(--vd-gold)]" />
+                        Artistes
+                      </Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="size-3.5 text-muted-foreground/40 hover:text-muted-foreground/70 cursor-help transition-colors" />
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="text-xs max-w-[240px]">
+                          Ajoutez les artistes de cet événement, puis assignez-les à un ou plusieurs créneaux ci-dessous.
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
 
-                  {!backendSynced ? (
-                    <p className="text-[12px] text-muted-foreground/50 rounded-xl border border-white/[0.08] bg-white/[0.025] p-3">
-                      Les artistes pourront être ajoutés une fois l&apos;événement synchronisé avec le serveur.
-                    </p>
-                  ) : (
-                    <>
-                      {/* Formulaire ajout artiste */}
-                      <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] p-4 space-y-3">
-                        <div className="flex gap-3">
-                          <button
-                            type="button"
-                            onClick={() => artistFileRef.current?.click()}
-                            disabled={artistImageLoading}
-                            className="relative shrink-0 size-16 rounded-full overflow-hidden border border-white/10 bg-white/[0.04] flex items-center justify-center group hover:border-[var(--vd-gold)]/40 transition-all"
-                          >
-                            {artistImageLoading ? (
-                              <Loader2 className="size-5 animate-spin text-muted-foreground/50" />
-                            ) : artistDraft.imageUrl ? (
-                              <img src={artistDraft.imageUrl} alt="Aperçu" className="absolute inset-0 w-full h-full object-cover" />
-                            ) : (
-                              <ImagePlus className="size-5 text-muted-foreground/40 group-hover:text-[var(--vd-gold)] transition-colors" />
-                            )}
-                          </button>
-                          <input
-                            ref={artistFileRef}
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            className="hidden"
-                            onChange={handleArtistImageChange}
-                          />
-                          <div className="grid grid-cols-2 gap-3 flex-1">
-                            <div className="space-y-1.5">
-                              <Label className="text-[11px] text-muted-foreground/60 font-medium uppercase tracking-wide">Nom</Label>
-                              <Input
-                                value={artistDraft.name}
-                                onChange={(e) => setArtistDraft((p) => ({ ...p, name: e.target.value }))}
-                                placeholder="Nom de l'artiste…"
-                                className="h-9 text-[13px] bg-white/[0.04] border-white/[0.1] rounded-lg"
-                              />
-                            </div>
-                            <div className="space-y-1.5">
-                              <Label className="text-[11px] text-muted-foreground/60 font-medium uppercase tracking-wide">Genre musical</Label>
-                              <Input
-                                value={artistDraft.genre}
-                                onChange={(e) => setArtistDraft((p) => ({ ...p, genre: e.target.value }))}
-                                placeholder="Afrobeat, Zouglou…"
-                                className="h-9 text-[13px] bg-white/[0.04] border-white/[0.1] rounded-lg"
-                              />
+                    {!backendSynced ? (
+                      <p className="text-[12px] text-muted-foreground/50 rounded-xl border border-white/[0.08] bg-white/[0.025] p-3">
+                        Les artistes pourront être ajoutés une fois l&apos;événement synchronisé avec le serveur.
+                      </p>
+                    ) : (
+                      <>
+                        {/* Formulaire ajout artiste */}
+                        <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] p-4 space-y-3">
+                          <div className="flex gap-3">
+                            <button
+                              type="button"
+                              onClick={() => artistFileRef.current?.click()}
+                              disabled={artistImageLoading}
+                              className="relative shrink-0 size-16 rounded-full overflow-hidden border border-white/10 bg-white/[0.04] flex items-center justify-center group hover:border-[var(--vd-gold)]/40 transition-all"
+                            >
+                              {artistImageLoading ? (
+                                <Loader2 className="size-5 animate-spin text-muted-foreground/50" />
+                              ) : artistDraft.imageUrl ? (
+                                <img src={artistDraft.imageUrl} alt="Aperçu" className="absolute inset-0 w-full h-full object-cover" />
+                              ) : (
+                                <ImagePlus className="size-5 text-muted-foreground/40 group-hover:text-[var(--vd-gold)] transition-colors" />
+                              )}
+                            </button>
+                            <input
+                              ref={artistFileRef}
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              className="hidden"
+                              onChange={handleArtistImageChange}
+                            />
+                            <div className="grid grid-cols-2 gap-3 flex-1">
+                              <div className="space-y-1.5">
+                                <Label className="text-[11px] text-muted-foreground/60 font-medium uppercase tracking-wide">Nom</Label>
+                                <Input
+                                  value={artistDraft.name}
+                                  onChange={(e) => setArtistDraft((p) => ({ ...p, name: e.target.value }))}
+                                  placeholder="Nom de l'artiste…"
+                                  className="h-9 text-[13px] bg-white/[0.04] border-white/[0.1] rounded-lg"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label className="text-[11px] text-muted-foreground/60 font-medium uppercase tracking-wide">Genre musical</Label>
+                                <Input
+                                  value={artistDraft.genre}
+                                  onChange={(e) => setArtistDraft((p) => ({ ...p, genre: e.target.value }))}
+                                  placeholder="Afrobeat, Zouglou…"
+                                  className="h-9 text-[13px] bg-white/[0.04] border-white/[0.1] rounded-lg"
+                                />
+                              </div>
                             </div>
                           </div>
+                          {artistImageError && (
+                            <p className="flex items-center gap-1.5 text-[11px] text-red-400">
+                              <AlertCircle className="size-3 shrink-0" /> {artistImageError}
+                            </p>
+                          )}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleAddArtist}
+                            disabled={addingArtist || !artistDraft.name.trim()}
+                            className="w-full h-9 border-[var(--vd-gold)]/25 text-[var(--vd-gold)] hover:bg-[var(--vd-gold)]/8 hover:border-[var(--vd-gold)]/40 hover:text-[var(--vd-gold)] rounded-lg text-[12px] font-medium transition-all"
+                          >
+                            {addingArtist
+                              ? <><Loader2 className="mr-2 size-3.5 animate-spin" />Ajout…</>
+                              : <><Plus className="mr-2 size-3.5" />Ajouter cet artiste</>}
+                          </Button>
                         </div>
-                        {artistImageError && (
-                          <p className="flex items-center gap-1.5 text-[11px] text-red-400">
-                            <AlertCircle className="size-3 shrink-0" /> {artistImageError}
-                          </p>
-                        )}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={handleAddArtist}
-                          disabled={addingArtist || !artistDraft.name.trim()}
-                          className="w-full h-9 border-[var(--vd-gold)]/25 text-[var(--vd-gold)] hover:bg-[var(--vd-gold)]/8 hover:border-[var(--vd-gold)]/40 hover:text-[var(--vd-gold)] rounded-lg text-[12px] font-medium transition-all"
-                        >
-                          {addingArtist
-                            ? <><Loader2 className="mr-2 size-3.5 animate-spin" />Ajout…</>
-                            : <><Plus className="mr-2 size-3.5" />Ajouter cet artiste</>}
-                        </Button>
-                      </div>
 
-                      {/* Liste des artistes */}
-                      {loadingArtists ? (
-                        <div className="space-y-2">
-                          {[1, 2].map(i => (
-                            <div key={i} className="h-10 rounded-lg bg-white/[0.04] animate-pulse" />
-                          ))}
-                        </div>
-                      ) : artists.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {artists.map((artist) => (
-                            <div
-                              key={artist.id}
-                              className="flex items-center gap-2 pl-1.5 pr-1.5 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] group hover:border-white/15 transition-all"
-                            >
-                              {artist.imageUrl ? (
-                                <img src={artist.imageUrl} alt="" className="size-5 rounded-full object-cover shrink-0" />
-                              ) : (
-                                <span className="size-5 rounded-full bg-white/[0.06] flex items-center justify-center shrink-0">
-                                  <Users2 className="size-3 text-muted-foreground/50" />
-                                </span>
-                              )}
-                              <span className="text-[12px] text-foreground/80">{artist.name}</span>
-                              {artist.genre && (
-                                <span className="text-[10px] text-muted-foreground/40">· {artist.genre}</span>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveArtist(artist.id)}
-                                disabled={removingArtist === artist.id}
-                                className="size-5 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-40"
+                        {/* Liste des artistes */}
+                        {loadingArtists ? (
+                          <div className="space-y-2">
+                            {[1, 2].map(i => (
+                              <div key={i} className="h-10 rounded-lg bg-white/[0.04] animate-pulse" />
+                            ))}
+                          </div>
+                        ) : artists.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {artists.map((artist) => (
+                              <div
+                                key={artist.id}
+                                className="flex items-center gap-2 pl-1.5 pr-1.5 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] group hover:border-white/15 transition-all"
                               >
-                                {removingArtist === artist.id
-                                  ? <Loader2 className="size-3 animate-spin" />
-                                  : <X className="size-3" />}
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-[12px] text-muted-foreground/40 py-1">Aucun artiste ajouté pour le moment</p>
-                      )}
-                    </>
-                  )}
-                </div>
+                                {artist.imageUrl ? (
+                                  <img src={artist.imageUrl} alt="" className="size-5 rounded-full object-cover shrink-0" />
+                                ) : (
+                                  <span className="size-5 rounded-full bg-white/[0.06] flex items-center justify-center shrink-0">
+                                    <Users2 className="size-3 text-muted-foreground/50" />
+                                  </span>
+                                )}
+                                <span className="text-[12px] text-foreground/80">{artist.name}</span>
+                                {artist.genre && (
+                                  <span className="text-[10px] text-muted-foreground/40">· {artist.genre}</span>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveArtist(artist.id)}
+                                  disabled={removingArtist === artist.id}
+                                  className="size-5 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-40"
+                                >
+                                  {removingArtist === artist.id
+                                    ? <Loader2 className="size-3 animate-spin" />
+                                    : <X className="size-3" />}
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-[12px] text-muted-foreground/40 py-1">Aucun artiste ajouté pour le moment</p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
 
                 {/* ── Créneaux horaires ─────────────────────────────── */}
                 <div className="space-y-3">
@@ -1867,9 +1960,23 @@ export function EventCreateModal({
                       className="w-full h-9 border-[var(--vd-gold)]/25 text-[var(--vd-gold)] hover:bg-[var(--vd-gold)]/8 hover:border-[var(--vd-gold)]/40 hover:text-[var(--vd-gold)] rounded-lg text-[12px] font-medium transition-all"
                     >
                       {addingSlot
-                        ? <><Loader2 className="mr-2 size-3.5 animate-spin" />Ajout…</>
-                        : <><CalendarPlus className="mr-2 size-3.5" />Ajouter ce créneau</>}
+                        ? <><Loader2 className="mr-2 size-3.5 animate-spin" />{editingSlotId ? "Mise à jour…" : "Ajout…"}</>
+                        : editingSlotId
+                          ? <><Pencil className="mr-2 size-3.5" />Mettre à jour le créneau</>
+                          : <><CalendarPlus className="mr-2 size-3.5" />Ajouter ce créneau</>}
                     </Button>
+                    {editingSlotId && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={cancelEditSlot}
+                        disabled={addingSlot}
+                        className="w-full h-8 text-[12px] text-muted-foreground/70 hover:text-foreground"
+                      >
+                        Annuler la modification
+                      </Button>
+                    )}
                   </div>
 
                   {/* Liste des créneaux */}
@@ -1895,6 +2002,14 @@ export function EventCreateModal({
                             </div>
                             <button
                               type="button"
+                              onClick={() => handleEditSlot(slot)}
+                              disabled={removingSlot === slot.id || addingSlot}
+                              className="ml-2 shrink-0 size-7 rounded-lg flex items-center justify-center text-muted-foreground/30 hover:text-[var(--vd-gold)] hover:bg-[var(--vd-gold)]/10 transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                            >
+                              <Pencil className="size-3.5" />
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => handleRemoveSlot(slot.id)}
                               disabled={removingSlot === slot.id}
                               className="ml-2 shrink-0 size-7 rounded-lg flex items-center justify-center text-muted-foreground/30 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
@@ -1906,7 +2021,7 @@ export function EventCreateModal({
                           </div>
 
                           {/* Assignation des artistes à ce créneau (plusieurs possibles) */}
-                          {backendSynced && artists.length > 0 && (
+                          {backendSynced && hasLineup && artists.length > 0 && (
                             <div className="flex flex-wrap items-center gap-1.5 px-3.5 pb-2.5">
                               {slot.artists?.map((a) => (
                                 <span key={a.id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--vd-gold)]/10 border border-[var(--vd-gold)]/25 text-[10px] text-[var(--vd-gold)]">

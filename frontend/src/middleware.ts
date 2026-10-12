@@ -93,7 +93,7 @@ export function middleware(request: NextRequest) {
     }
 
     // /instad/* : réservé à l'INStaD, avec supervision possible du SUPER_ADMIN
-    if (pathname.startsWith("/instad") && role !== "INSTAD" && role !== "SUPER_ADMIN") {
+    if (pathname.startsWith("/instad") && role !== "INSTAD") {
       return NextResponse.redirect(new URL(destinationFor(role), request.url))
     }
   }

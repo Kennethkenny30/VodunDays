@@ -88,8 +88,11 @@ const statusConfig: Record<EventStatus, { label: string; color: string }> = {
 
 function formatProgramTime(p: Program) {
   try {
-    const start = format(new Date(p.startTime), "dd MMM yyyy, HH:mm", { locale: fr })
-    const end   = format(new Date(p.endTime),   "HH:mm",               { locale: fr })
+    const s       = new Date(p.startTime)
+    const e       = new Date(p.endTime)
+    const sameDay = format(s, "yyyy-MM-dd") === format(e, "yyyy-MM-dd")
+    const start = format(s, "dd MMM yyyy, HH:mm", { locale: fr })
+    const end   = format(e, sameDay ? "HH:mm" : "dd MMM, HH:mm", { locale: fr })
     return `${start} → ${end}`
   } catch { return `${p.startTime} → ${p.endTime}` }
 }
@@ -151,11 +154,17 @@ export function EventsManager({ className }: EventsManagerProps) {
                 // Sync des créneaux si nécessaire
                 if (draft.slots.length > 0) {
                   const { createProgram } = await import("@/lib/api/programs")
-                  await Promise.allSettled(
+                  const slotResults = await Promise.allSettled(
                     draft.slots.map((s) =>
                       createProgram({ eventId: res.data.id, startTime: s.startTime, endTime: s.endTime } as import("@/lib/types/api").ProgramCreatePayload)
                     )
                   )
+                  const failedSlots = slotResults.filter((r) => r.status === "rejected" || !r.value.success).length
+                  if (failedSlots > 0) {
+                    toast.error(`${failedSlots} créneau${failedSlots > 1 ? "x" : ""} de « ${draft.name} » non synchronisé${failedSlots > 1 ? "s" : ""}`, {
+                      description: "Rouvrez l'événement pour les ajouter à nouveau.",
+                    })
+                  }
                 }
                 syncedIds.push(draft.id)
               }

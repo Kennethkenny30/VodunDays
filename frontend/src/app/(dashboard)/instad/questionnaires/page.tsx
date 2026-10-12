@@ -71,7 +71,11 @@ function RatingQuestionCard({ stats }: { stats: InstadRatingStats }) {
   if (stats.count === 0) {
     return <p className="text-xs text-muted-foreground/50 py-4">Aucune réponse pour cette question</p>
   }
-  const chartData = (stats.distribution ?? []).map(d => ({ name: `${d.value} ★`, count: d.count }))
+  // Toujours 1 à 5 étoiles, même si l'API n'envoie pas les notes sans réponse
+  const chartData = [1, 2, 3, 4, 5].map(v => ({
+    name: `${v} ★`,
+    count: stats.distribution?.find(d => d.value === v)?.count ?? 0,
+  }))
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
@@ -197,14 +201,20 @@ export default function InstadQuestionnairesPage() {
 
   useEffect(() => {
     if (!selectedQuizId) return
+    // `cancelled` ignore les réponses obsolètes quand le quiz ou un filtre change entre-temps
+    let cancelled = false
     setStatsLoading(true)
+    // Évite d'afficher les stats d'un autre questionnaire si ce chargement échoue
+    setStatistics(null)
     getInstadQuizStatistics(selectedQuizId, filters)
       .then(res => {
+        if (cancelled) return
         if (res.success) setStatistics(res.data)
         else toast.error(res.message || "Impossible de charger les statistiques")
       })
-      .catch(() => toast.error("Erreur réseau"))
-      .finally(() => setStatsLoading(false))
+      .catch(() => { if (!cancelled) toast.error("Erreur réseau") })
+      .finally(() => { if (!cancelled) setStatsLoading(false) })
+    return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedQuizId, filters.from, filters.to, filters.gender, filters.ageRange])
 

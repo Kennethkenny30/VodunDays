@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog"
 import { EmptyState } from "@/components/dashboard/empty-state"
 import { IconPlus, IconDelete } from "@/components/icons"
-import { Star, Circle, CheckSquare, AlignLeft, Settings } from "lucide-react"
+import { Settings } from "lucide-react"
 import { toast } from "sonner"
 import {
   getQuestionTypes,
@@ -18,34 +18,18 @@ import {
   updateQuestionType,
   deleteQuestionType,
 } from "@/lib/api/questions"
+import { KIND_META, KIND_ORDER, kindIcon } from "@/lib/question-kinds"
 import type { QuestionType, QuestionKind } from "@/lib/types/api"
 
 interface QuestionTypesManagerProps {
   onTypesChanged: (types: QuestionType[]) => void
 }
 
-const KIND_OPTIONS: { value: QuestionKind; label: string; description: string }[] = [
-  { value: "RATING",   label: "Note étoilée",   description: "Notation 1-5 étoiles" },
-  { value: "SINGLE",   label: "Choix unique",   description: "Une seule réponse"    },
-  { value: "MULTIPLE", label: "Choix multiple", description: "Plusieurs réponses"   },
-  { value: "TEXT",     label: "Texte libre",    description: "Réponse ouverte"      },
-]
-
-const KIND_COLORS: Record<QuestionKind, string> = {
-  RATING:   "bg-amber-500/10 border-amber-500/25 text-amber-400",
-  SINGLE:   "bg-blue-500/10 border-blue-500/25 text-blue-400",
-  MULTIPLE: "bg-purple-500/10 border-purple-500/25 text-purple-400",
-  TEXT:     "bg-slate-500/10 border-slate-500/25 text-slate-400",
-}
-
-function kindIcon(kind: QuestionKind) {
-  switch (kind) {
-    case "RATING":   return Star
-    case "SINGLE":   return Circle
-    case "MULTIPLE": return CheckSquare
-    default:         return AlignLeft
-  }
-}
+const KIND_OPTIONS = KIND_ORDER.map((value) => ({
+  value,
+  label: KIND_META[value].label,
+  description: KIND_META[value].description,
+}))
 
 export function QuestionTypesManager({ onTypesChanged }: QuestionTypesManagerProps) {
   const [types, setTypes]                   = useState<QuestionType[]>([])
@@ -55,7 +39,6 @@ export function QuestionTypesManager({ onTypesChanged }: QuestionTypesManagerPro
   const [formName, setFormName] = useState("")
   const [formKind, setFormKind] = useState<QuestionKind>("TEXT")
   const [saving, setSaving]     = useState(false)
-  const [isDirty, setIsDirty]   = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -73,20 +56,18 @@ export function QuestionTypesManager({ onTypesChanged }: QuestionTypesManagerPro
     load()
   }, [])
 
-  // Calcule isDirty selon le mode (création ou édition)
-  useEffect(() => {
-    if (selectedTypeId === null) {
-      setIsDirty(formName.trim().length > 0)
-    } else {
-      const original = types.find((t) => t.id === selectedTypeId)
-      setIsDirty(
-        !!original &&
-        (formName.trim() !== original.types || formKind !== original.kind)
-      )
-    }
+  // isDirty selon le mode (création ou édition)
+  const isDirty = useMemo(() => {
+    if (selectedTypeId === null) return formName.trim().length > 0
+    const original = types.find((t) => t.id === selectedTypeId)
+    return !!original && (formName.trim() !== original.types || formKind !== original.kind)
   }, [formName, formKind, selectedTypeId, types])
 
+  const confirmDiscard = () =>
+    !isDirty || window.confirm("Abandonner les modifications non enregistrées ?")
+
   const selectType = (type: QuestionType) => {
+    if (type.id !== selectedTypeId && !confirmDiscard()) return
     setSelectedTypeId(type.id)
     setFormName(type.types)
     setFormKind(type.kind)
@@ -96,6 +77,11 @@ export function QuestionTypesManager({ onTypesChanged }: QuestionTypesManagerPro
     setSelectedTypeId(null)
     setFormName("")
     setFormKind("TEXT")
+  }
+
+  const handleNewType = () => {
+    if (!confirmDiscard()) return
+    resetToCreate()
   }
 
   const handleSave = async () => {
@@ -210,7 +196,7 @@ export function QuestionTypesManager({ onTypesChanged }: QuestionTypesManagerPro
                     </span>
                     <ConfirmDialog
                       title="Supprimer le type"
-                      description={`Supprimer "${t.types}" ? Les questions associées perdront ce type.`}
+                      description={`Supprimer « ${t.types} » ? Les questions qui utilisent ce type pourraient être affectées.`}
                       confirmLabel="Supprimer"
                       variant="destructive"
                       onConfirm={() => handleDelete(t.id)}
@@ -218,7 +204,8 @@ export function QuestionTypesManager({ onTypesChanged }: QuestionTypesManagerPro
                         <button
                           type="button"
                           onClick={(e) => e.stopPropagation()}
-                          className="opacity-0 group-hover:opacity-100 text-muted-foreground/30 hover:text-red-400 transition-all p-0.5 rounded"
+                          aria-label="Supprimer le type"
+                          className="opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100 text-muted-foreground/40 hover:text-red-400 transition-all p-0.5 rounded"
                         >
                           <IconDelete className="size-3" />
                         </button>
@@ -235,7 +222,7 @@ export function QuestionTypesManager({ onTypesChanged }: QuestionTypesManagerPro
           <Button
             variant="outline"
             size="sm"
-            onClick={resetToCreate}
+            onClick={handleNewType}
             className={cn(
               "w-full h-8 text-[11px] rounded-xl transition-all",
               !isEditing
@@ -279,7 +266,7 @@ export function QuestionTypesManager({ onTypesChanged }: QuestionTypesManagerPro
                 "transition-all duration-200"
               )}
               onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === "Enter") handleSave()
+                if (e.key === "Enter" && isDirty && !saving) handleSave()
               }}
             />
           </div>
@@ -298,9 +285,10 @@ export function QuestionTypesManager({ onTypesChanged }: QuestionTypesManagerPro
                     key={opt.value}
                     type="button"
                     onClick={() => setFormKind(opt.value)}
+                    disabled={isEditing}
                     className={cn(
                       "flex flex-col items-center gap-2 px-3 py-3 rounded-xl border text-center",
-                      "transition-all duration-150 focus-visible:outline-none",
+                      "transition-all duration-150 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60",
                       isSelected
                         ? "bg-[var(--vd-gold)]/10 border-[var(--vd-gold)]/50 text-[var(--vd-gold)]"
                         : "bg-white/[0.03] border-white/[0.08] text-muted-foreground hover:border-white/20 hover:bg-white/[0.05]"
@@ -313,16 +301,21 @@ export function QuestionTypesManager({ onTypesChanged }: QuestionTypesManagerPro
                 )
               })}
             </div>
+            {isEditing && (
+              <p className="text-[11px] text-muted-foreground/50 leading-relaxed">
+                Le comportement ne peut plus être modifié après la création : il détermine le format des réponses déjà collectées. Créez un nouveau type pour changer de comportement.
+              </p>
+            )}
           </div>
 
-          {/* Apercu du badge kind */}
+          {/* Aperçu du badge kind */}
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-muted-foreground/40">Apercu :</span>
+            <span className="text-[11px] text-muted-foreground/40">Aperçu :</span>
             <Badge
               variant="outline"
-              className={cn("text-[10px] px-2 h-5 font-medium border", KIND_COLORS[formKind])}
+              className={cn("text-[10px] px-2 h-5 font-medium border", KIND_META[formKind].badge)}
             >
-              {formKind}
+              {KIND_META[formKind].label}
             </Badge>
           </div>
 
