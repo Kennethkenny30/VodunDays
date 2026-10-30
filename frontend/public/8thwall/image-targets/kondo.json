@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/kondo_luminance.jpg",
+  "metadata": null,
+  "name": "kondo",
+  "type": "PLANAR",
+  "properties": {
+    "top": 80,
+    "left": 327,
+    "width": 773,
+    "height": 1030,
+    "isRotated": true,
+    "originalWidth": 1280,
+    "originalHeight": 1280
+  },
+  "resources": {
+    "originalImage": "kondo_original.jpg",
+    "croppedImage": "kondo_cropped.jpg",
+    "thumbnailImage": "kondo_thumbnail.jpg",
+    "luminanceImage": "kondo_luminance.jpg"
+  },
+  "created": 1793359366648,
+  "updated": 1793359366648
+}

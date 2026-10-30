@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AlertCircle, Camera, VideoOff } from "lucide-react";
 import * as THREE from "three";
 import { ImageTargetOverlay, type TargetCorners } from "./ImageTargetOverlay";
+import { MODEL_TARGET_NAMES, isModelTarget, createModelAnchor } from "./ARModelAnchor";
 
 type CameraState = "idle" | "loading" | "active" | "denied" | "unavailable";
 
@@ -15,7 +16,10 @@ interface CameraViewProps {
 // Pour chaque cible, deposer dans public/8thwall/image-targets/ :
 //  - <nom>.json            (metadonnees completes : type, properties, etc.)
 //  - <nom>_luminance.jpg   (image traitee pour la detection)
-const IMAGE_TARGET_NAMES = ["lissa", "aziza"];
+// lissa / aziza : mode descriptif (flou + texte). MODEL_TARGET_NAMES (logo, 2 versions) :
+// mode modele 3D verrouille en SLAM. Le mode actif suit la derniere cible
+// detectee : jamais les deux affiches en meme temps.
+const IMAGE_TARGET_NAMES = ["lissa", "aziza", ...MODEL_TARGET_NAMES];
 const IMAGE_TARGETS_BASE = "/8thwall/image-targets";
 
 // Le moteur exige les objets JSON complets generes par le CLI (notamment
@@ -191,6 +195,7 @@ export function CameraView({ onBack }: CameraViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [cameraState, setCameraState] = useState<CameraState>("idle");
   const [activeTarget, setActiveTarget] = useState<string | null>(null);
+  const [modelVisible, setModelVisible] = useState(false);
 
   // Ref pour la transform courante de la cible suivie, mise a jour par les
   // evenements 8th Wall et lue par la boucle de projection ecran
@@ -216,6 +221,15 @@ export function CameraView({ onBack }: CameraViewProps) {
     let mounted = true;
     let pipelineRegistered = false;
     let rafId: number | null = null;
+
+    // Version du logo actuellement suivie (blanc sur noir ou noir sur blanc) :
+    // si les deux sont visibles, la premiere detectee fait foi
+    let modelName: string | null = null;
+
+    // Mode modele 3D (logo) : ancre dans le monde, gere sa propre scene Three
+    const modelAnchor = createModelAnchor((visible) => {
+      if (mounted) setModelVisible(visible);
+    });
 
     // Vecteurs reutilises pour ne pas allouer a chaque frame
     const cornerVec = new THREE.Vector3();
@@ -302,6 +316,21 @@ export function CameraView({ onBack }: CameraViewProps) {
                 lostTimerRef.current = null;
               }
 
+              // Logo : le mode modele prend la main, le mode descriptif se retire
+              if (isModelTarget(name)) {
+                if (modelName && modelName !== name) return;
+                modelName = name;
+                trackedNameRef.current = null;
+                trackedTransformRef.current = null;
+                cornersRef.current = null;
+                setActiveTarget(null);
+                modelAnchor.setEnabled(true);
+                modelAnchor.found(event.detail);
+                return;
+              }
+
+              // Cible descriptive : la figure 3D se masque (elle garde sa place)
+              modelAnchor.setEnabled(false);
               trackedNameRef.current = name;
               trackedTransformRef.current = {
                 position,
@@ -319,6 +348,10 @@ export function CameraView({ onBack }: CameraViewProps) {
               if (!mounted) return;
               const { name, position, rotation, scale, scaledWidth, scaledHeight } =
                 event.detail;
+              if (isModelTarget(name)) {
+                if (name === modelName) modelAnchor.update(event.detail);
+                return;
+              }
               if (name !== trackedNameRef.current) return;
               trackedTransformRef.current = {
                 position,
@@ -333,6 +366,13 @@ export function CameraView({ onBack }: CameraViewProps) {
             event: "reality.imagelost",
             process: (event: any) => {
               if (!mounted) return;
+              if (isModelTarget(event.detail?.name)) {
+                if (event.detail.name === modelName) {
+                  modelName = null;
+                  modelAnchor.lost();
+                }
+                return;
+              }
               if (event.detail?.name !== trackedNameRef.current) return;
 
               // Delai de grace : on garde la derniere pose (le flou et le
@@ -344,7 +384,10 @@ export function CameraView({ onBack }: CameraViewProps) {
                 trackedNameRef.current = null;
                 trackedTransformRef.current = null;
                 cornersRef.current = null;
-                if (mounted) setActiveTarget(null);
+                if (mounted) {
+                  setActiveTarget(null);
+                  modelAnchor.setEnabled(true);
+                }
               }, LOST_GRACE_MS);
             },
           },
@@ -389,13 +432,18 @@ export function CameraView({ onBack }: CameraViewProps) {
           XR8.Threejs.pipelineModule(),
           XR8.XrController.pipelineModule(),
           imageTargetPipelineModule(),
+          modelAnchor.pipelineModule(),
         ]);
         pipelineRegistered = true;
 
-        // SLAM desactive : uniquement du tracking d'image ici. imageTargetData
-        // definit les cibles directement depuis le code (imagePath/name/isRotated)
+        // SLAM actif et echelle absolue (metres) : necessaires pour verrouiller
+        // la figure du mode modele dans le monde, a taille reelle (30 cm).
+        // disableWorldTracking ne peut pas changer une fois le moteur lance,
+        // d'ou un seul reglage pour les deux modes. imageTargetData definit les
+        // cibles directement depuis le code (imagePath/name/isRotated)
         XR8.XrController.configure({
-          disableWorldTracking: true,
+          disableWorldTracking: false,
+          scale: "absolute",
           imageTargetData,
         });
 
@@ -424,6 +472,7 @@ export function CameraView({ onBack }: CameraViewProps) {
 
     return () => {
       mounted = false;
+      modelAnchor.dispose();
       if (rafId !== null) cancelAnimationFrame(rafId);
       if (lostTimerRef.current) {
         clearTimeout(lostTimerRef.current);
@@ -514,7 +563,7 @@ export function CameraView({ onBack }: CameraViewProps) {
         </div>
       )}
 
-      {cameraState === "active" && !activeTarget && (
+      {cameraState === "active" && !activeTarget && !modelVisible && (
         <div className="absolute bottom-32 left-0 right-0 flex justify-center pointer-events-none">
           <div className="px-4 py-1.5 rounded-full backdrop-blur-md bg-black/40 border border-white/15">
             <p className="text-[12px] text-white/70 font-medium tracking-wide">
